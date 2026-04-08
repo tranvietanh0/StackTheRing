@@ -1,0 +1,12 @@
+[submodule "HyperCasualTemplate/Assets/Submodules/GameFoundationCore"]
+	path = HyperCasualTemplate/Assets/Submodules/GameFoundationCore
+	url = git@github.com:tranvietanh0/GameFoundationCore.git
+[submodule "HyperCasualTemplate/Assets/Submodules/Extensions"]
+	path = HyperCasualTemplate/Assets/Submodules/Extensions
+	url = git@github.com:tranvietanh0/Unity.Extensions.git
+[submodule "HyperCasualTemplate/Assets/Submodules/Logging"]
+	path = HyperCasualTemplate/Assets/Submodules/Logging
+	url = git@github.com:tranvietanh0/Unity.Logging.git
+[submodule "HyperCasualTemplate/Assets/Submodules/UITemplate"]
+	path = HyperCasualTemplate/Assets/Submodules/UITemplate
+	url = git@github.com:tranvietanh0/UITemplate.git

@@ -1,0 +1,28 @@
+{
+    "name": "HyperCasualGame.Scripts",
+    "rootNamespace": "HyperCasualGame.Scripts",
+    "references": [
+        "VContainer",
+        "GameFoundationCore.Scripts",
+        "GameFoundationCore.DI",
+        "GameFoundationCore.UIModule",
+        "GameFoundationCore.Signals",
+        "UniT.Logging",
+        "UniTask",
+        "GameFoundationCore.Models",
+        "UITemplate.Scripts",
+        "UniT.Extensions",
+        "Unity.ResourceManager",
+        "GameFoundationCore.AssetLibrary",
+        "Unity.Addressables"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
