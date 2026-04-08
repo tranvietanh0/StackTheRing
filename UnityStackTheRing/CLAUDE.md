@@ -76,26 +76,51 @@ Transition: `stateMachine.TransitionTo<GameHomeState>()`
 
 ### Screen/UI System (MVP Pattern)
 
-**View**: MonoBehaviour inheriting `BaseView` (handles animations, lifecycle)
-**Presenter**: Handles logic, inherits `BaseScreenPresenter<TView>`
+**All MVP in ONE file:** `{Name}ScreenView.cs` (e.g., `HomeScreenView.cs`)
+
+- **Model**: Data class (optional)
+- **View**: MonoBehaviour inheriting `BaseView`
+- **Presenter**: Logic, inherits `BaseScreenPresenter<TView>`, uses constructor injection
 
 ```csharp
-public class LoadingScreenView : BaseView { }
+// HomeScreenView.cs - Model + View + Presenter together
 
-[ScreenInfo(nameof(LoadingScreenView))]
-public class LoadingScreenPresenter : BaseScreenPresenter<LoadingScreenView>
+public class HomeScreenModel { public int HighScore; }  // Model (optional)
+
+public class HomeScreenView : BaseView { }  // View
+
+[ScreenInfo(nameof(HomeScreenView))]
+public class HomeScreenPresenter : BaseScreenPresenter<HomeScreenView>  // Presenter
 {
+    private readonly IGameAssets gameAssets;
+
+    public HomeScreenPresenter(SignalBus signalBus, ILoggerManager logger, IGameAssets gameAssets)
+        : base(signalBus, logger)
+    {
+        this.gameAssets = gameAssets;
+    }
+
     public override async UniTask BindData() { /* load data */ }
 }
 ```
 
 Open screens via `IScreenManager`:
 ```csharp
-await screenManager.OpenScreen<LoadingScreenPresenter>();
-await screenManager.OpenScreen<HomeScreenPresenter, HomeModel>(model);
+await screenManager.OpenScreen<HomeScreenPresenter>();
+await screenManager.OpenScreen<HomeScreenPresenter, HomeScreenModel>(model);
 ```
 
 ### Signals (Pub/Sub)
+
+**Signals must be `class` (not struct):**
+
+```csharp
+// Define signal as class
+public class UserDataLoadedSignal
+{
+    public UserLocalData Data;
+}
+```
 
 Declare signals in LifetimeScope:
 ```csharp
@@ -105,7 +130,7 @@ builder.DeclareSignal<UserDataLoadedSignal>();
 Usage:
 ```csharp
 signalBus.Subscribe<UserDataLoadedSignal>(OnDataLoaded);
-signalBus.Fire(new UserDataLoadedSignal());
+signalBus.Fire(new UserDataLoadedSignal { Data = userData });
 signalBus.Unsubscribe<UserDataLoadedSignal>(OnDataLoaded);
 ```
 
@@ -125,8 +150,19 @@ public class MyConfigReader : GenericBlueprintReaderByRow<MyConfigModel> { }
 ## Key Conventions
 
 - Async methods use `UniTask`, not `Task`
-- All DI-aware classes use constructor injection
+- **Constructor injection ONLY** — never use `[Inject]` attribute
+- **Signals are `class`** — never use `struct` for signals
+- **MVP in one file** — Model + View + Presenter in `{Name}ScreenView.cs`
 - Screen presenters are instantiated via `IScreenManager`, not directly
 - Use `IInitializable.Initialize()` for post-injection setup (called after DI container resolves)
 - Use `ITickable.Tick()` for update loops (managed by VContainer)
 - States auto-register by implementing marker interfaces (`IGameState`)
+
+## Prohibited Patterns
+
+- `[Inject]` attribute — Use constructor injection only
+- `struct` for signals — Use `class` for signals
+- Separate MVP files — All MVP in `{Name}ScreenView.cs`
+- `FindObjectOfType<T>()` / `GameObject.Find()` — Use DI or serialize reference
+- Static singletons — Use VContainer `Lifetime.Singleton`
+- `async void` / `Task` — Use `async UniTask`
