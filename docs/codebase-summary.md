@@ -42,15 +42,18 @@ StackTheRing/
 
 ```
 HyperCasualGame.Scripts              # Main game assembly
+├── VContainer                       # DI container
 ├── GameFoundationCore.Scripts       # Core services (DI, signals, assets)
 ├── GameFoundationCore.UIModule      # Screen management, MVP
-├── GameFoundationCore.DI            # DI interfaces
-├── GameFoundationCore.Signals       # SignalBus
-├── GameFoundationCore.AssetLibrary  # Addressables wrapper
+├── GameFoundationCore.DI            # DI interfaces (IInitializable, ITickable, etc.)
+├── GameFoundationCore.Signals       # SignalBus (MessagePipe wrapper)
+├── GameFoundationCore.AssetLibrary  # Addressables wrapper (GameAssets)
 ├── GameFoundationCore.Models        # Base data models
 ├── UITemplate.Scripts               # StateMachine, UserData
 ├── UniT.Logging                     # Logging abstractions
-└── UniT.Extensions                  # Utility helpers
+├── UniT.Extensions                  # Utility helpers
+├── UniTask                          # Async/await framework
+└── Unity.Addressables               # Asset loading
 ```
 
 ## Source Files
@@ -65,10 +68,22 @@ HyperCasualGame.Scripts              # Main game assembly
 ## Key Entry Points
 
 1. **`0.LoadingScene`** — App entry, loads user data, transitions to main
-2. **`GameLifetimeScope`** — Root DI container setup
-3. **`LoadingScreenPresenter`** — Initial screen, loads data then scene
-4. **`MainSceneScope`** — Per-scene DI registrations
-5. **`GameStateMachine`** — Game flow orchestrator
+2. **`GameLifetimeScope`** — Root DI container, calls `RegisterGameFoundation()` + `RegisterUITemplate()`
+3. **`LoadingScreenPresenter`** — Initial screen, loads `UserLocalData` then `1.MainScene`
+4. **`MainSceneScope`** — Per-scene DI, registers `GameStateMachine` with auto-discovered states
+5. **`GameStateMachine`** — Game flow orchestrator, implements `IInitializable` to start at `GameHomeState`
+
+## Services Registered (via RegisterGameFoundation)
+
+| Service | Lifetime | Interface | Purpose |
+|---------|----------|-----------|---------|
+| SignalBus | Scoped | - | Pub/sub messaging (MessagePipe wrapper) |
+| GameAssets | Singleton | IGameAssets | Addressables wrapper with caching |
+| ScreenManager | Scoped | IScreenManager | MVP screen management |
+| ObjectPoolManager | Singleton | - | Object pooling |
+| AudioService | Singleton | IAudioService | Sound management |
+| HandleLocalUserDataServices | Singleton | IHandleUserDataServices | User data persistence |
+| LoggerManager | - | ILoggerManager | Logging |
 
 ## Dependencies (Git Submodules)
 
@@ -112,3 +127,18 @@ HyperCasualGame.Scripts              # Main game assembly
 | IHaveStateMachine.cs | ~10 | StateMachine accessor |
 
 **Total game-specific code: ~180 lines** (template ready for game logic)
+
+## Framework Quick Reference
+
+| Task | Code Pattern |
+|------|--------------|
+| Register service | `builder.Register<MyService>(Lifetime.Singleton)` |
+| Inject dependency | Constructor parameter (no `[Inject]` attribute) |
+| Open screen | `await screenManager.OpenScreen<MyPresenter>()` |
+| Open screen with data | `await screenManager.OpenScreen<MyPresenter, MyModel>(model)` |
+| Fire signal | `signalBus.Fire(new MySignal { ... })` |
+| Subscribe signal | `signalBus.Subscribe<MySignal>(OnMySignal)` |
+| Load scene | `await gameAssets.LoadSceneAsync("SceneName")` |
+| Load asset | `await gameAssets.LoadAssetAsync<Sprite>("key")` |
+| Change state | `stateMachine.TransitionTo<GamePlayState>()` |
+| Async method | `public async UniTask DoWorkAsync()` |

@@ -14,7 +14,10 @@
         "UniT.Extensions",
         "Unity.ResourceManager",
         "GameFoundationCore.AssetLibrary",
-        "Unity.Addressables"
+        "Unity.Addressables",
+        "DOTween.Modules",
+        "DOTweenPro.Scripts",
+        "Dreamteck.Splines"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

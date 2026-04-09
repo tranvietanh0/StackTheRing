@@ -12,12 +12,16 @@
 
     public class GameStateMachine : StateMachine, IInitializable
     {
+        private readonly List<IGameState> gameStates;
+
         public GameStateMachine(
             List<IGameState> listState,
             ILoggerManager   loggerManager,
             SignalBus        signalBus
         ) : base(listState.Select(x => x as IState).ToList(), loggerManager, signalBus)
         {
+            this.gameStates = listState;
+
             foreach (var gameState in listState)
             {
                 if (gameState is IHaveStateMachine haveStateMachine) haveStateMachine.StateMachine = this;
@@ -27,6 +31,18 @@
         public void Initialize()
         {
             this.TransitionTo<GameHomeState>();
+        }
+
+        public T GetState<T>() where T : class, IGameState
+        {
+            foreach (var state in this.gameStates)
+            {
+                if (state is T typedState)
+                {
+                    return typedState;
+                }
+            }
+            return null;
         }
     }
 }

@@ -176,6 +176,10 @@ public class GamePlayState : IGameState, IHaveStateMachine
 
 **File naming:** `{Name}ScreenView.cs` (e.g., `HomeScreenView.cs`, `SettingsScreenView.cs`)
 
+**Two presenter patterns:**
+1. `BaseScreenPresenter<TView>` — no model, override `BindData()`
+2. `BaseScreenPresenter<TView, TModel>` — with model, override `BindData(TModel)`
+
 ```csharp
 // HomeScreenView.cs - contains Model, View, and Presenter
 
@@ -225,6 +229,27 @@ public class HomeScreenPresenter : BaseScreenPresenter<HomeScreenView>
     protected virtual string GetWelcomeMessage() => "Welcome!";
 }
 ```
+
+### Popups (special screens)
+
+Use `[PopupInfo]` attribute to mark presenters as popups:
+
+```csharp
+// Standard popup (replaces previous screen)
+[ScreenInfo(nameof(SettingsPopupView))]
+[PopupInfo]
+public class SettingsPopupPresenter : BasePopupPresenter<SettingsPopupView> { }
+
+// Overlay popup (stacks on top, doesn't hide previous)
+[ScreenInfo(nameof(NotificationPopupView))]
+[PopupInfo(IsOverlay = true)]
+public class NotificationPopupPresenter : BasePopupPresenter<NotificationPopupView> { }
+```
+
+**Popup behavior:**
+- Standard popup: previous screen hides when popup opens
+- Overlay popup: previous screen remains visible (rendered to `CurrentOverlayRoot`)
+- Both use blur background signal (`PopupBlurBgShowedSignal`)
 
 ### Signals/Events
 

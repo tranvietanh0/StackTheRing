@@ -91,16 +91,38 @@ States implementing `IHaveStateMachine` receive reference back to their parent m
 - **Presenter**: Logic class inheriting `BaseScreenPresenter<TView>`
 
 ```
-IScreenManager
-├── OpenScreen<TPresenter>()
-├── OpenScreen<TPresenter, TModel>(model)
-├── CloseScreen<TPresenter>()
+IScreenManager (ScreenManager)
+├── OpenScreen<TPresenter>()           — load/cache, BindData(), Open()
+├── OpenScreen<TPresenter, TModel>()   — with model data
+├── GetScreen<TPresenter>()            — get or lazy-load
+├── CloseCurrentScreen()               — close top screen
+├── CloseAllScreen()                   — close all
+├── CleanUpAllScreen()                 — dispose all
 │
 TPresenter : BaseScreenPresenter<TView>
-├── BindData() — async initialization
-├── View — reference to MonoBehaviour
-└── SignalBus — for communication
+├── BindData()            — abstract, override to load data
+├── OpenViewAsync()       — calls BindData() then View.Open()
+├── CloseViewAsync()      — View.Close() + fires ScreenCloseSignal
+├── HideView()            — hide without destroy
+├── View                  — reference to MonoBehaviour
+├── SignalBus             — protected, for communication
+├── Logger                — protected, for logging
+├── IsClosePrevious       — if true, closes previous screen on open
+└── ScreenStatus          — Opened, Closed, Hide, Destroyed
 ```
+
+**Screen Lifecycle:**
+```
+GetScreen<T>() → VContainer.Instantiate(T) → LoadAsset(View prefab) → SetView()
+                                                                        ↓
+OpenViewAsync() → BindData() → ScreenShowSignal → View.Open()
+                                                        ↓
+                                              [Active Screen]
+                                                        ↓
+CloseViewAsync() → View.Close() → ScreenCloseSignal → SetParent(HiddenRoot) → Dispose()
+```
+
+**Screen Caching:** ScreenManager caches loaded presenters in `typeToLoadedScreenPresenter`. Second `OpenScreen<T>()` call reuses cached instance.
 
 **File Structure Example (`HomeScreenView.cs`):**
 ```csharp
@@ -117,6 +139,8 @@ public class HomeScreenPresenter : BaseScreenPresenter<HomeScreenView> { }
 
 ### 4. Pub/Sub Messaging (MessagePipe + SignalBus)
 
+**SignalBus** wraps MessagePipe's `IPublisher<T>` / `ISubscriber<T>` with automatic subscription tracking and cleanup. Implements `ILateDisposable` for container disposal.
+
 **Signal Definition (always use `class`, not `struct`):**
 ```csharp
 public class UserDataLoadedSignal
@@ -132,26 +156,58 @@ builder.DeclareSignal<UserDataLoadedSignal>();
 
 **Usage Pattern:**
 ```csharp
-// Subscribe
+// Subscribe (with or without signal parameter)
 signalBus.Subscribe<UserDataLoadedSignal>(OnDataLoaded);
+signalBus.Subscribe<UserDataLoadedSignal>(() => Debug.Log("Loaded"));
+
+// Try-variants (don't throw if already subscribed/unsubscribed)
+signalBus.TrySubscribe<UserDataLoadedSignal>(OnDataLoaded);
+signalBus.TryUnsubscribe<UserDataLoadedSignal>(OnDataLoaded);
 
 // Publish
 signalBus.Fire(new UserDataLoadedSignal { Data = userData });
+signalBus.Fire<UserDataLoadedSignal>();  // default(T)
 
-// Cleanup
+// Cleanup (REQUIRED in Exit() or Dispose())
 signalBus.Unsubscribe<UserDataLoadedSignal>(OnDataLoaded);
 ```
 
+**Internal Signals (framework-defined):**
+- `ScreenShowSignal` — fired when screen opens
+- `ScreenCloseSignal` — fired when screen closes
+- `ScreenSelfDestroyedSignal` — fired when view destroyed
+- `StartLoadingNewSceneSignal` — triggers screen cleanup
+- `UserDataLoadedSignal` — fired after user data load
+
 ### 5. Asset Loading (Addressables)
 
-**Interface:** `IGameAssets`
+**Interface:** `IGameAssets` (implemented by `GameAssets`)
+
+**Features:**
+- **Caching:** Assets cached in `loadedAssets` dictionary, prevents duplicate loads
+- **Auto-unload:** Assets track their scene, auto-release when scene unloads
+- **Load tracking:** `loadingAssets` prevents concurrent loads of same asset
 
 ```csharp
 // Scene loading
-AsyncOperationHandle<SceneInstance> LoadSceneAsync(string sceneName);
+AsyncOperationHandle<SceneInstance> LoadSceneAsync(object key, LoadSceneMode mode = Single);
+AsyncOperationHandle<SceneInstance> UnloadSceneAsync(object key);
 
-// Asset loading
-AsyncOperationHandle<T> LoadAssetAsync<T>(string key);
+// Asset loading (with auto-unload option)
+AsyncOperationHandle<T> LoadAssetAsync<T>(object key, bool isAutoUnload = true);
+AsyncOperationHandle<T> LoadAssetAsync<T>(AssetReference assetRef, bool isAutoUnload = true);
+
+// Preloading multiple assets
+List<AsyncOperationHandle<T>> PreloadAsync<T>(string targetScene, params object[] keys);
+UniTask<List<AsyncOperationHandle<T>>> LoadAssetsByLabelAsync<T>(string label);
+
+// Instantiation
+UniTask<GameObject> InstantiateAsync(object key, Vector3 pos, Quaternion rot, Transform parent);
+bool DestroyGameObject(GameObject go);  // releases Addressable instance
+
+// Manual release
+void ReleaseAsset(object key);
+void UnloadUnusedAssets(string sceneName);  // release all scene's auto-unload assets
 ```
 
 ## Data Flow
@@ -198,6 +254,17 @@ Current State                    Next State
 | `ILateTickable` | Every LateUpdate frame | Post-update logic |
 | `IFixedTickable` | Every FixedUpdate frame | Physics timing |
 | `IDisposable` | Container disposed | Cleanup |
+
+## Framework Internals Reference
+
+| Component | File Location | Key Methods |
+|-----------|---------------|-------------|
+| DI Registration | `GameFoundationCore/Scripts/GameFoundationVContainer.cs` | `RegisterGameFoundation()` |
+| SignalBus | `GameFoundationCore/Scripts/Signals/SignalBus.cs` | `Fire()`, `Subscribe()`, `Unsubscribe()` |
+| ScreenManager | `GameFoundationCore/Scripts/UIModule/ScreenFlow/Manager/ScreenManager.cs` | `OpenScreen()`, `GetScreen()`, `CloseCurrentScreen()` |
+| GameAssets | `GameFoundationCore/Scripts/AssetLibrary/GameAssets.cs` | `LoadSceneAsync()`, `LoadAssetAsync()` |
+| BasePresenter | `GameFoundationCore/Scripts/UIModule/ScreenFlow/BaseScreen/Presenter/BaseScreenPresenter.cs` | `BindData()`, `OpenViewAsync()` |
+| StateMachine | `UITemplate/Scripts/Others/StateMachine/Controller/StateMachine.cs` | `TransitionTo<T>()` |
 
 ## Extension Points
 
