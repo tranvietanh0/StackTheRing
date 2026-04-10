@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BaseSpeed: 1
   LoopDuration: 8
-  MinRingSpacing: 0.05
+  RowSpacing: 0.06
   AttractionZoneSize: 0.05
   RingHeightOffset: 0.1
+  LaneCount: 5
+  LaneSpacing: 0.15
+  RingScale: 0.15

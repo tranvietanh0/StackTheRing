@@ -14,15 +14,22 @@ namespace HyperCasualGame.Scripts.Signals
         public ColorType Color;
     }
 
-    public class RingAttractedSignal
+    public class BallCollectedSignal
     {
-        public Ring Ring;
+        public int RowId;
+        public int BallIndex;
+        public ColorType Color;
+    }
+
+    public class BallAttractedSignal
+    {
+        public Ball Ball;
         public int SlotIndex;
     }
 
-    public class RingStackedSignal
+    public class BallStackedSignal
     {
-        public Ring Ring;
+        public Ball Ball;
         public int SlotIndex;
         public int CurrentStackCount;
     }
@@ -31,12 +38,12 @@ namespace HyperCasualGame.Scripts.Signals
     {
         public int SlotIndex;
         public ColorType Color;
-        public int RingsCleared;
+        public int BallsCleared;
     }
 
-    public class RingCompletedLoopSignal
+    public class RowBallCompletedLoopSignal
     {
-        public Ring Ring;
+        public RowBall RowBall;
         public int LoopCount;
     }
 
@@ -58,5 +65,25 @@ namespace HyperCasualGame.Scripts.Signals
     public class LevelStartSignal
     {
         public int LevelNumber;
+    }
+
+    // Legacy signals for backward compatibility
+    public class RingAttractedSignal
+    {
+        public Ball Ring;
+        public int SlotIndex;
+    }
+
+    public class RingStackedSignal
+    {
+        public Ball Ring;
+        public int SlotIndex;
+        public int CurrentStackCount;
+    }
+
+    public class RingCompletedLoopSignal
+    {
+        public RowBall Ring;
+        public int LoopCount;
     }
 }

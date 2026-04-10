@@ -25,6 +25,7 @@ namespace HyperCasualGame.Scripts.Slot
         private SignalBus signalBus;
         private ILogger logger;
         private int stackLimit = 8;
+        private bool isInitialized;
 
         #endregion
 
@@ -38,7 +39,7 @@ namespace HyperCasualGame.Scripts.Slot
 
         public event Action<Slot, ColorType> OnCollectorPlaced;
         public event Action<Slot> OnSlotCleared;
-        public event Action<Slot, Ring> OnRingStackedInSlot;
+        public event Action<Slot, Ball> OnBallStackedInSlot;
 
         #endregion
 
@@ -46,6 +47,9 @@ namespace HyperCasualGame.Scripts.Slot
 
         public void Initialize(SignalBus signalBus, ILoggerManager loggerManager)
         {
+            if (this.isInitialized) return;
+            this.isInitialized = true;
+
             this.signalBus = signalBus;
             this.logger = loggerManager.GetLogger(this);
 
@@ -61,7 +65,7 @@ namespace HyperCasualGame.Scripts.Slot
                 var attractionProgress = (float)i / this.slots.Length;
                 this.slots[i].Initialize(this.stackLimit, attractionProgress);
                 this.slots[i].OnStackFull += this.HandleStackFull;
-                this.slots[i].OnRingAdded += this.HandleRingAdded;
+                this.slots[i].OnBallAdded += this.HandleBallAdded;
             }
 
             this.logger.Info($"SlotManager setup with stackLimit: {this.stackLimit}");
@@ -155,7 +159,7 @@ namespace HyperCasualGame.Scripts.Slot
             foreach (var slot in this.slots)
             {
                 slot.OnStackFull -= this.HandleStackFull;
-                slot.OnRingAdded -= this.HandleRingAdded;
+                slot.OnBallAdded -= this.HandleBallAdded;
                 slot.ClearSlot();
             }
         }
@@ -173,19 +177,19 @@ namespace HyperCasualGame.Scripts.Slot
         {
             this.logger.Info($"Stack full in slot {slot.SlotIndex}");
 
-            var ringsCleared = slot.CurrentStackCount;
+            var ballsCleared = slot.CurrentStackCount;
             var color = slot.CurrentColor ?? ColorType.Red;
 
-            slot.ClearStack(ring =>
+            slot.ClearStack(ball =>
             {
-                ring.transform.localScale = Vector3.one * 1.2f;
-                DG.Tweening.DOTween.Sequence()
-                    .Append(ring.transform.DOScale(0f, 0.2f))
+                ball.transform.localScale = Vector3.one * 1.2f;
+                DOTween.Sequence()
+                    .Append(ball.transform.DOScale(0f, 0.2f))
                     .OnComplete(() =>
                     {
-                        if (ring != null)
+                        if (ball != null)
                         {
-                            Destroy(ring.gameObject);
+                            Destroy(ball.gameObject);
                         }
                     });
             });
@@ -196,17 +200,17 @@ namespace HyperCasualGame.Scripts.Slot
             {
                 SlotIndex = slot.SlotIndex,
                 Color = color,
-                RingsCleared = ringsCleared
+                BallsCleared = ballsCleared
             });
         }
 
-        private void HandleRingAdded(Slot slot, Ring ring)
+        private void HandleBallAdded(Slot slot, Ball ball)
         {
-            this.OnRingStackedInSlot?.Invoke(slot, ring);
+            this.OnBallStackedInSlot?.Invoke(slot, ball);
 
-            this.signalBus.Fire(new RingStackedSignal
+            this.signalBus.Fire(new BallStackedSignal
             {
-                Ring = ring,
+                Ball = ball,
                 SlotIndex = slot.SlotIndex,
                 CurrentStackCount = slot.CurrentStackCount
             });

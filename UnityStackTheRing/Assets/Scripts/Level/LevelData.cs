@@ -47,7 +47,7 @@ namespace HyperCasualGame.Scripts.Level
     public class RingSpawn
     {
         public ColorType Color;
-        [Range(1, 20)]
+        [Range(1, 50)]
         public int Count;
     }
 }

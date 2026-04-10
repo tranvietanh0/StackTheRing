@@ -63,9 +63,9 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             this.hasCollectedThisLoop = false;
             this.lastCheckedLoopCount = 0;
 
-            this.signalBus.Subscribe<AllRingsClearedSignal>(this.OnAllRingsCleared);
-            this.signalBus.Subscribe<RingCompletedLoopSignal>(this.OnRingCompletedLoop);
-            this.signalBus.Subscribe<RingAttractedSignal>(this.OnRingAttracted);
+            this.signalBus.Subscribe<AllRingsClearedSignal>(this.OnAllBallsCleared);
+            this.signalBus.Subscribe<RowBallCompletedLoopSignal>(this.OnRowBallCompletedLoop);
+            this.signalBus.Subscribe<BallAttractedSignal>(this.OnBallAttracted);
 
             this.StartGameplay();
         }
@@ -76,9 +76,9 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
 
             this.isPlaying = false;
 
-            this.signalBus.Unsubscribe<AllRingsClearedSignal>(this.OnAllRingsCleared);
-            this.signalBus.Unsubscribe<RingCompletedLoopSignal>(this.OnRingCompletedLoop);
-            this.signalBus.Unsubscribe<RingAttractedSignal>(this.OnRingAttracted);
+            this.signalBus.Unsubscribe<AllRingsClearedSignal>(this.OnAllBallsCleared);
+            this.signalBus.Unsubscribe<RowBallCompletedLoopSignal>(this.OnRowBallCompletedLoop);
+            this.signalBus.Unsubscribe<BallAttractedSignal>(this.OnBallAttracted);
 
             this.StopGameplay();
         }
@@ -124,18 +124,18 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             this.attractionController?.SetEnabled(false);
         }
 
-        private void OnAllRingsCleared()
+        private void OnAllBallsCleared()
         {
             if (!this.isPlaying) return;
 
-            this.logger.Info("All rings cleared - WIN!");
+            this.logger.Info("All balls cleared - WIN!");
             this.isPlaying = false;
 
             this.levelManager.CompleteLevel();
             this.StateMachine.TransitionTo<GameWinState>();
         }
 
-        private void OnRingCompletedLoop(RingCompletedLoopSignal signal)
+        private void OnRowBallCompletedLoop(RowBallCompletedLoopSignal signal)
         {
             if (!this.isPlaying) return;
 
@@ -151,7 +151,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             }
         }
 
-        private void OnRingAttracted(RingAttractedSignal signal)
+        private void OnBallAttracted(BallAttractedSignal signal)
         {
             this.hasCollectedThisLoop = true;
         }
@@ -164,13 +164,17 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             if (!this.slotManager.AllSlotsOccupied()) return;
 
             var canCollectAny = false;
-            foreach (var ring in this.conveyor.ActiveRings)
+            foreach (var rowBall in this.conveyor.ActiveRowBalls)
             {
-                if (this.slotManager.CanCollectColor(ring.ColorType))
+                foreach (var ball in rowBall.GetActiveBalls())
                 {
-                    canCollectAny = true;
-                    break;
+                    if (this.slotManager.CanCollectColor(ball.BallColor))
+                    {
+                        canCollectAny = true;
+                        break;
+                    }
                 }
+                if (canCollectAny) break;
             }
 
             if (!canCollectAny)

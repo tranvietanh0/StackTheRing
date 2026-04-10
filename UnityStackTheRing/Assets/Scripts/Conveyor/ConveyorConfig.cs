@@ -15,9 +15,9 @@ namespace HyperCasualGame.Scripts.Conveyor
         public float LoopDuration = 8f;
 
         [Header("Ring Spacing")]
-        [Tooltip("Minimum spacing between rings as percentage of path (0-1)")]
-        [Range(0.02f, 0.1f)]
-        public float MinRingSpacing = 0.05f;
+        [Tooltip("World-space distance between row centers (like Cocos BALL_SPACING)")]
+        [Range(0.05f, 0.5f)]
+        public float RowSpacing = 0.115f;
 
         [Header("Attraction Zone")]
         [Tooltip("How close to slot position ring must be to get attracted (0-1 path progress)")]
@@ -27,5 +27,18 @@ namespace HyperCasualGame.Scripts.Conveyor
         [Header("Visual")]
         [Tooltip("Height offset for rings on conveyor")]
         public float RingHeightOffset = 0.1f;
+
+        [Header("Multi-Lane")]
+        [Tooltip("Number of parallel lanes for rings (1 = single line, 5 = 5 rows)")]
+        [Range(1, 7)]
+        public int LaneCount = 5;
+
+        [Tooltip("Spacing between lanes (perpendicular to path)")]
+        [Range(0.05f, 0.3f)]
+        public float LaneSpacing = 0.12f;
+
+        [Tooltip("Ring scale for dense packing")]
+        [Range(0.05f, 0.3f)]
+        public float RingScale = 0.1f;
     }
 }

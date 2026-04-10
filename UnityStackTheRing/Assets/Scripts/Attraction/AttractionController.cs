@@ -27,7 +27,7 @@ namespace HyperCasualGame.Scripts.Attraction
         private SignalBus signalBus;
         private ILogger logger;
 
-        private readonly List<Ring> ringsBeingAttracted = new();
+        private readonly HashSet<Ball> ballsBeingAttracted = new();
 
         #endregion
 
@@ -74,32 +74,40 @@ namespace HyperCasualGame.Scripts.Attraction
 
         private void CheckAttraction()
         {
-            foreach (var ring in this.conveyor.ActiveRings)
+            foreach (var rowBall in this.conveyor.ActiveRowBalls)
             {
-                if (ring.State != RingState.OnConveyor) continue;
-                if (this.ringsBeingAttracted.Contains(ring)) continue;
+                var follower = rowBall.GetComponent<PathFollower>();
+                if (follower == null) continue;
 
-                var slot = this.FindMatchingSlot(ring);
-                if (slot == null) continue;
-
-                if (this.IsInAttractionZone(ring, slot))
+                foreach (var ball in rowBall.GetActiveBalls())
                 {
-                    this.AttractRing(ring, slot);
+                    if (this.ballsBeingAttracted.Contains(ball)) continue;
+
+                    var slot = this.FindMatchingSlot(ball);
+                    if (slot == null) continue;
+
+                    if (this.IsInAttractionZone(follower, slot))
+                    {
+                        this.AttractBall(ball, rowBall, slot);
+                    }
                 }
             }
         }
 
-        private Slot FindMatchingSlot(Ring ring)
+        private Slot FindMatchingSlot(Ball ball)
         {
-            return this.slotManager.GetSlotForColor(ring.ColorType);
+            return this.slotManager.GetSlotForColor(ball.BallColor);
         }
 
-        private bool IsInAttractionZone(Ring ring, Slot slot)
+        private bool IsInAttractionZone(PathFollower follower, Slot slot)
         {
-            var ringProgress = ring.PathProgress;
+            var totalLength = follower.GetTotalPathLength();
+            if (totalLength <= 0) return false;
+
+            var currentProgress = follower.GetCurrentDistance() / totalLength;
             var slotProgress = slot.AttractionProgress;
 
-            var diff = Mathf.Abs(ringProgress - slotProgress);
+            var diff = Mathf.Abs(currentProgress - slotProgress);
 
             if (diff > 0.5f)
             {
@@ -109,25 +117,29 @@ namespace HyperCasualGame.Scripts.Attraction
             return diff <= this.config.AttractionZone;
         }
 
-        private void AttractRing(Ring ring, Slot slot)
+        private void AttractBall(Ball ball, RowBall rowBall, Slot slot)
         {
-            ring.SetState(RingState.Attracted);
-            this.ringsBeingAttracted.Add(ring);
-            this.conveyor.RemoveRing(ring);
+            this.ballsBeingAttracted.Add(ball);
 
-            this.signalBus.Fire(new RingAttractedSignal
+            // Remove ball from row
+            rowBall.RemoveBallAt(ball.BallIndex);
+
+            this.signalBus.Fire(new BallAttractedSignal
             {
-                Ring = ring,
+                Ball = ball,
                 SlotIndex = slot.SlotIndex
             });
 
-            var startPos = ring.transform.position;
+            // Detach from parent
+            ball.transform.SetParent(null);
+
+            var startPos = ball.transform.position;
             var endPos = slot.GetNextStackWorldPosition();
             var path = this.CalculateCurvedPath(startPos, endPos);
 
-            ring.transform.DOPath(path, this.config.AttractionDuration, PathType.CatmullRom)
+            ball.transform.DOPath(path, this.config.AttractionDuration, PathType.CatmullRom)
                 .SetEase(this.config.MoveEase)
-                .OnComplete(() => this.OnAttractionComplete(ring, slot));
+                .OnComplete(() => this.OnAttractionComplete(ball, slot));
         }
 
         private Vector3[] CalculateCurvedPath(Vector3 start, Vector3 end)
@@ -138,18 +150,18 @@ namespace HyperCasualGame.Scripts.Attraction
             return new[] { start, mid, end };
         }
 
-        private void OnAttractionComplete(Ring ring, Slot slot)
+        private void OnAttractionComplete(Ball ball, Slot slot)
         {
-            this.ringsBeingAttracted.Remove(ring);
+            this.ballsBeingAttracted.Remove(ball);
 
             if (this.config.ArrivalPunch > 0)
             {
-                ring.transform.DOPunchScale(Vector3.one * this.config.ArrivalPunch, 0.15f, 5, 0.5f);
+                ball.transform.DOPunchScale(Vector3.one * this.config.ArrivalPunch, 0.15f, 5, 0.5f);
             }
 
-            slot.AddRing(ring);
+            slot.AddBall(ball);
 
-            this.logger.Info($"Ring attracted to slot {slot.SlotIndex}. Stack: {slot.CurrentStackCount}");
+            this.logger.Info($"Ball attracted to slot {slot.SlotIndex}. Stack: {slot.CurrentStackCount}");
         }
 
         #endregion

@@ -2,7 +2,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 {
     using System;
     using System.Collections.Generic;
-    using DG.Tweening;
+    using System.Linq;
     using Dreamteck.Splines;
     using GameFoundationCore.Scripts.Signals;
     using HyperCasualGame.Scripts.Core;
@@ -13,20 +13,29 @@ namespace HyperCasualGame.Scripts.Conveyor
     using UnityEngine;
     using ILogger = UniT.Logging.ILogger;
 
+    /// <summary>
+    /// Main conveyor controller. Matches Cocos MainConveyorController.
+    /// </summary>
     public class ConveyorController : MonoBehaviour
     {
         #region Serialized Fields
 
         [SerializeField] private ConveyorConfig config;
-        [SerializeField] private Transform ringContainer;
+        [SerializeField] private Transform rowBallContainer;
         [SerializeField] private SplineComputer spline;
+        [SerializeField] private RowBall rowBallPrefab;
+        [SerializeField] private Ball ballPrefab;
+
+        [Header("Entry Points")]
+        [SerializeField] private List<Transform> entryNodes = new();
 
         #endregion
 
         #region Private Fields
 
-        private readonly List<Ring> activeRings = new();
-        private float currentSpeed = 1f;
+        private readonly List<RowBall> activeRowBalls = new();
+        private ConveyorPath conveyorPath;
+        private float baseSpeed = 1f;
         private bool isRunning;
         private SignalBus signalBus;
         private ILogger logger;
@@ -35,16 +44,20 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         #region Properties
 
-        public IReadOnlyList<Ring> ActiveRings => this.activeRings;
-        public int ActiveRingCount => this.activeRings.Count;
+        public IReadOnlyList<RowBall> ActiveRowBalls => this.activeRowBalls;
+
+        public int ActiveRowCount => this.activeRowBalls.Count;
+
+        public int TotalBallCount => this.activeRowBalls.Sum(r => r.GetBallCount());
+
         public bool IsRunning => this.isRunning;
 
         #endregion
 
         #region Events
 
-        public event Action<Ring> OnRingCompletedLoop;
-        public event Action OnAllRingsCleared;
+        public event Action<RowBall> OnRowBallCompletedLoop;
+        public event Action OnAllBallsCleared;
 
         #endregion
 
@@ -58,190 +71,298 @@ namespace HyperCasualGame.Scripts.Conveyor
             if (this.spline == null)
             {
                 this.logger.Error("SplineComputer not assigned!");
+                return;
             }
+
+            // Build path from spline samples
+            this.conveyorPath = new ConveyorPath(this.spline, 100);
+
+            this.logger.Info($"ConveyorController initialized. Path length: {this.conveyorPath.GetSampleCount()} samples");
         }
 
-        public void SetupLevel(LevelData levelData, Ring ringPrefab, Transform poolParent)
+        public void SetupLevel(LevelData levelData, Ball ballPrefab, RowBall rowBallPrefab)
         {
-            this.ClearAllRings();
-            this.currentSpeed = levelData.ConveyorSpeed;
+            this.ClearAllRowBalls();
 
-            this.SpawnRings(levelData, ringPrefab, poolParent);
+            this.ballPrefab = ballPrefab;
+            this.rowBallPrefab = rowBallPrefab;
+            this.baseSpeed = levelData.ConveyorSpeed;
+
+            this.SpawnRowBalls(levelData);
         }
 
         public void StartConveyor()
         {
             this.isRunning = true;
+
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall.GetComponent<PathFollower>();
+                follower?.StartMoving();
+            }
+
             this.logger.Info("Conveyor started");
         }
 
         public void StopConveyor()
         {
             this.isRunning = false;
+
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall.GetComponent<PathFollower>();
+                follower?.StopMoving();
+            }
+
             this.logger.Info("Conveyor stopped");
         }
 
         public void PauseConveyor()
         {
             this.isRunning = false;
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall.GetComponent<PathFollower>();
+                follower?.StopMoving();
+            }
         }
 
         public void ResumeConveyor()
         {
             this.isRunning = true;
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall.GetComponent<PathFollower>();
+                follower?.StartMoving();
+            }
         }
 
-        public Ring GetRingAtProgress(float progress, float tolerance = 0.05f)
+        public RowBall GetRowBallAtDistance(float distance, float tolerance = 0.5f)
         {
-            foreach (var ring in this.activeRings)
+            foreach (var rowBall in this.activeRowBalls)
             {
-                if (ring.State != RingState.OnConveyor) continue;
-
-                var diff = Mathf.Abs(ring.PathProgress - progress);
-                if (diff < tolerance || diff > 1f - tolerance)
+                var follower = rowBall.GetComponent<PathFollower>();
+                if (follower == null)
                 {
-                    return ring;
+                    continue;
+                }
+
+                var diff = Mathf.Abs(follower.GetCurrentDistance() - distance);
+                if (diff < tolerance)
+                {
+                    return rowBall;
                 }
             }
+
             return null;
         }
 
-        public List<Ring> GetRingsInRange(float startProgress, float endProgress)
+        public List<Ball> GetBallsInRange(float startDistance, float endDistance)
         {
-            var result = new List<Ring>();
-            foreach (var ring in this.activeRings)
-            {
-                if (ring.State != RingState.OnConveyor) continue;
+            var result = new List<Ball>();
 
-                if (ring.PathProgress >= startProgress && ring.PathProgress <= endProgress)
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall.GetComponent<PathFollower>();
+                if (follower == null)
                 {
-                    result.Add(ring);
+                    continue;
+                }
+
+                var dist = follower.GetCurrentDistance();
+                if (dist >= startDistance && dist <= endDistance)
+                {
+                    result.AddRange(rowBall.GetActiveBalls());
                 }
             }
+
             return result;
         }
 
-        public void RemoveRing(Ring ring)
+        public void RemoveRowBall(RowBall rowBall)
         {
-            if (this.activeRings.Remove(ring))
+            if (!this.activeRowBalls.Contains(rowBall))
             {
-                this.logger.Info($"Ring removed. Remaining: {this.activeRings.Count}");
+                return;
+            }
 
-                if (this.activeRings.Count == 0)
-                {
-                    this.OnAllRingsCleared?.Invoke();
-                    this.signalBus.Fire(new AllRingsClearedSignal());
-                }
+            this.activeRowBalls.Remove(rowBall);
+            Destroy(rowBall.gameObject);
+
+            this.logger.Info($"RowBall removed. Remaining: {this.ActiveRowCount}");
+
+            if (this.TotalBallCount == 0)
+            {
+                this.OnAllBallsCleared?.Invoke();
+                this.signalBus.Fire(new AllRingsClearedSignal());
             }
         }
 
-        public Vector3 GetPositionAtProgress(float progress)
+        public Vector3 GetPositionAtDistance(float distance)
         {
-            if (this.spline == null)
+            if (this.conveyorPath == null)
             {
                 return Vector3.zero;
             }
 
-            // Dreamteck Spline uses 0-1 range, wraps automatically for closed splines
-            progress = Mathf.Repeat(progress, 1f);
-            return this.spline.EvaluatePosition(progress);
-        }
+            // Simple linear interpolation on path samples
+            var sampleCount = this.conveyorPath.GetSampleCount();
+            var pathLength = this.CalculatePathLength();
 
-        #endregion
+            var t = distance / pathLength;
+            t = Mathf.Repeat(t, 1f);
 
-        #region Unity Lifecycle
+            var floatIndex = t * (sampleCount - 1);
+            var index = Mathf.FloorToInt(floatIndex);
+            var frac = floatIndex - index;
 
-        private void Update()
-        {
-            if (!this.isRunning) return;
+            var p1 = this.conveyorPath.GetSample(index);
+            var p2 = this.conveyorPath.GetSample((index + 1) % sampleCount);
 
-            this.UpdateRingPositions();
+            return Vector3.Lerp(p1, p2, frac);
         }
 
         #endregion
 
         #region Private Methods
 
-        private void SpawnRings(LevelData levelData, Ring ringPrefab, Transform poolParent)
+        private void SpawnRowBalls(LevelData levelData)
         {
-            var totalRings = levelData.TotalRingCount;
-            var spacing = 1f / totalRings;
+            // Calculate path length
+            var pathLength = this.CalculatePathLength();
+            var spacing = this.config != null ? this.config.RowSpacing : 1f;
+            var maxRows = Mathf.FloorToInt(pathLength / spacing);
 
-            var ringIndex = 0;
+            this.logger.Info($"SpawnRowBalls: pathLength={pathLength:F2}, spacing={spacing}, maxRows={maxRows}");
+
+            // Build color pool from level data (keep colors grouped like Cocos)
+            var colorPool = new List<ColorType>();
             foreach (var ringSpawn in levelData.Rings)
             {
                 for (var i = 0; i < ringSpawn.Count; i++)
                 {
-                    var ring = Instantiate(ringPrefab, this.ringContainer);
-                    ring.Initialize(ringSpawn.Color);
-                    ring.PathProgress = ringIndex * spacing;
-                    ring.transform.position = this.GetPositionAtProgress(ring.PathProgress);
-
-                    this.activeRings.Add(ring);
-                    ringIndex++;
+                    colorPool.Add(ringSpawn.Color);
                 }
             }
 
-            this.ShuffleRings();
-            this.logger.Info($"Spawned {totalRings} rings");
-        }
-
-        private void ShuffleRings()
-        {
-            var n = this.activeRings.Count;
-            for (var i = n - 1; i > 0; i--)
+            // Spawn rows
+            var rowCount = Mathf.Min(maxRows, colorPool.Count);
+            for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
             {
-                var j = UnityEngine.Random.Range(0, i + 1);
+                var color = colorPool[rowIndex];
+                var startDistance = rowIndex * spacing;
 
-                var tempProgress = this.activeRings[i].PathProgress;
-                this.activeRings[i].PathProgress = this.activeRings[j].PathProgress;
-                this.activeRings[j].PathProgress = tempProgress;
-            }
+                // Calculate start index on path
+                var startIndex = Mathf.RoundToInt((startDistance / pathLength) * (this.conveyorPath.GetSampleCount() - 1));
 
-            foreach (var ring in this.activeRings)
-            {
-                ring.transform.position = this.GetPositionAtProgress(ring.PathProgress);
-            }
-        }
-
-        private void UpdateRingPositions()
-        {
-            var deltaProgress = (this.currentSpeed / this.config.LoopDuration) * Time.deltaTime;
-
-            foreach (var ring in this.activeRings)
-            {
-                if (ring.State != RingState.OnConveyor) continue;
-
-                var previousProgress = ring.PathProgress;
-                ring.PathProgress += deltaProgress;
-
-                if (ring.PathProgress >= 1f)
+                // Create RowBall config - all 5 balls same color
+                var colors = new ColorType[GameConstants.RowBallConfig.MaxBalls];
+                for (var i = 0; i < colors.Length; i++)
                 {
-                    ring.PathProgress -= 1f;
-                    ring.IncrementLoopCount();
-
-                    this.OnRingCompletedLoop?.Invoke(ring);
-                    this.signalBus.Fire(new RingCompletedLoopSignal
-                    {
-                        Ring = ring,
-                        LoopCount = ring.ConveyorLoopCount
-                    });
+                    colors[i] = color;
                 }
 
-                ring.transform.position = this.GetPositionAtProgress(ring.PathProgress);
+                var rowConfig = new RowBallConfig
+                {
+                    SpawnPosition = Vector3.zero,
+                    BallColors = colors,
+                    RowId = rowIndex
+                };
+
+                this.SpawnRowBall(rowConfig, startIndex);
+            }
+
+            this.logger.Info($"Spawned {rowCount} rows ({rowCount * GameConstants.RowBallConfig.MaxBalls} balls). Path length: {pathLength:F2}, Max capacity: {maxRows}");
+        }
+
+        private void SpawnRowBall(RowBallConfig config, int startIndex)
+        {
+            if (this.rowBallPrefab == null || this.ballPrefab == null)
+            {
+                this.logger.Error("RowBall or Ball prefab not assigned!");
+                return;
+            }
+
+            var container = this.rowBallContainer != null ? this.rowBallContainer : this.transform;
+            var rowBall = Instantiate(this.rowBallPrefab, container);
+
+            // Add PathFollower
+            var follower = rowBall.GetComponent<PathFollower>();
+            if (follower == null)
+            {
+                follower = rowBall.gameObject.AddComponent<PathFollower>();
+            }
+
+            // Configure follower
+            follower.MoveSpeed = this.baseSpeed;
+            follower.LoopPath = true;
+            follower.ReverseDirection = false;
+
+            if (this.entryNodes.Count > 0)
+            {
+                follower.SetEntryNodes(this.entryNodes);
+            }
+
+            // Initialize path following
+            follower.Initialize(this.conveyorPath, startIndex, "MAIN");
+
+            // Initialize RowBall with balls
+            rowBall.Initialize(config, this.ballPrefab, this.signalBus);
+
+            this.activeRowBalls.Add(rowBall);
+
+            // Start moving if conveyor is running
+            if (this.isRunning)
+            {
+                follower.StartMoving();
             }
         }
 
-        private void ClearAllRings()
+        private float CalculatePathLength()
         {
-            foreach (var ring in this.activeRings)
+            if (this.conveyorPath == null)
             {
-                if (ring != null)
+                return 0;
+            }
+
+            var length = 0f;
+            var count = this.conveyorPath.GetSampleCount();
+
+            for (var i = 0; i < count - 1; i++)
+            {
+                length += Vector3.Distance(
+                    this.conveyorPath.GetSample(i),
+                    this.conveyorPath.GetSample(i + 1));
+            }
+
+            // Add loop closure
+            length += Vector3.Distance(
+                this.conveyorPath.GetSample(count - 1),
+                this.conveyorPath.GetSample(0));
+
+            return length;
+        }
+
+        private void ClearAllRowBalls()
+        {
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                if (rowBall != null && rowBall.gameObject != null)
                 {
-                    Destroy(ring.gameObject);
+                    Destroy(rowBall.gameObject);
                 }
             }
-            this.activeRings.Clear();
+
+            this.activeRowBalls.Clear();
+        }
+
+        #endregion
+
+        #region Unity Lifecycle
+
+        private void OnDestroy()
+        {
+            this.ClearAllRowBalls();
         }
 
         #endregion

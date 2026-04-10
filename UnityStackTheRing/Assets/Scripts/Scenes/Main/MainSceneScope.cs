@@ -19,6 +19,9 @@
 
         protected override void Configure(IContainerBuilder builder)
         {
+            // Register VContainerAdapter for scene-scoped IInitializable/ITickable types
+            builder.Register<VContainerAdapter>(Lifetime.Scoped).AsImplementedInterfaces();
+
             this.RegisterSignals(builder);
             this.RegisterServices(builder);
             this.RegisterStateMachine(builder);

@@ -17,11 +17,13 @@ MonoBehaviour:
   StackLimit: 8
   Rings:
   - Color: 0
-    Count: 8
+    Count: 50
   - Color: 1
-    Count: 8
+    Count: 50
   - Color: 2
-    Count: 8
-  AvailableCollectors: 000000000100000002000000
+    Count: 50
+  - Color: 3
+    Count: 50
+  AvailableCollectors: 03000000000000000100000002000000
   HasHiddenRings: 0
   BlockedSlotCount: 0

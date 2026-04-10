@@ -14,13 +14,13 @@ namespace HyperCasualGame.Scripts.Slot
         [SerializeField] private int slotIndex;
         [SerializeField] private Transform stackContainer;
         [SerializeField] private Transform collectorVisual;
-        [SerializeField] private float ringStackSpacing = 0.15f;
+        [SerializeField] private float ballStackSpacing = 0.15f;
 
         #endregion
 
         #region Private Fields
 
-        private readonly Stack<Ring> ringStack = new();
+        private readonly Stack<Ball> ballStack = new();
         private int stackLimit = 8;
         private MeshRenderer collectorRenderer;
 
@@ -31,8 +31,8 @@ namespace HyperCasualGame.Scripts.Slot
         public int SlotIndex => this.slotIndex;
         public ColorType? CurrentColor { get; private set; }
         public bool IsEmpty => this.CurrentColor == null;
-        public bool IsFull => this.ringStack.Count >= this.stackLimit;
-        public int CurrentStackCount => this.ringStack.Count;
+        public bool IsFull => this.ballStack.Count >= this.stackLimit;
+        public int CurrentStackCount => this.ballStack.Count;
         public float AttractionProgress { get; set; }
 
         #endregion
@@ -40,7 +40,7 @@ namespace HyperCasualGame.Scripts.Slot
         #region Events
 
         public event Action<Slot> OnStackFull;
-        public event Action<Slot, Ring> OnRingAdded;
+        public event Action<Slot, Ball> OnBallAdded;
 
         #endregion
 
@@ -78,16 +78,15 @@ namespace HyperCasualGame.Scripts.Slot
             }
         }
 
-        public void AddRing(Ring ring)
+        public void AddBall(Ball ball)
         {
-            ring.SetState(RingState.Stacked);
-            ring.transform.SetParent(this.stackContainer);
+            ball.transform.SetParent(this.stackContainer);
 
             var stackPosition = this.GetNextStackPosition();
-            ring.transform.DOLocalMove(stackPosition, 0.1f).SetEase(Ease.OutBack);
+            ball.transform.DOLocalMove(stackPosition, 0.1f).SetEase(Ease.OutBack);
 
-            this.ringStack.Push(ring);
-            this.OnRingAdded?.Invoke(this, ring);
+            this.ballStack.Push(ball);
+            this.OnBallAdded?.Invoke(this, ball);
 
             if (this.IsFull)
             {
@@ -97,7 +96,7 @@ namespace HyperCasualGame.Scripts.Slot
 
         public Vector3 GetNextStackPosition()
         {
-            var heightOffset = this.ringStack.Count * this.ringStackSpacing;
+            var heightOffset = this.ballStack.Count * this.ballStackSpacing;
             return new Vector3(0f, heightOffset, 0f);
         }
 
@@ -106,18 +105,17 @@ namespace HyperCasualGame.Scripts.Slot
             return this.stackContainer.TransformPoint(this.GetNextStackPosition());
         }
 
-        public List<Ring> GetAllRings()
+        public List<Ball> GetAllBalls()
         {
-            return new List<Ring>(this.ringStack);
+            return new List<Ball>(this.ballStack);
         }
 
-        public void ClearStack(Action<Ring> onRingCleared = null)
+        public void ClearStack(Action<Ball> onBallCleared = null)
         {
-            while (this.ringStack.Count > 0)
+            while (this.ballStack.Count > 0)
             {
-                var ring = this.ringStack.Pop();
-                ring.SetState(RingState.Cleared);
-                onRingCleared?.Invoke(ring);
+                var ball = this.ballStack.Pop();
+                onBallCleared?.Invoke(ball);
             }
 
             this.ClearSlot();
@@ -132,14 +130,14 @@ namespace HyperCasualGame.Scripts.Slot
                 this.collectorVisual.gameObject.SetActive(false);
             }
 
-            foreach (var ring in this.ringStack)
+            foreach (var ball in this.ballStack)
             {
-                if (ring != null)
+                if (ball != null)
                 {
-                    Destroy(ring.gameObject);
+                    Destroy(ball.gameObject);
                 }
             }
-            this.ringStack.Clear();
+            this.ballStack.Clear();
         }
 
         #endregion
@@ -152,10 +150,9 @@ namespace HyperCasualGame.Scripts.Slot
 
             var materialColor = GameConstants.GetColor(color);
 
-            // Create instance material to avoid shared material issues
             var mat = this.collectorRenderer.material;
             mat.SetColor("_BaseColor", materialColor);
-            mat.color = materialColor; // Fallback for standard shader
+            mat.color = materialColor;
         }
 
         private void PlayPlaceAnimation()

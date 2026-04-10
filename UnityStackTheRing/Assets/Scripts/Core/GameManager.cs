@@ -25,7 +25,8 @@ namespace HyperCasualGame.Scripts.Core
         [SerializeField] private CollectorPanel collectorPanel;
 
         [Header("Prefabs")]
-        [SerializeField] private Ring ringPrefab;
+        [SerializeField] private Ball ballPrefab;
+        [SerializeField] private RowBall rowBallPrefab;
 
         [Header("Configs")]
         [SerializeField] private ConveyorConfig conveyorConfig;
@@ -108,7 +109,7 @@ namespace HyperCasualGame.Scripts.Core
 
         private void SetupLevel(LevelData levelData)
         {
-            this.conveyorController.SetupLevel(levelData, this.ringPrefab, this.transform);
+            this.conveyorController.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
             this.slotManager.SetupLevel(levelData);
             this.collectorPanel.SetupLevel(levelData);
 

@@ -22,6 +22,7 @@ namespace HyperCasualGame.Scripts.Slot
         private SignalBus signalBus;
         private ILogger logger;
         private readonly Dictionary<ColorType, ColorCollector> colorToCollector = new();
+        private bool isInitialized;
 
         #endregion
 
@@ -29,6 +30,9 @@ namespace HyperCasualGame.Scripts.Slot
 
         public void Initialize(SignalBus signalBus, ILoggerManager loggerManager)
         {
+            if (this.isInitialized) return;
+            this.isInitialized = true;
+
             this.signalBus = signalBus;
             this.logger = loggerManager.GetLogger(this);
 
