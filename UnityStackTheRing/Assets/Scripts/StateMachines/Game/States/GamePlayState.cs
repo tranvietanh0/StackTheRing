@@ -1,6 +1,7 @@
 namespace HyperCasualGame.Scripts.StateMachines.Game.States
 {
     using System.Linq;
+    using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.DI;
     using GameFoundationCore.Scripts.Signals;
     using HyperCasualGame.Scripts.Bucket;
@@ -118,6 +119,9 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             this.bucketColumnManager = bucketColumnManager;
             this.collectAreaManager = collectAreaManager;
             this.collectAreaBucketService = collectAreaBucketService;
+
+            // Pass service to conveyor for entry point ball collection
+            this.conveyor?.SetCollectAreaBucketService(collectAreaBucketService);
         }
 
         #endregion

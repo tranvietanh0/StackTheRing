@@ -52,6 +52,7 @@ namespace HyperCasualGame.Scripts.Core
             ILoggerManager loggerManager,
             CollectAreaBucketService collectAreaBucketService)
         {
+            Debug.Log($"[GameManager] Inject() called. collectAreaBucketService={collectAreaBucketService != null}");
             this.signalBus = signalBus;
             this.levelManager = levelManager;
             this.gameStateMachine = gameStateMachine;
@@ -66,6 +67,7 @@ namespace HyperCasualGame.Scripts.Core
 
         public void Initialize()
         {
+            Debug.Log("[GameManager] Initialize() called");
             this.InitializeSystems();
             this.StartGame().Forget();
         }
@@ -92,6 +94,7 @@ namespace HyperCasualGame.Scripts.Core
             this.collectAreaManager.SpawnAreas(this.collectAreaCount);
 
             // Wire up services
+            Debug.Log($"[GameManager] collectAreaBucketService is {(this.collectAreaBucketService != null ? "valid" : "NULL")}");
             this.collectAreaBucketService.SetCollectAreaManager(this.collectAreaManager);
             this.conveyorController.SetCollectAreaBucketService(this.collectAreaBucketService);
 

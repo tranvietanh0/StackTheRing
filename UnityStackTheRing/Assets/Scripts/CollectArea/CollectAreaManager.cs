@@ -30,6 +30,7 @@ namespace HyperCasualGame.Scripts.CollectArea
         /// </summary>
         public void SpawnAreas(int count)
         {
+            Debug.Log($"[CollectAreaManager] SpawnAreas called with count={count}");
             this.ClearContainer();
 
             if (this.collectAreaPrefab == null)
@@ -49,6 +50,8 @@ namespace HyperCasualGame.Scripts.CollectArea
                 area.name = $"CollectArea_{i}";
                 this.collectAreas.Add(area);
             }
+
+            Debug.Log($"[CollectAreaManager] Spawned {this.collectAreas.Count} CollectAreas");
         }
 
         /// <summary>

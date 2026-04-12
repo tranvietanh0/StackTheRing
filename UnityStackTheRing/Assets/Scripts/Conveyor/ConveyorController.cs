@@ -87,6 +87,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         public void SetCollectAreaBucketService(CollectAreaBucketService service)
         {
+            Debug.Log($"[ConveyorController] SetCollectAreaBucketService called with {(service != null ? "valid service" : "NULL")}");
             this.collectAreaBucketService = service;
         }
 
@@ -310,9 +311,14 @@ namespace HyperCasualGame.Scripts.Conveyor
             follower.LoopPath = true;
             follower.ReverseDirection = false;
 
+            Debug.Log($"[ConveyorController] entryNodes.Count = {this.entryNodes.Count}");
             if (this.entryNodes.Count > 0)
             {
                 follower.SetEntryNodes(this.entryNodes);
+            }
+            else
+            {
+                Debug.LogWarning("[ConveyorController] No entry nodes configured!");
             }
 
             // Initialize path following
@@ -374,8 +380,14 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         private void Update()
         {
-            if (!this.isRunning || this.collectAreaBucketService == null)
+            if (!this.isRunning)
             {
+                return;
+            }
+
+            if (this.collectAreaBucketService == null)
+            {
+                Debug.LogWarning("[ConveyorController] collectAreaBucketService is null!");
                 return;
             }
 
@@ -397,6 +409,7 @@ namespace HyperCasualGame.Scripts.Conveyor
         /// </summary>
         private void CheckEntryPoints()
         {
+            Debug.Log($"[ConveyorController] CheckEntryPoints called. activeRowBalls={this.activeRowBalls.Count}");
             foreach (var rowBall in this.activeRowBalls)
             {
                 if (rowBall == null)
@@ -432,6 +445,8 @@ namespace HyperCasualGame.Scripts.Conveyor
 
             try
             {
+                Debug.Log($"[ConveyorController] RowBall {rowBall.RowId} reached entry {entryIndex}");
+
                 // Fire signal
                 this.signalBus?.Fire(new RowBallReachEntrySignal
                 {
@@ -441,6 +456,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 
                 // Get target colors from buckets in CollectAreas
                 var targetColors = this.collectAreaBucketService.GetTargetColorsFromBuckets();
+                Debug.Log($"[ConveyorController] Target colors: {string.Join(", ", targetColors)} (count: {targetColors.Count})");
                 if (targetColors.Count == 0)
                 {
                     return;
@@ -452,6 +468,7 @@ namespace HyperCasualGame.Scripts.Conveyor
                     .Where(b => !b.IsCollected && targetColors.Contains(b.BallColor))
                     .ToList();
 
+                Debug.Log($"[ConveyorController] Balls to collect: {ballsToCollect.Count}");
                 if (ballsToCollect.Count == 0)
                 {
                     return;
@@ -471,18 +488,20 @@ namespace HyperCasualGame.Scripts.Conveyor
                     }
                 }
 
-                // Check if we have enough slots
-                if (!this.HasEnoughSlotsForEntry(colorCount))
+                // Limit balls to available slots per color (collect as many as possible)
+                var limitedBallsToCollect = this.LimitBallsToAvailableSlots(ballsToCollect);
+                Debug.Log($"[ConveyorController] After slot limit: {limitedBallsToCollect.Count} balls");
+                if (limitedBallsToCollect.Count == 0)
                 {
                     return;
                 }
 
                 // Build balanced bucket assignment
-                var bucketPlan = this.BuildBucketPlan(ballsToCollect);
+                var bucketPlan = this.BuildBucketPlan(limitedBallsToCollect);
 
                 // Reserve slots and build assignment pairs
                 var assignments = new List<(Ball ball, Bucket bucket)>();
-                foreach (var ball in ballsToCollect)
+                foreach (var ball in limitedBallsToCollect)
                 {
                     if (!bucketPlan.TryGetValue(ball.BallColor, out var buckets) || buckets.Count == 0)
                     {
@@ -530,18 +549,29 @@ namespace HyperCasualGame.Scripts.Conveyor
             await ball.JumpToBucket(bucket, incomingAlreadyReserved: true);
         }
 
-        private bool HasEnoughSlotsForEntry(Dictionary<ColorType, int> colorCount)
+        /// <summary>
+        /// Limit balls to collect based on available slots per color.
+        /// Returns a subset of balls that can actually be collected.
+        /// </summary>
+        private List<Ball> LimitBallsToAvailableSlots(List<Ball> ballsToCollect)
         {
-            foreach (var (color, count) in colorCount)
+            var result = new List<Ball>();
+            var slotsUsedByColor = new Dictionary<ColorType, int>();
+
+            foreach (var ball in ballsToCollect)
             {
+                var color = ball.BallColor;
+                slotsUsedByColor.TryGetValue(color, out var usedSlots);
+
                 var availableSlots = this.collectAreaBucketService.GetAvailableSlotCountByColor(color);
-                if (availableSlots < count)
+                if (usedSlots < availableSlots)
                 {
-                    return false;
+                    result.Add(ball);
+                    slotsUsedByColor[color] = usedSlots + 1;
                 }
             }
 
-            return true;
+            return result;
         }
 
         private Dictionary<ColorType, List<Bucket>> BuildBucketPlan(List<Ball> ballsToCollect)

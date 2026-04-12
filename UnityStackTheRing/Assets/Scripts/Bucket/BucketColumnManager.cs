@@ -210,6 +210,38 @@ namespace HyperCasualGame.Scripts.Bucket
         }
 
         /// <summary>
+        /// Auto-place eligible buckets into empty CollectAreas.
+        /// Called at game start to fill CollectAreas automatically.
+        /// </summary>
+        public async UniTask AutoPlaceEligibleBuckets()
+        {
+            var eligibleBuckets = this.GetEligibleBuckets();
+            Debug.Log($"[BucketColumnManager] AutoPlaceEligibleBuckets: {eligibleBuckets.Count} eligible buckets");
+
+            foreach (var bucket in eligibleBuckets)
+            {
+                var targetArea = this.collectAreaManager?.GetFirstEmptyArea();
+                if (targetArea == null)
+                {
+                    Debug.Log("[BucketColumnManager] No more empty CollectAreas for auto-placement");
+                    break;
+                }
+
+                targetArea.Occupy(bucket.transform);
+                await bucket.JumpToCollectArea(targetArea.transform);
+
+                this.signalBus?.Fire(new BucketJumpedToAreaSignal
+                {
+                    BucketIndex = bucket.Data.IndexBucket,
+                    AreaIndex = targetArea.AreaIndex,
+                    Color = bucket.Data.Color
+                });
+
+                Debug.Log($"[BucketColumnManager] Auto-placed {bucket.name} to CollectArea {targetArea.AreaIndex}");
+            }
+        }
+
+        /// <summary>
         /// Cleanup all buckets and columns.
         /// Matches Cocos GridBucketManager.cleanup()
         /// </summary>

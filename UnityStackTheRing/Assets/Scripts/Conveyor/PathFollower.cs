@@ -109,6 +109,8 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.entryNode = this.entryNodes.Count > 0 ? this.entryNodes[0] : null;
             this.entryPathDistances.Clear();
             this.ResetEntryTriggerState();
+
+            Debug.Log($"[PathFollower] SetEntryNodes: {this.entryNodes.Count} entry nodes set");
         }
 
         public void StartMoving()
@@ -529,6 +531,7 @@ namespace HyperCasualGame.Scripts.Conveyor
         {
             if (this.entryNodes.Count == 0)
             {
+                Debug.LogWarning($"[PathFollower] No entry nodes set for follower on {this.gameObject.name}");
                 return;
             }
 
@@ -537,10 +540,17 @@ namespace HyperCasualGame.Scripts.Conveyor
                 var entryNode = this.entryNodes[i];
                 if (entryNode == null)
                 {
+                    Debug.LogWarning($"[PathFollower] Entry node {i} is NULL!");
                     continue;
                 }
 
                 var dist = Vector3.Distance(this.transform.position, entryNode.position);
+
+                // Log distance for first row only to avoid spam (using static counter)
+                if (Time.frameCount % 60 == 0 && i == 0)
+                {
+                    Debug.Log($"[PathFollower] dist to entry: {dist:F2} (threshold: {GameConstants.DistanceThresholds.EntryTrigger})");
+                }
 
                 if (this.triggeredEntryIndices.Contains(i))
                 {
@@ -556,6 +566,7 @@ namespace HyperCasualGame.Scripts.Conveyor
                 // Check if close enough to trigger
                 if (dist < GameConstants.DistanceThresholds.EntryTrigger)
                 {
+                    Debug.Log($"[PathFollower] TRIGGERED! Row at dist {dist:F2}");
                     this.triggeredEntryIndices.Add(i);
                     onEntryReached?.Invoke(i);
                 }

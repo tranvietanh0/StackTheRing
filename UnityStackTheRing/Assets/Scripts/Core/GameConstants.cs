@@ -37,7 +37,7 @@ namespace HyperCasualGame.Scripts.Core
             public const float FillPoint = 0.3f;
 
             /// <summary>Distance threshold for entry point trigger</summary>
-            public const float EntryTrigger = 0.3f;
+            public const float EntryTrigger = 0.5f;
 
             /// <summary>Distance to reset fill point tracking</summary>
             public const float FillReset = 1.0f;
