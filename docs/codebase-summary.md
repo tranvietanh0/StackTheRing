@@ -1,207 +1,85 @@
 # Codebase Summary — Stack The Ring
 
-## Project Overview
+## Tổng quan dự án / Overview
+- **Tiếng Việt**: Kho mã nằm trong `UnityStackTheRing/Assets/Scripts` dùng VContainer để kết hợp các hệ thống conveyor, bucket, CollectArea, và state machine; phần còn lại dựa vào Submodule GameFoundationCore/UITemplate để tái sử dụng DI, ScreenManager, SignalBus.
+- **English**: The codebase lives under `UnityStackTheRing/Assets/Scripts`, leveraging VContainer to orchestrate conveyor, bucket, and CollectArea systems together with the auto-discovering state machine; GameFoundationCore/UITemplate submodules provide DI, screen MVP, signaling, and asset management.
 
-**Stack The Ring** is a Unity 6 (6000.3.10f1) hyper-casual mobile game featuring a conveyor-based ball sorting mechanic. Balls move along a spline-based conveyor, and players tap color collectors to attract matching balls into stacking slots. Clear stacks when full, avoid deadlock conditions.
-
-## Tech Stack
-
+## Tech stack
 | Category | Technology | Version |
-|----------|-----------|---------|
+|----------|------------|---------|
 | Engine | Unity | 6000.3.10f1 |
-| DI Container | VContainer | 1.16.9 |
-| Async | UniTask | 2.5.10 |
-| Pub/Sub | MessagePipe | 1.8.1 |
-| Asset Loading | Addressables | 2.9.0 |
-| Spline | Dreamteck Splines | - |
-| Tweening | DOTween Pro | - |
-| JSON | Newtonsoft.Json | 3.2.2 |
+| Dependency Injection | VContainer | 1.16.9 |
+| Async / Task | UniTask | 2.5.10 |
+| Pub/Sub | MessagePipe via SignalBus | 1.8.1 |
+| Asset Loading | Unity Addressables | 2.9.0 |
+| Input | Unity Input System | 1.18.0 |
+| Tween | DOTween Pro | — |
+| Spline | Dreamteck Splines | — |
 
-## Directory Structure
-
+## Cấu trúc thư mục chính / Directory layout
 ```
 StackTheRing/
-├── UnityStackTheRing/           # Unity project root
+├── UnityStackTheRing/
 │   ├── Assets/
-│   │   ├── Scripts/             # Game-specific code (31 files)
-│   │   │   ├── Attraction/      # Ball attraction system
-│   │   │   ├── Conveyor/        # Spline-based conveyor belt
-│   │   │   ├── Core/            # Constants, enums, GameManager
-│   │   │   ├── Editor/          # Unity Editor tools
-│   │   │   ├── Level/           # LevelData, LevelManager
-│   │   │   ├── Models/          # Data models (UserLocalData)
-│   │   │   ├── Ring/            # Ball & RowBall components
-│   │   │   ├── Scenes/          # DI scopes & screens
-│   │   │   ├── Signals/         # Game event signals
-│   │   │   ├── Slot/            # Stacking slots & collectors
-│   │   │   └── StateMachines/   # Game state management
-│   │   ├── Data/                # ScriptableObject configs
-│   │   ├── Prefabs/             # Ball, RowBall prefabs
-│   │   ├── Scenes/              # Unity scene files
-│   │   ├── Plugins/             # DOTween, etc.
-│   │   └── Submodules/          # Git submodules (core frameworks)
-│   │       ├── GameFoundationCore/  # Core framework
-│   │       ├── UITemplate/          # UI MVP framework
-│   │       ├── Extensions/          # Utility extensions
-│   │       └── Logging/             # Logging system
+│   │   ├── Scripts/             # Game-specific code
+│   │   │   ├── Bucket/          # Column bucket grid, Bucket, BucketColumnManager, BucketInputController
+│   │   │   ├── CollectArea/      # CollectArea slots + manager
+│   │   │   ├── Conveyor/         # RowBall/Conveyor spline logic
+│   │   │   ├── Core/             # GameManager, GameConstants, ColorType, RingState
+│   │   │   ├── Level/            # LevelData, LevelManager
+│   │   │   ├── Ring/             # Ball, RowBall data
+│   │   │   ├── Services/          # JumpService, CollectAreaBucketService
+│   │   │   ├── Signals/           # GameSignals, BucketSignals
+│   │   │   ├── StateMachines/    # Game FSM + states
+│   │   │   └── Scenes/           # Scopes & screens
+│   │   ├── Submodules/           # GameFoundationCore, UITemplate, Extensions, Logging
 │   ├── Packages/
-│   └── ProjectSettings/
-└── docs/                        # Documentation
+└── docs/
 ```
 
-## Assembly Structure
+## Assemblies và điểm khởi động / Assemblies & Entry Points
+- **Tiếng Việt**: `HyperCasualGame.Scripts` (chứa toàn bộ logic gameplay/Bucket/CollectArea), `GameFoundationCore.Scripts` và `UITemplate.Scripts` qua submodule giữ DI, MVP, SignalBus, và Blueprint Infrastructure.
+- **English**: `HyperCasualGame.Scripts` hosts conveyor, bucket, state machine, and service logic while the submodules `GameFoundationCore.Scripts` and `UITemplate.Scripts` catalogue DI helpers, MVP ScreenManager, SignalBus, and blueprint utilities.
+- **Entry Points**:
+  1. `0.LoadingScene` → `LoadingSceneScope` → `LoadingScreenPresenter` tải `UserLocalData` + `1.MainScene` (through Addressables).
+  2. `1.MainScene` → `MainSceneScope` registers `GameManager`, `GameStateMachine`, `LevelManager`.
+  3. `GameManager` → initializes `ConveyorController`, `BucketColumnManager`, `CollectAreaManager`, wires `CollectAreaBucketService`, subscribes to `BucketTappedSignal`, loads level, then transitions state machine.
 
-```
-HyperCasualGame.Scripts              # Main game assembly
-├── VContainer                       # DI container
-├── GameFoundationCore.Scripts       # Core services (DI, signals, assets)
-├── GameFoundationCore.UIModule      # Screen management, MVP
-├── GameFoundationCore.DI            # DI interfaces (IInitializable, ITickable, etc.)
-├── GameFoundationCore.Signals       # SignalBus (MessagePipe wrapper)
-├── GameFoundationCore.AssetLibrary  # Addressables wrapper (GameAssets)
-├── GameFoundationCore.Models        # Base data models
-├── UITemplate.Scripts               # StateMachine, UserData
-├── UniT.Logging                     # Logging abstractions
-├── UniT.Extensions                  # Utility helpers
-├── UniTask                          # Async/await framework
-└── Unity.Addressables               # Asset loading
-```
+## Hệ thống cốt lõi / Core Gameplay Systems
+### Conveyor & RowBall
+- **Tiếng Việt**: `ConveyorController` dùng Dreamteck Spline để sinh `RowBall` liên tục; mỗi `RowBall` chứa một chuỗi `Ball` (màu từ `LevelData.Rings`). `PathFollower` điều khiển sự di chuyển, `ConveyorConfig` cấp tốc độ.
+- **English**: `ConveyorController` uses Dreamteck Splines to spawn `RowBall` instances populated with `Ball` prefabs (colors supplied by `LevelData.Rings`); `PathFollower` drives spline movement while `ConveyorConfig` defines speed and spacing.
 
-## Source Files
+### Bucket Grid & Column
+- **Tiếng Việt**: `BucketColumnManager` tạo `Bucket` mỗi column/row theo `LevelData.BucketColumns`, tính `TargetBallCount` chia đều theo màu, dùng `BucketInputController` để nhận tap, và gọi `Bucket.JumpToCollectArea`/`JumpService`.
+- **English**: `BucketColumnManager` instantiates `Bucket` prefabs arranged by `LevelData.BucketColumns`, balances `TargetBallCount` per color, listens for taps through `BucketInputController`, and animates bucket jumps via `Bucket.JumpToCollectArea` which in turn uses `JumpService`.
 
-| Location | Files | Purpose |
-|----------|-------|---------|
-| `Assets/Scripts/` | 31 | Game-specific logic |
-| `Assets/Scripts/Core/` | 4 | ColorType, RingState, GameConstants, GameManager |
-| `Assets/Scripts/Conveyor/` | 4 | Spline conveyor system |
-| `Assets/Scripts/Ring/` | 2 | Ball, RowBall components |
-| `Assets/Scripts/Slot/` | 4 | Stacking slots & collectors |
-| `Assets/Scripts/Attraction/` | 2 | Ball attraction mechanics |
-| `Assets/Scripts/Level/` | 2 | Level data & management |
-| `Assets/Scripts/Signals/` | 1 | 15 game signals |
-| `Assets/Scripts/StateMachines/` | 6 | FSM states |
-| `Assets/Submodules/GameFoundationCore/` | ~200+ | Core framework |
-| `Assets/Submodules/UITemplate/` | ~50+ | UI system |
-| `Assets/Scenes/` | 2 | Loading + Main |
+### CollectArea / Service
+- **Tiếng Việt**: `CollectAreaManager` duy trì tập landing pad, `CollectAreaBucketService` cung cấp danh sách bucket hiện tại trong CollectAreas, số slot còn lại, và xây dựng kế hoạch phân phối ball theo màu.
+- **English**: `CollectAreaManager` tracks landing pads, while `CollectAreaBucketService` exposes the buckets currently in CollectAreas, available slot counts, and balanced assignment plans for upcoming balls.
 
-## Key Entry Points
+### JumpService & Visuals
+- **Tiếng Việt**: `JumpService.JumpToDestination` tạo quỹ đạo parabol dùng DOTween; `JumpConfig.DefaultBucket`/`DefaultBall` chia sẻ tham số height/duration/rotation.
+- **English**: `JumpService.JumpToDestination` uses DOTween to animate parabolic arcs, with shared `JumpConfig.DefaultBucket` and `DefaultBall` to keep rotations/height consistent.
 
-1. **`0.LoadingScene`** — App entry, loads user data, transitions to main
-2. **`GameLifetimeScope`** — Root DI container, calls `RegisterGameFoundation()` + `RegisterUITemplate()`
-3. **`LoadingScreenPresenter`** — Initial screen, loads `UserLocalData` then `1.MainScene`
-4. **`MainSceneScope`** — Per-scene DI, registers `GameStateMachine`, `LevelManager`, `GameManager`
-5. **`GameManager`** — Central orchestrator, initializes all game systems
-6. **`GameStateMachine`** — Game flow: `GameHomeState` → `GamePlayState` → `GameWinState`/`GameLoseState`
+### Signals & State Machine
+- **Tiếng Việt**: SignalBus (MessagePipe) truyền `RowBallCompletedLoopSignal`, `AllRingsClearedSignal`, `BucketCompletedSignal`, `BucketTappedSignal` để `GamePlayState` theo dõi win/lose; `GameStateMachine` auto-discover `IGameState` (Home/Play/Win/Lose).
+- **English**: SignalBus flows include `RowBallCompletedLoopSignal`, `AllRingsClearedSignal`, `BucketCompletedSignal`, and `BucketTappedSignal` so `GamePlayState` can decide win/lose; `GameStateMachine` auto-discovers `IGameState` implementations (Home/Play/Win/Lose).
 
-## Services Registered (via RegisterGameFoundation)
+## Scenes & DI scopes / Scenes & DI
+- **Tiếng Việt**: `GameLifetimeScope` root gọi `RegisterGameFoundation()`, `RegisterUITemplate()`; `LoadingSceneScope` mở `LoadingScreenPresenter`; `MainSceneScope` đăng ký `GameStateMachine`, `LevelManager`, `GameManager`.
+- **English**: `GameLifetimeScope` registers GameFoundation and UITemplate cores; `LoadingSceneScope` instantiates the loading presenter, and `MainSceneScope` wire `GameStateMachine`, `LevelManager`, `GameManager`.
 
-| Service | Lifetime | Interface | Purpose |
-|---------|----------|-----------|---------|
-| SignalBus | Scoped | - | Pub/sub messaging (MessagePipe wrapper) |
-| GameAssets | Singleton | IGameAssets | Addressables wrapper with caching |
-| ScreenManager | Scoped | IScreenManager | MVP screen management |
-| ObjectPoolManager | Singleton | - | Object pooling |
-| AudioService | Singleton | IAudioService | Sound management |
-| HandleLocalUserDataServices | Singleton | IHandleUserDataServices | User data persistence |
-| LoggerManager | - | ILoggerManager | Logging |
+## Luồng dữ liệu & gameplay / Data Flow & Gameplay
+1. **Khởi động**: `LoadingScreenPresenter.BindData()` tải user data, gọi `GameAssets.LoadSceneAsync("1.MainScene")`, `MainSceneScope.Configure()` build container, `GameManager` initialize systems.
+2. **Thiết lập level**: `LevelManager.LoadLevel(1)` trả về `LevelData`; `GameManager.SetupLevel` gọi `ConveyorController.SetupLevel`, `BucketColumnManager.SpawnBuckets`, `CollectAreaManager.SpawnAreas`.
+3. **GamePlayState**: `Enter` bật conveyor, subscribe signals; `Tick` gọi `CheckLoseCondition()` khi CollectArea full; win khi `AllRingsClearedSignal` hoặc tất cả bucket hoàn thành.
+4. **Bucket lifecycle**: bucket nhận `BallCollectedSignal`, `Bucket.StartIncomingBall()`, `Bucket.CompleteIncomingBall()`, khi đủ `TargetBallCount` và incoming 0 thì phát `BucketCompletedSignal`.
 
-## Dependencies (Git Submodules)
+## Cấu hình level & dữ liệu / Level configuration
+- **Tiếng Việt**: Level designer chỉnh `Rings[]` cho màu + số lượng, `AvailableCollectors` để hiển thị bộ thu, `BucketColumns[]` cho màu mỗi cột, `BucketColumnSpacing`/`BucketRowSpacing` để điều chỉnh layout; `LevelManager` dùng Addressables/Resources.
+- **English**: Designers tweak `Rings[]` for color/count, `AvailableCollectors` for collectors in play, `BucketColumns[]` for column palettes, and spacing fields; `LevelManager` loads the SO via Addressables/Resources.
 
-| Submodule | Repository | Purpose |
-|-----------|-----------|---------|
-| GameFoundationCore | tranvietanh0/GameFoundationCore | Core framework services |
-| UITemplate | tranvietanh0/UITemplate | UI MVP pattern, StateMachine |
-| Extensions | tranvietanh0/Unity.Extensions | Utility extensions |
-| Logging | tranvietanh0/Unity.Logging | Logging abstractions |
-
-## External Packages (via OpenUPM)
-
-- `jp.hadashikick.vcontainer` — DI container
-- `com.cysharp.unitask` — Async/await for Unity
-- `com.cysharp.messagepipe` — High-performance pub/sub
-- `com.unity.addressables` — Async asset loading
-
-## Scene Flow
-
-```
-0.LoadingScene
-    └── LoadingScreenPresenter.BindData()
-        ├── userDataManager.LoadUserData()
-        └── gameAssets.LoadSceneAsync("1.MainScene")
-            └── 1.MainScene
-                └── GameManager.Initialize()
-                    ├── InitializeSystems()
-                    │   ├── conveyorController.Initialize()
-                    │   ├── slotManager.Initialize()
-                    │   ├── collectorPanel.Initialize()
-                    │   └── attractionController.Initialize()
-                    └── StartGame()
-                        ├── levelManager.LoadLevel(1)
-                        ├── SetupLevel(levelData)
-                        └── stateMachine.TransitionTo<GamePlayState>()
-```
-
-## Game Loop
-
-```
-GamePlayState.Enter()
-    ├── Subscribe signals (AllRingsCleared, RowBallCompletedLoop, BallAttracted)
-    ├── conveyor.StartConveyor()
-    └── attractionController.SetEnabled(true)
-
-Tick() [every frame]
-    └── CheckLoseCondition()
-        └── If no possible moves → TransitionTo<GameLoseState>()
-
-Win Condition: AllRingsClearedSignal → TransitionTo<GameWinState>()
-Lose Condition: AllSlotsOccupied + NoPossibleMoves → TransitionTo<GameLoseState>()
-```
-
-## Lines of Code (Game-Specific)
-
-| File | Lines | Description |
-|------|-------|-------------|
-| **Core** | | |
-| GameManager.cs | 157 | Central game orchestrator |
-| GameConstants.cs | 90 | Game constants & color configs |
-| ColorType.cs | 11 | Color enum (Red, Yellow, Green, Blue) |
-| **Conveyor** | | |
-| ConveyorController.cs | 371 | Spline-based conveyor management |
-| ConveyorPath.cs | ~50 | Path data wrapper |
-| PathFollower.cs | ~100 | Spline following component |
-| **Ring** | | |
-| Ball.cs | 92 | Individual ball component |
-| RowBall.cs | ~150 | Row of 5 balls container |
-| **Slot** | | |
-| SlotManager.cs | 222 | Manages 4 stacking slots |
-| Slot.cs | ~120 | Individual slot logic |
-| ColorCollector.cs | ~80 | Tap-to-place collector |
-| CollectorPanel.cs | ~100 | Collector UI panel |
-| **Attraction** | | |
-| AttractionController.cs | 170 | Ball-to-slot attraction |
-| **Level** | | |
-| LevelManager.cs | 140 | Level loading & progress |
-| LevelData.cs | 53 | ScriptableObject level config |
-| **States** | | |
-| GamePlayState.cs | 193 | Main gameplay loop |
-| GameWinState.cs | ~30 | Win condition handler |
-| GameLoseState.cs | ~30 | Lose condition handler |
-| **Signals** | | |
-| GameSignals.cs | 89 | 15 game event signals |
-
-**Total game-specific code: ~2,200+ lines**
-
-## Framework Quick Reference
-
-| Task | Code Pattern |
-|------|--------------|
-| Register service | `builder.Register<MyService>(Lifetime.Singleton)` |
-| Inject dependency | Constructor parameter (no `[Inject]` attribute) |
-| Open screen | `await screenManager.OpenScreen<MyPresenter>()` |
-| Fire signal | `signalBus.Fire(new MySignal { ... })` |
-| Subscribe signal | `signalBus.Subscribe<MySignal>(OnMySignal)` |
-| Load level | `await levelManager.LoadLevel(levelNumber)` |
-| Change state | `stateMachine.TransitionTo<GamePlayState>()` |
-| Start conveyor | `conveyorController.StartConveyor()` |
-| Place collector | `slotManager.TryPlaceCollector(ColorType.Red)` |
-| Check win | `signalBus.Fire(new AllRingsClearedSignal())` |
+## Phụ thuộc & Submodule / Dependencies & Submodules
+- **Tiếng Việt**: Phụ thuộc chính: `GameFoundationCore` (SignalBus, ScreenManager, Blueprints), `UITemplate` (StateMachine, Screen flow), `Extensions` (helper), `Logging` (ILogger). Giữ một số package OpenUPM: VContainer, UniTask, MessagePipe, Addressables, InputSystem, DOTween Pro, Dreamteck Splines.
+- **English**: The core dependencies are `GameFoundationCore` (signals/screens/assets), `UITemplate` (state machine/screen flow), `Extensions`, and `Logging`. OpenUPM packages include VContainer, UniTask, MessagePipe, Addressables, InputSystem plus DOTween Pro and Dreamteck Splines.

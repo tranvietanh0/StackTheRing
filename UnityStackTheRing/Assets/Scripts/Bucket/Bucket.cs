@@ -186,6 +186,7 @@ namespace HyperCasualGame.Scripts.Bucket
             }
 
             this.collectedBalls.Add(ball);
+            Debug.Log($"[Bucket] AddBall bucket={this.data.IndexBucket} color={this.data.Color} collected={this.collectedBalls.Count} incoming={this.incomingBalls} target={this.TargetBallCount} ball={ball.BallColor}:{ball.BallIndex}");
             this.UpdateProgressUI();
             this.TriggerShake();
 
@@ -199,6 +200,7 @@ namespace HyperCasualGame.Scripts.Bucket
         public void StartIncomingBall()
         {
             this.incomingBalls++;
+            Debug.Log($"[Bucket] StartIncoming bucket={this.data.IndexBucket} color={this.data.Color} collected={this.collectedBalls.Count} incoming={this.incomingBalls} target={this.TargetBallCount}");
         }
 
         /// <summary>
@@ -207,6 +209,7 @@ namespace HyperCasualGame.Scripts.Bucket
         public void CompleteIncomingBall()
         {
             this.incomingBalls = Mathf.Max(0, this.incomingBalls - 1);
+            Debug.Log($"[Bucket] CompleteIncoming bucket={this.data.IndexBucket} color={this.data.Color} collected={this.collectedBalls.Count} incoming={this.incomingBalls} target={this.TargetBallCount}");
             this.CheckComplete();
         }
 

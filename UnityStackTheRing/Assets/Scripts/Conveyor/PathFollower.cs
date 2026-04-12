@@ -544,7 +544,7 @@ namespace HyperCasualGame.Scripts.Conveyor
                     continue;
                 }
 
-                var dist = Vector3.Distance(this.transform.position, entryNode.position);
+                var dist = this.GetDistanceToEntryAlongPath(i);
 
                 // Log distance for first row only to avoid spam (using static counter)
                 if (Time.frameCount % 60 == 0 && i == 0)
@@ -592,20 +592,18 @@ namespace HyperCasualGame.Scripts.Conveyor
             // Get pre-computed entry path distance
             if (this.entryPathDistances.TryGetValue(entryIndex, out var cachedDist))
             {
-                // Calculate signed distance from current position to cached entry distance
-                var diff = cachedDist - this.currentDistance;
+                var diff = this.ReverseDirection
+                    ? this.currentDistance - cachedDist
+                    : cachedDist - this.currentDistance;
 
-                // Handle wrap-around for looping paths
                 if (this.LoopPath && this.totalPathLength > 0)
                 {
-                    if (diff < -this.totalPathLength / 2)
+                    if (diff < 0)
                     {
                         diff += this.totalPathLength;
                     }
-                    else if (diff > this.totalPathLength / 2)
-                    {
-                        diff -= this.totalPathLength;
-                    }
+
+                    return diff;
                 }
 
                 return Mathf.Abs(diff);

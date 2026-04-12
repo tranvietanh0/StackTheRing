@@ -323,6 +323,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 
             // Initialize path following
             follower.Initialize(this.conveyorPath, startIndex, "MAIN");
+            follower.ComputeEntryPathDistances();
 
             // Initialize RowBall with balls and conveyor config
             rowBall.Initialize(config, this.ballPrefab, this.signalBus, this.config);
@@ -409,7 +410,6 @@ namespace HyperCasualGame.Scripts.Conveyor
         /// </summary>
         private void CheckEntryPoints()
         {
-            Debug.Log($"[ConveyorController] CheckEntryPoints called. activeRowBalls={this.activeRowBalls.Count}");
             foreach (var rowBall in this.activeRowBalls)
             {
                 if (rowBall == null)
@@ -441,11 +441,18 @@ namespace HyperCasualGame.Scripts.Conveyor
                 return;
             }
 
+            var follower = rowBall.GetComponent<PathFollower>();
+            if (follower == null)
+            {
+                return;
+            }
+
             this.processingAtEntry.Add(rowBall);
+            follower.IsWaitingAtEntry = true;
 
             try
             {
-                Debug.Log($"[ConveyorController] RowBall {rowBall.RowId} reached entry {entryIndex}");
+                Debug.Log($"[ConveyorController] EntryStart row={rowBall.RowId} entry={entryIndex} balls={this.FormatBallList(rowBall.GetActiveBalls())} targets={this.FormatTargetBuckets()}");
 
                 // Fire signal
                 this.signalBus?.Fire(new RowBallReachEntrySignal
@@ -454,78 +461,7 @@ namespace HyperCasualGame.Scripts.Conveyor
                     EntryIndex = entryIndex
                 });
 
-                // Get target colors from buckets in CollectAreas
-                var targetColors = this.collectAreaBucketService.GetTargetColorsFromBuckets();
-                Debug.Log($"[ConveyorController] Target colors: {string.Join(", ", targetColors)} (count: {targetColors.Count})");
-                if (targetColors.Count == 0)
-                {
-                    return;
-                }
-
-                // Get balls matching target colors
-                var activeBalls = rowBall.GetActiveBalls();
-                var ballsToCollect = activeBalls
-                    .Where(b => !b.IsCollected && targetColors.Contains(b.BallColor))
-                    .ToList();
-
-                Debug.Log($"[ConveyorController] Balls to collect: {ballsToCollect.Count}");
-                if (ballsToCollect.Count == 0)
-                {
-                    return;
-                }
-
-                // Count balls by color
-                var colorCount = new Dictionary<ColorType, int>();
-                foreach (var ball in ballsToCollect)
-                {
-                    if (colorCount.ContainsKey(ball.BallColor))
-                    {
-                        colorCount[ball.BallColor]++;
-                    }
-                    else
-                    {
-                        colorCount[ball.BallColor] = 1;
-                    }
-                }
-
-                // Limit balls to available slots per color (collect as many as possible)
-                var limitedBallsToCollect = this.LimitBallsToAvailableSlots(ballsToCollect);
-                Debug.Log($"[ConveyorController] After slot limit: {limitedBallsToCollect.Count} balls");
-                if (limitedBallsToCollect.Count == 0)
-                {
-                    return;
-                }
-
-                // Build balanced bucket assignment
-                var bucketPlan = this.BuildBucketPlan(limitedBallsToCollect);
-
-                // Reserve slots and build assignment pairs
-                var assignments = new List<(Ball ball, Bucket bucket)>();
-                foreach (var ball in limitedBallsToCollect)
-                {
-                    if (!bucketPlan.TryGetValue(ball.BallColor, out var buckets) || buckets.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    var bucket = buckets[0];
-                    buckets.RemoveAt(0);
-
-                    bucket.StartIncomingBall();
-                    assignments.Add((ball, bucket));
-                }
-
-                // Jump balls with staggered delay
-                var jumpTasks = new List<UniTask>();
-                for (var i = 0; i < assignments.Count; i++)
-                {
-                    var (ball, bucket) = assignments[i];
-                    var delay = i * GameConstants.RowBallConfig.BallJumpDelay;
-
-                    jumpTasks.Add(this.JumpBallWithDelay(ball, bucket, delay));
-                }
-
-                await UniTask.WhenAll(jumpTasks);
+                await this.CollectMatchingBallsAtEntry(rowBall, entryIndex);
 
                 // Remove row ball if all balls collected
                 if (rowBall.GetBallCount() == 0)
@@ -535,6 +471,8 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
             finally
             {
+                Debug.Log($"[ConveyorController] EntryEnd row={rowBall.RowId} entry={entryIndex} remaining={this.FormatBallList(rowBall.GetActiveBalls())} targets={this.FormatTargetBuckets()}");
+                follower.IsWaitingAtEntry = false;
                 this.processingAtEntry.Remove(rowBall);
             }
         }
@@ -549,57 +487,127 @@ namespace HyperCasualGame.Scripts.Conveyor
             await ball.JumpToBucket(bucket, incomingAlreadyReserved: true);
         }
 
+        private async UniTask CollectMatchingBallsAtEntry(RowBall rowBall, int entryIndex)
+        {
+            var waveIndex = 0;
+
+            while (waveIndex < GameConstants.RowBallConfig.MaxBalls)
+            {
+                var rowColor = this.GetRowTargetColor(rowBall);
+                if (!rowColor.HasValue)
+                {
+                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-row-color");
+                    return;
+                }
+
+                var targetBucket = this.collectAreaBucketService.GetStableTargetBucketForColor(rowColor.Value);
+                Debug.Log($"[ConveyorController] EntryWave row={rowBall.RowId} entry={entryIndex} wave={waveIndex} rowColor={rowColor.Value} activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()} targets={this.FormatTargetBuckets()}");
+                if (targetBucket == null)
+                {
+                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-target-bucket rowColor={rowColor.Value}");
+                    return;
+                }
+
+                var ballsToCollect = rowBall.GetActiveBalls()
+                    .Where(b => !b.IsCollected && b.BallColor == rowColor.Value)
+                    .ToList();
+
+                Debug.Log($"[ConveyorController] EntryCandidates row={rowBall.RowId} entry={entryIndex} wave={waveIndex} candidates={this.FormatBallList(ballsToCollect)}");
+                if (ballsToCollect.Count == 0)
+                {
+                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-matching-balls");
+                    return;
+                }
+
+                var limitedBallsToCollect = this.LimitBallsToAvailableSlots(targetBucket, ballsToCollect);
+                Debug.Log($"[ConveyorController] EntryLimited row={rowBall.RowId} entry={entryIndex} wave={waveIndex} limited={this.FormatBallList(limitedBallsToCollect)}");
+                if (limitedBallsToCollect.Count == 0)
+                {
+                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-available-slots activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()}");
+                    return;
+                }
+
+                var assignments = this.BuildAssignments(targetBucket, limitedBallsToCollect);
+                if (assignments.Count == 0)
+                {
+                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-assignments activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()}");
+                    return;
+                }
+
+                Debug.Log($"[ConveyorController] EntryAssignments row={rowBall.RowId} entry={entryIndex} wave={waveIndex} assignments={this.FormatAssignments(assignments)}");
+
+                var jumpTasks = new List<UniTask>();
+                for (var i = 0; i < assignments.Count; i++)
+                {
+                    var (ball, bucket) = assignments[i];
+                    var delay = i * GameConstants.RowBallConfig.BallJumpDelay;
+                    jumpTasks.Add(this.JumpBallWithDelay(ball, bucket, delay));
+                }
+
+                await UniTask.WhenAll(jumpTasks);
+                waveIndex++;
+            }
+
+            Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=max-wave-reached");
+        }
+
         /// <summary>
         /// Limit balls to collect based on available slots per color.
         /// Returns a subset of balls that can actually be collected.
         /// </summary>
-        private List<Ball> LimitBallsToAvailableSlots(List<Ball> ballsToCollect)
+        private List<Ball> LimitBallsToAvailableSlots(Bucket targetBucket, List<Ball> ballsToCollect)
         {
-            var result = new List<Ball>();
-            var slotsUsedByColor = new Dictionary<ColorType, int>();
-
-            foreach (var ball in ballsToCollect)
+            if (targetBucket == null)
             {
-                var color = ball.BallColor;
-                slotsUsedByColor.TryGetValue(color, out var usedSlots);
-
-                var availableSlots = this.collectAreaBucketService.GetAvailableSlotCountByColor(color);
-                if (usedSlots < availableSlots)
-                {
-                    result.Add(ball);
-                    slotsUsedByColor[color] = usedSlots + 1;
-                }
+                return new List<Ball>();
             }
 
-            return result;
+            var availableSlots = targetBucket.GetRemainingSlotCount();
+            if (availableSlots <= 0)
+            {
+                return new List<Ball>();
+            }
+
+            return ballsToCollect.Take(availableSlots).ToList();
         }
 
-        private Dictionary<ColorType, List<Bucket>> BuildBucketPlan(List<Ball> ballsToCollect)
+        private List<(Ball ball, Bucket bucket)> BuildAssignments(Bucket targetBucket, List<Ball> ballsToCollect)
         {
-            var plan = new Dictionary<ColorType, List<Bucket>>();
+            var assignments = new List<(Ball ball, Bucket bucket)>();
+            if (targetBucket == null)
+            {
+                return assignments;
+            }
 
-            // Group balls by color
-            var ballsByColor = new Dictionary<ColorType, int>();
             foreach (var ball in ballsToCollect)
             {
-                if (ballsByColor.ContainsKey(ball.BallColor))
-                {
-                    ballsByColor[ball.BallColor]++;
-                }
-                else
-                {
-                    ballsByColor[ball.BallColor] = 1;
-                }
+                targetBucket.StartIncomingBall();
+                assignments.Add((ball, targetBucket));
             }
 
-            // Build balanced plan for each color
-            foreach (var (color, count) in ballsByColor)
-            {
-                var buckets = this.collectAreaBucketService.BuildBalancedBucketPlanByColor(color, count);
-                plan[color] = buckets;
-            }
+            return assignments;
+        }
 
-            return plan;
+        private ColorType? GetRowTargetColor(RowBall rowBall)
+        {
+            var firstBall = rowBall.GetActiveBalls().FirstOrDefault(ball => !ball.IsCollected);
+            return firstBall?.BallColor;
+        }
+
+        private string FormatBallList(IEnumerable<Ball> balls)
+        {
+            return string.Join(",", balls.Select(ball => $"{ball.BallColor}:{ball.BallIndex}"));
+        }
+
+        private string FormatAssignments(IEnumerable<(Ball ball, Bucket bucket)> assignments)
+        {
+            return string.Join(",", assignments.Select(pair => $"{pair.ball.BallColor}:{pair.ball.BallIndex}->b{pair.bucket.Data.IndexBucket}[c={pair.bucket.CollectedBallCount},in={pair.bucket.IncomingBallCount},target={pair.bucket.TargetBallCount}]"));
+        }
+
+        private string FormatTargetBuckets()
+        {
+            return string.Join(",", this.collectAreaBucketService.GetAvailableBucketsInCollectAreas()
+                .Select(bucket => $"b{bucket.Data.IndexBucket}:{bucket.Data.Color}[c={bucket.CollectedBallCount},in={bucket.IncomingBallCount},target={bucket.TargetBallCount},rem={bucket.GetRemainingSlotCount()}]"));
         }
 
         #endregion

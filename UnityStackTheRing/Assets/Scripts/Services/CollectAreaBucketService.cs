@@ -1,9 +1,11 @@
 namespace HyperCasualGame.Scripts.Services
 {
     using System.Collections.Generic;
+    using System.Linq;
     using HyperCasualGame.Scripts.Bucket;
     using HyperCasualGame.Scripts.CollectArea;
     using HyperCasualGame.Scripts.Core;
+    using UnityEngine;
 
     /// <summary>
     /// Service to query buckets in CollectAreas.
@@ -12,10 +14,41 @@ namespace HyperCasualGame.Scripts.Services
     public class CollectAreaBucketService
     {
         private CollectAreaManager collectAreaManager;
+        private Bucket activeTargetBucket;
 
         public void SetCollectAreaManager(CollectAreaManager manager)
         {
             this.collectAreaManager = manager;
+            this.activeTargetBucket = null;
+        }
+
+        public Bucket GetStableTargetBucketForColor(ColorType color)
+        {
+            if (this.IsBucketValid(this.activeTargetBucket) && this.activeTargetBucket.Data.Color == color)
+            {
+                return this.activeTargetBucket;
+            }
+
+            var nextBucket = this.GetAvailableBucketsByColor(color).FirstOrDefault();
+            if (nextBucket != this.activeTargetBucket)
+            {
+                var previous = this.activeTargetBucket != null ? $"b{this.activeTargetBucket.Data.IndexBucket}:{this.activeTargetBucket.Data.Color}" : "none";
+                var next = nextBucket != null ? $"b{nextBucket.Data.IndexBucket}:{nextBucket.Data.Color}" : "none";
+                Debug.Log($"[CollectAreaBucketService] ActiveTargetSwitch requestedColor={color} from={previous} to={next}");
+            }
+
+            this.activeTargetBucket = nextBucket;
+            return this.activeTargetBucket;
+        }
+
+        public string GetActiveTargetDebug()
+        {
+            if (!this.IsBucketValid(this.activeTargetBucket))
+            {
+                return "none";
+            }
+
+            return $"b{this.activeTargetBucket.Data.IndexBucket}:{this.activeTargetBucket.Data.Color}[c={this.activeTargetBucket.CollectedBallCount},in={this.activeTargetBucket.IncomingBallCount},target={this.activeTargetBucket.TargetBallCount},rem={this.activeTargetBucket.GetRemainingSlotCount()}]";
         }
 
         /// <summary>
@@ -197,8 +230,7 @@ namespace HyperCasualGame.Scripts.Services
                 }
 
                 plannedIncomingByBucket.TryGetValue(bucket, out var plannedIncoming);
-                var totalIncoming = bucket.IncomingBallCount + plannedIncoming;
-                var remainingSlots = bucket.GetRemainingSlotCount(totalIncoming);
+                var remainingSlots = bucket.GetRemainingSlotCount(plannedIncoming);
 
                 if (remainingSlots <= 0)
                 {
@@ -251,6 +283,11 @@ namespace HyperCasualGame.Scripts.Services
             }
 
             return area.OccupyingBucket.GetComponent<Bucket>();
+        }
+
+        private bool IsBucketValid(Bucket bucket)
+        {
+            return bucket != null && !bucket.IsBucketCompleted() && bucket.GetRemainingSlotCount() > 0;
         }
     }
 }

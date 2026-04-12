@@ -65,52 +65,73 @@ namespace HyperCasualGame.Scripts.Ring
         /// </summary>
         public async UniTask JumpToBucket(Bucket targetBucket, bool incomingAlreadyReserved = false)
         {
-            if (this.isCollected || targetBucket == null || targetBucket.IsBucketCompleted())
+            var hasReservation = incomingAlreadyReserved;
+            var reservationCompleted = false;
+
+            try
             {
-                return;
+                if (this.isCollected || targetBucket == null || targetBucket.IsBucketCompleted())
+                {
+                    Debug.Log($"[Ball] JumpAbort row={this.RowId} ball={this.BallColor}:{this.BallIndex} reason=invalid-target reserved={hasReservation}");
+                    return;
+                }
+
+                // Check available slots
+                var incomingToCheck = incomingAlreadyReserved ? -1 : 1;
+                var availableSlots = targetBucket.GetRemainingSlotCount(incomingToCheck);
+                if (availableSlots <= 0)
+                {
+                    Debug.Log($"[Ball] JumpAbort row={this.RowId} ball={this.BallColor}:{this.BallIndex} reason=no-slots bucket={targetBucket.Data.IndexBucket} reserved={hasReservation} collected={targetBucket.CollectedBallCount} incoming={targetBucket.IncomingBallCount} target={targetBucket.TargetBallCount}");
+                    return;
+                }
+
+                this.isCollected = true;
+
+                if (!incomingAlreadyReserved)
+                {
+                    targetBucket.StartIncomingBall();
+                    hasReservation = true;
+                }
+
+                Debug.Log($"[Ball] JumpStart row={this.RowId} ball={this.BallColor}:{this.BallIndex} bucket={targetBucket.Data.IndexBucket} reserved={hasReservation} collected={targetBucket.CollectedBallCount} incoming={targetBucket.IncomingBallCount} target={targetBucket.TargetBallCount}");
+
+                // Fire collected signal
+                this.signalBus?.Fire(new BallCollectedSignal
+                {
+                    RowId = this.RowId,
+                    BallIndex = this.BallIndex,
+                    Color = this.BallColor
+                });
+
+                // Detach from parent for jump
+                this.transform.SetParent(null);
+
+                // Jump animation using JumpService
+                await JumpService.Instance.JumpToDestination(
+                    this.transform,
+                    targetBucket.transform,
+                    GameConstants.BallConfig.JumpHeight,
+                    GameConstants.BallConfig.JumpDuration,
+                    Vector3.zero
+                );
+
+                // Add to bucket and complete incoming reservation
+                targetBucket.AddBall(this);
+                targetBucket.CompleteIncomingBall();
+                reservationCompleted = true;
+                Debug.Log($"[Ball] JumpComplete row={this.RowId} ball={this.BallColor}:{this.BallIndex} bucket={targetBucket.Data.IndexBucket} collected={targetBucket.CollectedBallCount} incoming={targetBucket.IncomingBallCount} target={targetBucket.TargetBallCount}");
+
+                // Hide after adding (bucket controls visibility)
+                this.gameObject.SetActive(false);
             }
-
-            // Check available slots
-            var incomingToCheck = incomingAlreadyReserved ? 0 : 1;
-            var availableSlots = targetBucket.GetRemainingSlotCount(incomingToCheck);
-            if (availableSlots <= 0)
+            finally
             {
-                return;
+                if (targetBucket != null && hasReservation && !reservationCompleted)
+                {
+                    Debug.Log($"[Ball] JumpRelease row={this.RowId} ball={this.BallColor}:{this.BallIndex} bucket={targetBucket.Data.IndexBucket} reason=finally-release collected={targetBucket.CollectedBallCount} incoming={targetBucket.IncomingBallCount} target={targetBucket.TargetBallCount}");
+                    targetBucket.CompleteIncomingBall();
+                }
             }
-
-            this.isCollected = true;
-
-            if (!incomingAlreadyReserved)
-            {
-                targetBucket.StartIncomingBall();
-            }
-
-            // Fire collected signal
-            this.signalBus?.Fire(new BallCollectedSignal
-            {
-                RowId = this.RowId,
-                BallIndex = this.BallIndex,
-                Color = this.BallColor
-            });
-
-            // Detach from parent for jump
-            this.transform.SetParent(null);
-
-            // Jump animation using JumpService
-            await JumpService.Instance.JumpToDestination(
-                this.transform,
-                targetBucket.transform,
-                GameConstants.BallConfig.JumpHeight,
-                GameConstants.BallConfig.JumpDuration,
-                Vector3.zero
-            );
-
-            // Add to bucket and complete incoming reservation
-            targetBucket.AddBall(this);
-            targetBucket.CompleteIncomingBall();
-
-            // Hide after adding (bucket controls visibility)
-            this.gameObject.SetActive(false);
         }
 
         /// <summary>
