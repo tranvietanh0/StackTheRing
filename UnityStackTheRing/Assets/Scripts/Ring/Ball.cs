@@ -1,8 +1,11 @@
 namespace HyperCasualGame.Scripts.Ring
 {
+    using Cysharp.Threading.Tasks;
     using DG.Tweening;
     using GameFoundationCore.Scripts.Signals;
+    using HyperCasualGame.Scripts.Bucket;
     using HyperCasualGame.Scripts.Core;
+    using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
     using UnityEngine;
 
@@ -19,6 +22,8 @@ namespace HyperCasualGame.Scripts.Ring
 
         private bool isCollected;
         private SignalBus signalBus;
+
+        public bool IsCollected => this.isCollected;
 
         public void Initialize(int rowId, int index, ColorType color, Vector3 localPos, SignalBus signalBus)
         {
@@ -54,7 +59,64 @@ namespace HyperCasualGame.Scripts.Ring
             }
         }
 
-        public void JumpToBucket(Transform targetBucket, System.Action onComplete = null)
+        /// <summary>
+        /// Jump ball to a Bucket component. Handles incoming reservation.
+        /// Matches Cocos Ball.jumpToBucket()
+        /// </summary>
+        public async UniTask JumpToBucket(Bucket targetBucket, bool incomingAlreadyReserved = false)
+        {
+            if (this.isCollected || targetBucket == null || targetBucket.IsBucketCompleted())
+            {
+                return;
+            }
+
+            // Check available slots
+            var incomingToCheck = incomingAlreadyReserved ? 0 : 1;
+            var availableSlots = targetBucket.GetRemainingSlotCount(incomingToCheck);
+            if (availableSlots <= 0)
+            {
+                return;
+            }
+
+            this.isCollected = true;
+
+            if (!incomingAlreadyReserved)
+            {
+                targetBucket.StartIncomingBall();
+            }
+
+            // Fire collected signal
+            this.signalBus?.Fire(new BallCollectedSignal
+            {
+                RowId = this.RowId,
+                BallIndex = this.BallIndex,
+                Color = this.BallColor
+            });
+
+            // Detach from parent for jump
+            this.transform.SetParent(null);
+
+            // Jump animation using JumpService
+            await JumpService.Instance.JumpToDestination(
+                this.transform,
+                targetBucket.transform,
+                GameConstants.BallConfig.JumpHeight,
+                GameConstants.BallConfig.JumpDuration,
+                Vector3.zero
+            );
+
+            // Add to bucket and complete incoming reservation
+            targetBucket.AddBall(this);
+            targetBucket.CompleteIncomingBall();
+
+            // Hide after adding (bucket controls visibility)
+            this.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Legacy jump to Transform (for backwards compatibility).
+        /// </summary>
+        public void JumpToTransform(Transform targetBucket, System.Action onComplete = null)
         {
             if (this.isCollected)
             {
@@ -72,7 +134,6 @@ namespace HyperCasualGame.Scripts.Ring
             });
 
             // Jump animation using DOTween
-            var startPos = this.transform.position;
             var endPos = targetBucket.position;
             var jumpHeight = GameConstants.BallConfig.JumpHeight;
             var duration = GameConstants.BallConfig.JumpDuration;

@@ -7,24 +7,30 @@
 │                     Unity Application Layer                      │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │ GameStates   │  │ Screens      │  │ Game Systems         │  │
-│  │ (FSM)        │  │ (MVP)        │  │ (Future)             │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────────────────────┘  │
-├─────────┼─────────────────┼─────────────────────────────────────┤
-│         │     Service Layer (DI Managed)                        │
-│  ┌──────┴─────────────────┴───────────────────────────────────┐ │
+│  │ GameStates   │  │ Screens      │  │ GameManager          │  │
+│  │ (FSM)        │  │ (MVP)        │  │ (Orchestrator)       │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
+├─────────┼─────────────────┼─────────────────────┼───────────────┤
+│         │          Game Systems Layer           │               │
+│  ┌──────┴───────────────────────────────────────┴─────────────┐ │
+│  │  ConveyorController │ SlotManager │ AttractionController   │ │
+│  │  LevelManager │ CollectorPanel │ PathFollower              │ │
+│  └────────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────┤
+│                Service Layer (DI Managed)                       │
+│  ┌────────────────────────────────────────────────────────────┐ │
 │  │  SignalBus │ ScreenManager │ GameAssets │ UserDataManager  │ │
 │  │  AudioService │ ObjectPoolManager │ LoggerManager          │ │
 │  └────────────────────────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────────┤
 │                  VContainer (Dependency Injection)              │
 │  ┌─────────────────┐  ┌─────────────────┐                      │
-│  │ GameLifetime    │──│ SceneScope      │                      │
+│  │ GameLifetime    │──│ MainSceneScope  │                      │
 │  │ Scope (Root)    │  │ (Per-Scene)     │                      │
 │  └─────────────────┘  └─────────────────┘                      │
 ├─────────────────────────────────────────────────────────────────┤
 │                    Unity Engine & Packages                      │
-│  Addressables │ InputSystem │ Timeline │ DOTween               │
+│  Addressables │ Dreamteck Splines │ DOTween │ InputSystem      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -70,20 +76,63 @@ GameStateMachine (Controller)
 ├── TransitionTo<T>() — switches current state
 │
 └── IGameState implementations
-    ├── GameHomeState
-    ├── GamePlayState (future)
-    └── GameResultState (future)
+    ├── GameHomeState      — Initial menu state
+    ├── GamePlayState      — Active gameplay (ITickable)
+    ├── GameWinState       — Level completed
+    └── GameLoseState      — Game over
 ```
 
 **State Lifecycle:**
 ```
-Enter() → [active] → Exit() → [next state].Enter()
+Enter() → [active, Tick() if ITickable] → Exit() → [next state].Enter()
 ```
 
 **Bi-directional Reference:**
 States implementing `IHaveStateMachine` receive reference back to their parent machine for self-transitions.
 
-### 3. MVP Screen Pattern
+### 3. Game Systems
+
+**ConveyorController** — Manages spline-based ball conveyor
+```
+ConveyorController
+├── SplineComputer spline (Dreamteck)
+├── ConveyorPath (cached path samples)
+├── List<RowBall> activeRowBalls
+├── SetupLevel(LevelData) — spawn rows from level config
+├── StartConveyor() / StopConveyor()
+└── Events: OnRowBallCompletedLoop, OnAllBallsCleared
+```
+
+**SlotManager** — Manages 4 stacking slots
+```
+SlotManager
+├── Slot[] slots (4 slots)
+├── TryPlaceCollector(ColorType) — assign color to empty slot
+├── GetSlotForColor(color) — find slot accepting color
+├── CanCollectColor(color) — check if attraction possible
+└── Events: OnCollectorPlaced, OnSlotCleared, OnBallStackedInSlot
+```
+
+**AttractionController** — Pulls matching balls to slots
+```
+AttractionController
+├── CheckAttraction() — every Update when enabled
+├── FindMatchingSlot(Ball) — color-based matching
+├── IsInAttractionZone(PathFollower, Slot) — progress-based check
+└── AttractBall() — DOTween curved path animation
+```
+
+**LevelManager** — Level loading & progression
+```
+ILevelManager
+├── CurrentLevel, HighestUnlockedLevel
+├── LoadLevel(int) — Resources or Addressables
+├── CompleteLevel() — unlock next, fire LevelWinSignal
+├── FailLevel() — fire LevelLoseSignal
+└── SaveProgress() — PlayerPrefs persistence
+```
+
+### 4. MVP Screen Pattern
 
 **Components (all in ONE file: `{Name}ScreenView.cs`):**
 - **Model**: Data class (optional, passed to presenter)
@@ -137,7 +186,7 @@ public class HomeScreenView : BaseView { }
 public class HomeScreenPresenter : BaseScreenPresenter<HomeScreenView> { }
 ```
 
-### 4. Pub/Sub Messaging (MessagePipe + SignalBus)
+### 5. Pub/Sub Messaging (MessagePipe + SignalBus)
 
 **SignalBus** wraps MessagePipe's `IPublisher<T>` / `ISubscriber<T>` with automatic subscription tracking and cleanup. Implements `ILateDisposable` for container disposal.
 
@@ -172,14 +221,29 @@ signalBus.Fire<UserDataLoadedSignal>();  // default(T)
 signalBus.Unsubscribe<UserDataLoadedSignal>(OnDataLoaded);
 ```
 
-**Internal Signals (framework-defined):**
+**Framework Signals:**
 - `ScreenShowSignal` — fired when screen opens
 - `ScreenCloseSignal` — fired when screen closes
 - `ScreenSelfDestroyedSignal` — fired when view destroyed
 - `StartLoadingNewSceneSignal` — triggers screen cleanup
 - `UserDataLoadedSignal` — fired after user data load
 
-### 5. Asset Loading (Addressables)
+**Game Signals (GameSignals.cs):**
+| Signal | Fired When | Data |
+|--------|-----------|------|
+| `CollectorTappedSignal` | Player taps collector | Color |
+| `CollectorPlacedSignal` | Collector placed in slot | SlotIndex, Color |
+| `BallCollectedSignal` | Ball removed from row | RowId, BallIndex, Color |
+| `BallAttractedSignal` | Ball starts attraction | Ball, SlotIndex |
+| `BallStackedSignal` | Ball lands in slot | Ball, SlotIndex, CurrentStackCount |
+| `StackClearedSignal` | Stack full & cleared | SlotIndex, Color, BallsCleared |
+| `RowBallCompletedLoopSignal` | RowBall completes loop | RowBall, LoopCount |
+| `AllRingsClearedSignal` | All balls collected | - |
+| `LevelStartSignal` | Level loaded | LevelNumber |
+| `LevelWinSignal` | Level completed | LevelNumber, Score |
+| `LevelLoseSignal` | Game over | LevelNumber |
+
+### 6. Asset Loading (Addressables)
 
 **Interface:** `IGameAssets` (implemented by `GameAssets`)
 
@@ -225,22 +289,58 @@ void UnloadUnusedAssets(string sceneName);  // release all scene's auto-unload a
    └── await gameAssets.LoadSceneAsync("1.MainScene")
 6. Unity loads 1.MainScene
 7. MainSceneScope.Configure() runs
-   └── Registers GameStateMachine
-8. VContainer calls IInitializable.Initialize() on GameStateMachine
-9. GameStateMachine.Initialize():
-   └── TransitionTo<GameHomeState>()
+   └── Registers GameStateMachine, LevelManager, GameManager
+8. VContainer calls IInitializable.Initialize():
+   ├── GameManager.Initialize()
+   │   ├── InitializeSystems() — wire up controllers
+   │   └── StartGame() — load level 1, transition to play
+   └── GameStateMachine.Initialize()
+```
+
+### Game Loop Flow
+
+```
+GamePlayState.Enter()
+    ├── Subscribe to signals
+    ├── conveyor.StartConveyor()
+    └── attractionController.SetEnabled(true)
+
+[Every Frame - Tick()]
+    ├── AttractionController.Update()
+    │   └── For each RowBall on conveyor
+    │       └── For each Ball in row
+    │           └── If matching slot in attraction zone → AttractBall()
+    └── GamePlayState.CheckLoseCondition()
+        └── If AllSlotsOccupied && NoPossibleMoves → GameLoseState
+
+[On Attraction Complete]
+    └── slot.AddBall(ball)
+        └── If stack full → ClearStack() → StackClearedSignal
+
+[On All Balls Cleared]
+    └── AllRingsClearedSignal → levelManager.CompleteLevel() → GameWinState
 ```
 
 ### State Transition Flow
 
 ```
-Current State                    Next State
-┌──────────────────┐            ┌──────────────────┐
-│ GameHomeState    │            │ GamePlayState    │
-│                  │            │                  │
-│ User taps Play   │──────────► │ Enter()          │
-│ Exit()           │            │ - Setup game     │
-└──────────────────┘            └──────────────────┘
+┌──────────────┐     LoadLevel()      ┌──────────────┐
+│ GameHomeState│────────────────────► │ GamePlayState│
+└──────────────┘                      └──────┬───────┘
+                                             │
+                  AllRingsClearedSignal      │ NoPossibleMoves
+                           │                 │
+                           ▼                 ▼
+                   ┌──────────────┐  ┌──────────────┐
+                   │ GameWinState │  │ GameLoseState│
+                   └──────────────┘  └──────────────┘
+                           │                 │
+                           └────────┬────────┘
+                                    │ Retry/Next
+                                    ▼
+                            ┌──────────────┐
+                            │ GamePlayState│
+                            └──────────────┘
 ```
 
 ## DI Lifecycle Interfaces
@@ -272,68 +372,64 @@ Current State                    Next State
 
 1. Create class implementing `IGameState`:
 ```csharp
-public class GamePlayState : IGameState, IHaveStateMachine
+public class GamePauseState : IGameState, IHaveStateMachine
 {
-    public IStateMachine StateMachine { get; set; }
-    public void Enter() { /* ... */ }
-    public void Exit() { /* ... */ }
+    public GameStateMachine StateMachine { get; set; }
+    public void Enter() { /* pause conveyor, show pause UI */ }
+    public void Exit() { /* resume conveyor */ }
 }
 ```
 
 2. Auto-discovered via reflection — no manual registration needed.
 
-### Adding a New Screen
-
-1. Create single file `{Name}ScreenView.cs` with Model + View + Presenter:
+3. For frame-by-frame updates, also implement `ITickable`:
 ```csharp
-// HomeScreenView.cs
-
-// Model (optional)
-public class HomeScreenModel
+public class GamePlayState : IGameState, IHaveStateMachine, ITickable
 {
-    public string PlayerName;
-}
-
-// View
-public class HomeScreenView : BaseView { }
-
-// Presenter (constructor injection only - no [Inject] attribute)
-[ScreenInfo(nameof(HomeScreenView))]
-public class HomeScreenPresenter : BaseScreenPresenter<HomeScreenView>
-{
-    private readonly IGameAssets gameAssets;
-
-    public HomeScreenPresenter(
-        SignalBus signalBus,
-        ILoggerManager loggerManager,
-        IGameAssets gameAssets
-    ) : base(signalBus, loggerManager)
-    {
-        this.gameAssets = gameAssets;
-    }
-
-    public override async UniTask BindData() { /* ... */ }
+    public void Tick() { /* called every Update frame */ }
 }
 ```
 
-2. Create prefab named `HomeScreenView` in Addressables.
+### Adding a New Level
 
-3. Open via: `screenManager.OpenScreen<HomeScreenPresenter>()`
+1. Create ScriptableObject via Assets → Create → StackTheRing → LevelData
+2. Configure:
+   - `LevelNumber` — Sequential level ID
+   - `ConveyorSpeed` — 0.5 to 3.0
+   - `StackLimit` — 4 to 12 balls per stack
+   - `Rings[]` — Color + Count pairs
+   - `AvailableCollectors[]` — Colors players can use
+
+3. Place in `Resources/Levels/Level_XX` or Addressables with key `Level_XX`
+
+### Adding a New Color
+
+1. Add to `ColorType` enum:
+```csharp
+public enum ColorType { Red = 0, Yellow = 1, Green = 2, Blue = 3, Purple = 4 }
+```
+
+2. Add color mapping in `GameConstants.GetColor()`:
+```csharp
+ColorType.Purple => new Color(0.6f, 0.2f, 0.8f),
+```
+
+3. Create matching Ball material and Collector prefab variant
 
 ### Adding a New Signal
 
-1. Define signal as **class** (not struct):
+1. Define signal as **class** in `GameSignals.cs`:
 ```csharp
-public class GameStartedSignal
+public class ComboAchievedSignal
 {
-    public int Level;
-    public GameMode Mode;
+    public int ComboCount;
+    public int BonusScore;
 }
 ```
 
 2. Declare in LifetimeScope:
 ```csharp
-builder.DeclareSignal<GameStartedSignal>();
+builder.DeclareSignal<ComboAchievedSignal>();
 ```
 
-3. Use via `SignalBus`.
+3. Fire: `signalBus.Fire(new ComboAchievedSignal { ComboCount = 3 });`

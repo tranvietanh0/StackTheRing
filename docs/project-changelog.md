@@ -9,12 +9,60 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- Initial project documentation (`docs/`)
-  - `codebase-summary.md` — Project overview and structure
-  - `system-architecture.md` — Architectural patterns and data flow
-  - `code-standards.md` — Coding conventions and patterns
-  - `project-changelog.md` — This file
-  - `development-roadmap.md` — Future development plan
+- Documentation sync with latest codebase (2026-04-10)
+
+---
+
+## [0.2.0] - 2026-04-10 (Core Gameplay)
+
+### Added
+- **Core Systems**
+  - `GameManager` — Central game orchestrator
+  - `GameConstants` — Game configuration constants
+  - `ColorType` enum — Red, Yellow, Green, Blue
+
+- **Conveyor System**
+  - `ConveyorController` — Spline-based conveyor belt management
+  - `ConveyorPath` — Cached path sample data
+  - `ConveyorConfig` — ScriptableObject configuration
+  - `PathFollower` — Spline following component (Dreamteck integration)
+
+- **Ring/Ball System**
+  - `Ball` — Individual ball component with color & animations
+  - `RowBall` — Container for 5 balls moving together
+  - `RowBallConfig` — Row spawn configuration
+
+- **Slot System**
+  - `SlotManager` — Manages 4 stacking slots
+  - `Slot` — Individual slot with stack logic
+  - `ColorCollector` — Tap-to-place color selector
+  - `CollectorPanel` — UI panel for collectors
+
+- **Attraction System**
+  - `AttractionController` — Ball-to-slot attraction with curved paths
+  - `AttractionConfig` — Attraction zone & animation settings
+
+- **Level System**
+  - `LevelManager` (ILevelManager) — Level loading, progression, save
+  - `LevelData` — ScriptableObject level configuration
+
+- **Game States**
+  - `GamePlayState` (ITickable) — Main gameplay loop with win/lose detection
+  - `GameWinState` — Level completed state
+  - `GameLoseState` — Game over state
+
+- **Signals (15 new)**
+  - Collector: `CollectorTappedSignal`, `CollectorPlacedSignal`
+  - Ball: `BallCollectedSignal`, `BallAttractedSignal`, `BallStackedSignal`
+  - Stack: `StackClearedSignal`
+  - Row: `RowBallCompletedLoopSignal`
+  - Game: `AllRingsClearedSignal`, `LevelStartSignal`, `LevelWinSignal`, `LevelLoseSignal`
+
+- **Editor Tools**
+  - `SplineSetupEditor` — Spline path visualization helper
+
+### Dependencies
+- Added Dreamteck Splines for conveyor path system
 
 ---
 

@@ -3,6 +3,7 @@ namespace HyperCasualGame.Scripts.Ring
     using System.Collections.Generic;
     using System.Linq;
     using GameFoundationCore.Scripts.Signals;
+    using HyperCasualGame.Scripts.Conveyor;
     using HyperCasualGame.Scripts.Core;
     using HyperCasualGame.Scripts.Signals;
     using UnityEngine;
@@ -18,16 +19,36 @@ namespace HyperCasualGame.Scripts.Ring
         private static int globalRowIdCounter;
 
         private int rowId;
-        private readonly Ball[] slots = new Ball[GameConstants.RowBallConfig.MaxBalls];
+        private Ball[] slots;
+        private float[] zPositions;
+        private int maxBalls;
         private SignalBus signalBus;
+        private RowBallConfig config;
 
         public int RowId => this.rowId;
+        public RowBallConfig Config => this.config;
 
-        public void Initialize(RowBallConfig config, Ball prefab, SignalBus signalBus)
+        public void Initialize(RowBallConfig config, Ball prefab, SignalBus signalBus, ConveyorConfig conveyorConfig = null)
         {
             this.rowId = globalRowIdCounter++;
+            this.config = config;
+            this.config.RowId = this.rowId;
             this.ballPrefab = prefab;
             this.signalBus = signalBus;
+
+            // Setup ball configuration from ConveyorConfig or use defaults
+            if (conveyorConfig != null)
+            {
+                this.maxBalls = conveyorConfig.BallsPerRow;
+                this.zPositions = conveyorConfig.GetBallZPositions();
+            }
+            else
+            {
+                this.maxBalls = GameConstants.RowBallConfig.MaxBalls;
+                this.zPositions = GameConstants.RowBallConfig.ZPositions;
+            }
+
+            this.slots = new Ball[this.maxBalls];
 
             // Subscribe to ball collected signal
             this.signalBus.Subscribe<BallCollectedSignal>(this.OnBallCollected);
@@ -35,7 +56,7 @@ namespace HyperCasualGame.Scripts.Ring
             this.ClearAllSlots();
 
             // Spawn balls for each color in config
-            for (var i = 0; i < config.BallColors.Length && i < GameConstants.RowBallConfig.MaxBalls; i++)
+            for (var i = 0; i < config.BallColors.Length && i < this.maxBalls; i++)
             {
                 this.SpawnBallInSlot(i, config.BallColors[i]);
             }
@@ -57,7 +78,7 @@ namespace HyperCasualGame.Scripts.Ring
 
         public void SpawnBallInSlot(int index, ColorType color)
         {
-            if (this.ballPrefab == null || index >= GameConstants.RowBallConfig.MaxBalls)
+            if (this.ballPrefab == null || index >= this.maxBalls)
             {
                 return;
             }
@@ -68,7 +89,7 @@ namespace HyperCasualGame.Scripts.Ring
 
             if (ball != null)
             {
-                var zPos = GameConstants.RowBallConfig.ZPositions[index];
+                var zPos = this.zPositions[index];
                 ball.Initialize(this.rowId, index, color, new Vector3(0, 0, zPos), this.signalBus);
                 this.slots[index] = ball;
             }
@@ -91,7 +112,7 @@ namespace HyperCasualGame.Scripts.Ring
 
         public Ball GetBallAt(int index)
         {
-            if (index < 0 || index >= GameConstants.RowBallConfig.MaxBalls)
+            if (index < 0 || index >= this.maxBalls)
             {
                 return null;
             }
@@ -120,12 +141,12 @@ namespace HyperCasualGame.Scripts.Ring
 
         public bool AddBallToSlot(Ball ball, int slotIndex)
         {
-            if (this.GetBallCount() >= GameConstants.RowBallConfig.MaxBalls)
+            if (this.GetBallCount() >= this.maxBalls)
             {
                 return false;
             }
 
-            if (slotIndex < 0 || slotIndex >= GameConstants.RowBallConfig.MaxBalls)
+            if (slotIndex < 0 || slotIndex >= this.maxBalls)
             {
                 return false;
             }
@@ -138,7 +159,7 @@ namespace HyperCasualGame.Scripts.Ring
             var parent = this.spawnRoot != null ? this.spawnRoot : this.transform;
             ball.transform.SetParent(parent, true);
 
-            var zPos = GameConstants.RowBallConfig.ZPositions[slotIndex];
+            var zPos = this.zPositions[slotIndex];
             ball.transform.localPosition = new Vector3(0, 0, zPos);
 
             ball.RowId = this.rowId;
@@ -151,7 +172,7 @@ namespace HyperCasualGame.Scripts.Ring
 
         public Ball RemoveBallAt(int index)
         {
-            if (index < 0 || index >= GameConstants.RowBallConfig.MaxBalls)
+            if (index < 0 || index >= this.maxBalls)
             {
                 return null;
             }
@@ -192,7 +213,7 @@ namespace HyperCasualGame.Scripts.Ring
                     continue;
                 }
 
-                var zPos = GameConstants.RowBallConfig.ZPositions[i];
+                var zPos = this.zPositions[i];
                 ball.transform.localPosition = new Vector3(0, 0, zPos);
             }
         }

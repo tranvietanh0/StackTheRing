@@ -520,5 +520,132 @@ namespace HyperCasualGame.Scripts.Conveyor
 
             return Vector3.Distance(this.transform.position, this.entryNode.position);
         }
+
+        /// <summary>
+        /// Check entry points and fire signals when approaching.
+        /// Call this from Update after movement.
+        /// </summary>
+        public void UpdateEntryPointDetection(System.Action<int> onEntryReached)
+        {
+            if (this.entryNodes.Count == 0)
+            {
+                return;
+            }
+
+            for (var i = 0; i < this.entryNodes.Count; i++)
+            {
+                var entryNode = this.entryNodes[i];
+                if (entryNode == null)
+                {
+                    continue;
+                }
+
+                var dist = Vector3.Distance(this.transform.position, entryNode.position);
+
+                if (this.triggeredEntryIndices.Contains(i))
+                {
+                    // Reset trigger when far enough away
+                    if (dist > GameConstants.DistanceThresholds.FillReset)
+                    {
+                        this.triggeredEntryIndices.Remove(i);
+                    }
+
+                    continue;
+                }
+
+                // Check if close enough to trigger
+                if (dist < GameConstants.DistanceThresholds.EntryTrigger)
+                {
+                    this.triggeredEntryIndices.Add(i);
+                    onEntryReached?.Invoke(i);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get distance along path to a specific entry node.
+        /// </summary>
+        public float GetDistanceToEntryAlongPath(int entryIndex)
+        {
+            if (entryIndex < 0 || entryIndex >= this.entryNodes.Count)
+            {
+                return float.MaxValue;
+            }
+
+            var entryNode = this.entryNodes[entryIndex];
+            if (entryNode == null)
+            {
+                return float.MaxValue;
+            }
+
+            // Get pre-computed entry path distance
+            if (this.entryPathDistances.TryGetValue(entryIndex, out var cachedDist))
+            {
+                // Calculate signed distance from current position to cached entry distance
+                var diff = cachedDist - this.currentDistance;
+
+                // Handle wrap-around for looping paths
+                if (this.LoopPath && this.totalPathLength > 0)
+                {
+                    if (diff < -this.totalPathLength / 2)
+                    {
+                        diff += this.totalPathLength;
+                    }
+                    else if (diff > this.totalPathLength / 2)
+                    {
+                        diff -= this.totalPathLength;
+                    }
+                }
+
+                return Mathf.Abs(diff);
+            }
+
+            // Fallback to direct distance if not cached
+            return Vector3.Distance(this.transform.position, entryNode.position);
+        }
+
+        /// <summary>
+        /// Pre-compute entry node path distances. Call after initialization.
+        /// </summary>
+        public void ComputeEntryPathDistances()
+        {
+            if (this.path == null)
+            {
+                return;
+            }
+
+            this.entryPathDistances.Clear();
+
+            for (var i = 0; i < this.entryNodes.Count; i++)
+            {
+                var entryNode = this.entryNodes[i];
+                if (entryNode == null)
+                {
+                    continue;
+                }
+
+                // Find closest path position to entry node
+                var closestDist = 0f;
+                var minDist = float.MaxValue;
+
+                var count = this.path.GetSampleCount();
+                var stepSize = this.totalPathLength / count;
+
+                for (var j = 0; j < count; j++)
+                {
+                    var pathDist = j * stepSize;
+                    var pathPos = this.GetPositionAtDistance(pathDist, false);
+                    var dist = Vector3.Distance(pathPos, entryNode.position);
+
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        closestDist = pathDist;
+                    }
+                }
+
+                this.entryPathDistances[i] = closestDist;
+            }
+        }
     }
 }

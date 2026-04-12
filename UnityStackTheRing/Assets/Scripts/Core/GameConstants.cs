@@ -74,6 +74,36 @@ namespace HyperCasualGame.Scripts.Core
             public const float JumpDuration = 0.2f;
         }
 
+        /// <summary>Bucket config from Cocos GameConfig.BUCKET</summary>
+        public static class BucketConfig
+        {
+            public const float DefaultJumpHeight = 0f;
+            public const float DefaultJumpDuration = 0.2f;
+            public const float DefaultJumpEndRotationX = 0f;
+            public const float DefaultJumpEndRotationY = 0f;
+            public const float DefaultJumpEndRotationZ = 0f;
+
+            public const float CollectionMoveUpOffset = 3f;
+            public const float CollectionMoveUpDuration = 0.5f;
+            public const float CollectionRotationEnd = 360f;
+            public const float CollectionRotationDuration = 0.5f;
+            public const float CollectionScaleEnd = 0f;
+            public const float CollectionScaleDuration = 0.5f;
+
+            public const float ShakeScaleBump = 0.03f;
+            public const float ShakeDuration = 0.1f;
+
+            public const bool ParentToCollectArea = true;
+            public const bool ResetPositionAfterLanding = true;
+        }
+
+        /// <summary>CollectArea config from Cocos GameConfig.COLLECT_AREA</summary>
+        public static class CollectAreaConfig
+        {
+            public const float Spacing = 1.15f;
+            public const int DefaultAreaCount = 4;
+        }
+
         public static Color GetColor(ColorType colorType)
         {
             return colorType switch

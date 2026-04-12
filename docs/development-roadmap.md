@@ -18,49 +18,64 @@
 
 ---
 
-### Phase 2: Game Mechanics (Next)
+### Phase 2: Game Mechanics (Current)
 
-**Status:** Planned
+**Status:** ✅ Complete
 
-**Ring Stacking Core:**
-- [ ] Ring prefab system (various sizes/colors)
-- [ ] Stack pole mechanics
-- [ ] Ring physics (drop, collision)
-- [ ] Stack validation (size order)
-- [ ] Success/failure detection
+**Conveyor System:**
+- [x] Spline-based conveyor (Dreamteck Splines)
+- [x] RowBall containers (5 balls each)
+- [x] PathFollower component
+- [x] Looping conveyor belt
 
-**Player Interaction:**
-- [ ] Touch/click input handling
-- [ ] Ring selection feedback
-- [ ] Drag-and-drop mechanics
-- [ ] Release and snap-to-pole
+**Ball/Ring System:**
+- [x] Ball prefab with color support (4 colors)
+- [x] RowBall container management
+- [x] Ball collection/removal from rows
+- [x] DOTween jump animations
+
+**Slot & Stacking:**
+- [x] 4 stacking slots
+- [x] Color-based collector placement
+- [x] Stack limit per slot (configurable)
+- [x] Stack clearing when full
+
+**Attraction Mechanics:**
+- [x] Progress-based attraction zones
+- [x] Curved path attraction (DOTween)
+- [x] Color matching logic
+
+**Level System:**
+- [x] LevelData ScriptableObject
+- [x] LevelManager with load/save
+- [x] Level progression tracking
 
 **Game States:**
-- [ ] `GamePlayState` — Active gameplay
-- [ ] `GamePauseState` — Pause menu
-- [ ] `GameResultState` — Win/lose screen
+- [x] `GamePlayState` — Active gameplay with ITickable
+- [x] `GameWinState` — Level completed
+- [x] `GameLoseState` — Game over (no possible moves)
 
 ---
 
-### Phase 3: Progression System
+### Phase 3: Progression System (Next)
 
-**Status:** Planned
+**Status:** In Progress
 
 **Level System:**
-- [ ] Level data structure (ScriptableObject or Blueprint)
-- [ ] Level loader
-- [ ] Difficulty scaling (more rings, more poles, time limit)
-- [ ] Level completion tracking
+- [x] Level data structure (LevelData ScriptableObject)
+- [x] Level loader (Resources + Addressables fallback)
+- [x] Difficulty scaling (ConveyorSpeed, StackLimit, RingCount)
+- [x] Level completion tracking (HighestUnlockedLevel)
 
 **Scoring:**
-- [ ] Score calculation (time, moves, accuracy)
-- [ ] High score persistence
+- [ ] Score calculation (time bonus, combo bonus)
+- [x] Basic score on level complete
 - [ ] Star rating system (1-3 stars)
 
 **User Progress:**
-- [ ] `UserLocalData` expansion
-- [ ] Level unlock progression
-- [ ] Statistics tracking
+- [x] `UserLocalData` persistence
+- [x] Level unlock progression
+- [ ] Statistics tracking (total games, total rings cleared)
 
 ---
 
@@ -69,23 +84,26 @@
 **Status:** Planned
 
 **Screens:**
+- [x] `LoadingScreenPresenter` — Initial loading
 - [ ] `HomeScreenPresenter` — Main menu
 - [ ] `LevelSelectScreenPresenter` — Level grid
-- [ ] `GameHUDPresenter` — In-game overlay
+- [ ] `GameHUDPresenter` — In-game overlay (score, level)
 - [ ] `PauseScreenPresenter` — Pause menu
-- [ ] `ResultScreenPresenter` — Level complete
+- [ ] `ResultScreenPresenter` — Win/Lose popup
 - [ ] `SettingsScreenPresenter` — Options
 
 **Visual Feedback:**
-- [ ] Ring selection highlight
-- [ ] Valid/invalid placement indicators
-- [ ] Success celebration effects
-- [ ] DOTween animations throughout
+- [x] Ball attraction curved path
+- [x] Stack clear scale animation
+- [x] Arrival punch effect
+- [ ] Collector tap feedback
+- [ ] Success celebration particles
+- [ ] Lose condition warning
 
 **Audio:**
 - [ ] Background music
 - [ ] UI SFX (tap, swipe)
-- [ ] Gameplay SFX (ring drop, success, fail)
+- [ ] Gameplay SFX (ball collect, stack clear, win, lose)
 
 ---
 
@@ -143,11 +161,13 @@
 
 | Item | Priority | Effort | Notes |
 |------|----------|--------|-------|
-| Unit tests for StateMachine | Medium | Medium | Add NUnit tests |
+| Object pooling for balls | High | Medium | Currently using Instantiate/Destroy |
+| Unit tests for game systems | Medium | Medium | ConveyorController, SlotManager |
 | Screen transition animations | Low | Low | Fade/slide presets |
-| Object pooling for rings | High | Medium | Performance critical |
 | Addressables memory cleanup | Medium | Medium | Unload unused assets |
-| Blueprint system for levels | Medium | High | CSV-based config |
+| Combo system | Medium | Medium | Rapid collection bonus |
+| Tutorial system | High | High | First-time player guidance |
+| Pause state | Low | Low | GamePauseState not implemented |
 
 ---
 
@@ -171,7 +191,8 @@
 | UniTask | 2.5.10 | Check | Stable |
 | MessagePipe | 1.8.1 | Check | Stable |
 | Addressables | 2.9.0 | Check | Unity 6 compatible |
-| DOTween Pro | - | Check | Manual update |
+| Dreamteck Splines | - | Check | Conveyor path system |
+| DOTween Pro | - | Check | Animation system |
 
 ---
 
@@ -179,7 +200,7 @@
 
 | Milestone | Target | Definition of Done |
 |-----------|--------|-------------------|
-| **Alpha** | TBD | Core gameplay loop playable |
+| **Alpha** | ✅ Done | Core gameplay loop playable |
 | **Beta** | TBD | All levels, basic UI, no major bugs |
 | **RC** | TBD | Monetization, analytics, store assets |
 | **Launch** | TBD | Store submission approved |

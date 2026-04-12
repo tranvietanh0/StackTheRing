@@ -17,7 +17,8 @@
         "Unity.Addressables",
         "DOTween.Modules",
         "DOTweenPro.Scripts",
-        "Dreamteck.Splines"
+        "Dreamteck.Splines",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

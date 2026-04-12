@@ -5,6 +5,7 @@
     using GameFoundationCore.Scripts.Signals;
     using HyperCasualGame.Scripts.Core;
     using HyperCasualGame.Scripts.Level;
+    using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
     using HyperCasualGame.Scripts.StateMachines.Game;
     using HyperCasualGame.Scripts.StateMachines.Game.Interfaces;
@@ -30,6 +31,7 @@
 
         private void RegisterSignals(IContainerBuilder builder)
         {
+            // Legacy signals (can be removed after full migration)
             builder.DeclareSignal<CollectorTappedSignal>();
             builder.DeclareSignal<CollectorPlacedSignal>();
             builder.DeclareSignal<RingAttractedSignal>();
@@ -40,11 +42,20 @@
             builder.DeclareSignal<LevelWinSignal>();
             builder.DeclareSignal<LevelLoseSignal>();
             builder.DeclareSignal<LevelStartSignal>();
+
+            // Bucket/CollectArea signals
+            builder.DeclareSignal<BucketTappedSignal>();
+            builder.DeclareSignal<BucketJumpedToAreaSignal>();
+            builder.DeclareSignal<BucketCompletedSignal>();
+            builder.DeclareSignal<RowBallReachEntrySignal>();
+            builder.DeclareSignal<BallCollectedSignal>();
+            builder.DeclareSignal<RowBallCompletedLoopSignal>();
         }
 
         private void RegisterServices(IContainerBuilder builder)
         {
             builder.Register<LevelManager>(Lifetime.Singleton).AsImplementedInterfaces();
+            builder.Register<CollectAreaBucketService>(Lifetime.Scoped);
         }
 
         private void RegisterStateMachine(IContainerBuilder builder)
@@ -66,7 +77,8 @@
                     container.Resolve<SignalBus>(),
                     container.Resolve<ILevelManager>(),
                     container.Resolve<GameStateMachine>(),
-                    container.Resolve<UniT.Logging.ILoggerManager>()
+                    container.Resolve<UniT.Logging.ILoggerManager>(),
+                    container.Resolve<CollectAreaBucketService>()
                 );
             });
         }

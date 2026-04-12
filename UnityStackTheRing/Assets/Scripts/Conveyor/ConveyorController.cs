@@ -3,11 +3,14 @@ namespace HyperCasualGame.Scripts.Conveyor
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Cysharp.Threading.Tasks;
     using Dreamteck.Splines;
     using GameFoundationCore.Scripts.Signals;
+    using HyperCasualGame.Scripts.Bucket;
     using HyperCasualGame.Scripts.Core;
     using HyperCasualGame.Scripts.Level;
     using HyperCasualGame.Scripts.Ring;
+    using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
     using UniT.Logging;
     using UnityEngine;
@@ -34,11 +37,13 @@ namespace HyperCasualGame.Scripts.Conveyor
         #region Private Fields
 
         private readonly List<RowBall> activeRowBalls = new();
+        private readonly HashSet<RowBall> processingAtEntry = new();
         private ConveyorPath conveyorPath;
         private float baseSpeed = 1f;
         private bool isRunning;
         private SignalBus signalBus;
         private ILogger logger;
+        private CollectAreaBucketService collectAreaBucketService;
 
         #endregion
 
@@ -78,6 +83,11 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.conveyorPath = new ConveyorPath(this.spline, 100);
 
             this.logger.Info($"ConveyorController initialized. Path length: {this.conveyorPath.GetSampleCount()} samples");
+        }
+
+        public void SetCollectAreaBucketService(CollectAreaBucketService service)
+        {
+            this.collectAreaBucketService = service;
         }
 
         public void SetupLevel(LevelData levelData, Ball ballPrefab, RowBall rowBallPrefab)
@@ -255,8 +265,9 @@ namespace HyperCasualGame.Scripts.Conveyor
                 // Calculate start index on path
                 var startIndex = Mathf.RoundToInt((startDistance / pathLength) * (this.conveyorPath.GetSampleCount() - 1));
 
-                // Create RowBall config - all 5 balls same color
-                var colors = new ColorType[GameConstants.RowBallConfig.MaxBalls];
+                // Create RowBall config - all balls same color
+                var ballsPerRow = this.config != null ? this.config.BallsPerRow : GameConstants.RowBallConfig.MaxBalls;
+                var colors = new ColorType[ballsPerRow];
                 for (var i = 0; i < colors.Length; i++)
                 {
                     colors[i] = color;
@@ -272,7 +283,8 @@ namespace HyperCasualGame.Scripts.Conveyor
                 this.SpawnRowBall(rowConfig, startIndex);
             }
 
-            this.logger.Info($"Spawned {rowCount} rows ({rowCount * GameConstants.RowBallConfig.MaxBalls} balls). Path length: {pathLength:F2}, Max capacity: {maxRows}");
+            var ballsPerRowForLog = this.config != null ? this.config.BallsPerRow : GameConstants.RowBallConfig.MaxBalls;
+            this.logger.Info($"Spawned {rowCount} rows ({rowCount * ballsPerRowForLog} balls). Path length: {pathLength:F2}, Max capacity: {maxRows}");
         }
 
         private void SpawnRowBall(RowBallConfig config, int startIndex)
@@ -306,8 +318,8 @@ namespace HyperCasualGame.Scripts.Conveyor
             // Initialize path following
             follower.Initialize(this.conveyorPath, startIndex, "MAIN");
 
-            // Initialize RowBall with balls
-            rowBall.Initialize(config, this.ballPrefab, this.signalBus);
+            // Initialize RowBall with balls and conveyor config
+            rowBall.Initialize(config, this.ballPrefab, this.signalBus, this.config);
 
             this.activeRowBalls.Add(rowBall);
 
@@ -360,9 +372,204 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         #region Unity Lifecycle
 
+        private void Update()
+        {
+            if (!this.isRunning || this.collectAreaBucketService == null)
+            {
+                return;
+            }
+
+            this.CheckEntryPoints();
+        }
+
         private void OnDestroy()
         {
             this.ClearAllRowBalls();
+        }
+
+        #endregion
+
+        #region Entry Point Detection
+
+        /// <summary>
+        /// Check all row balls for entry point proximity.
+        /// Matches Cocos MainConveyorController entry detection.
+        /// </summary>
+        private void CheckEntryPoints()
+        {
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                if (rowBall == null)
+                {
+                    continue;
+                }
+
+                var follower = rowBall.GetComponent<PathFollower>();
+                if (follower == null)
+                {
+                    continue;
+                }
+
+                follower.UpdateEntryPointDetection(entryIndex =>
+                {
+                    this.OnRowBallReachedEntry(rowBall, entryIndex).Forget();
+                });
+            }
+        }
+
+        /// <summary>
+        /// Handle row ball reaching entry point.
+        /// Matches Cocos MainConveyorController.onRowBallReachedEntry()
+        /// </summary>
+        private async UniTask OnRowBallReachedEntry(RowBall rowBall, int entryIndex)
+        {
+            if (rowBall == null || this.processingAtEntry.Contains(rowBall))
+            {
+                return;
+            }
+
+            this.processingAtEntry.Add(rowBall);
+
+            try
+            {
+                // Fire signal
+                this.signalBus?.Fire(new RowBallReachEntrySignal
+                {
+                    RowId = rowBall.Config.RowId,
+                    EntryIndex = entryIndex
+                });
+
+                // Get target colors from buckets in CollectAreas
+                var targetColors = this.collectAreaBucketService.GetTargetColorsFromBuckets();
+                if (targetColors.Count == 0)
+                {
+                    return;
+                }
+
+                // Get balls matching target colors
+                var activeBalls = rowBall.GetActiveBalls();
+                var ballsToCollect = activeBalls
+                    .Where(b => !b.IsCollected && targetColors.Contains(b.BallColor))
+                    .ToList();
+
+                if (ballsToCollect.Count == 0)
+                {
+                    return;
+                }
+
+                // Count balls by color
+                var colorCount = new Dictionary<ColorType, int>();
+                foreach (var ball in ballsToCollect)
+                {
+                    if (colorCount.ContainsKey(ball.BallColor))
+                    {
+                        colorCount[ball.BallColor]++;
+                    }
+                    else
+                    {
+                        colorCount[ball.BallColor] = 1;
+                    }
+                }
+
+                // Check if we have enough slots
+                if (!this.HasEnoughSlotsForEntry(colorCount))
+                {
+                    return;
+                }
+
+                // Build balanced bucket assignment
+                var bucketPlan = this.BuildBucketPlan(ballsToCollect);
+
+                // Reserve slots and build assignment pairs
+                var assignments = new List<(Ball ball, Bucket bucket)>();
+                foreach (var ball in ballsToCollect)
+                {
+                    if (!bucketPlan.TryGetValue(ball.BallColor, out var buckets) || buckets.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    var bucket = buckets[0];
+                    buckets.RemoveAt(0);
+
+                    bucket.StartIncomingBall();
+                    assignments.Add((ball, bucket));
+                }
+
+                // Jump balls with staggered delay
+                var jumpTasks = new List<UniTask>();
+                for (var i = 0; i < assignments.Count; i++)
+                {
+                    var (ball, bucket) = assignments[i];
+                    var delay = i * GameConstants.RowBallConfig.BallJumpDelay;
+
+                    jumpTasks.Add(this.JumpBallWithDelay(ball, bucket, delay));
+                }
+
+                await UniTask.WhenAll(jumpTasks);
+
+                // Remove row ball if all balls collected
+                if (rowBall.GetBallCount() == 0)
+                {
+                    this.RemoveRowBall(rowBall);
+                }
+            }
+            finally
+            {
+                this.processingAtEntry.Remove(rowBall);
+            }
+        }
+
+        private async UniTask JumpBallWithDelay(Ball ball, Bucket bucket, float delay)
+        {
+            if (delay > 0)
+            {
+                await UniTask.Delay((int)(delay * 1000));
+            }
+
+            await ball.JumpToBucket(bucket, incomingAlreadyReserved: true);
+        }
+
+        private bool HasEnoughSlotsForEntry(Dictionary<ColorType, int> colorCount)
+        {
+            foreach (var (color, count) in colorCount)
+            {
+                var availableSlots = this.collectAreaBucketService.GetAvailableSlotCountByColor(color);
+                if (availableSlots < count)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private Dictionary<ColorType, List<Bucket>> BuildBucketPlan(List<Ball> ballsToCollect)
+        {
+            var plan = new Dictionary<ColorType, List<Bucket>>();
+
+            // Group balls by color
+            var ballsByColor = new Dictionary<ColorType, int>();
+            foreach (var ball in ballsToCollect)
+            {
+                if (ballsByColor.ContainsKey(ball.BallColor))
+                {
+                    ballsByColor[ball.BallColor]++;
+                }
+                else
+                {
+                    ballsByColor[ball.BallColor] = 1;
+                }
+            }
+
+            // Build balanced plan for each color
+            foreach (var (color, count) in ballsByColor)
+            {
+                var buckets = this.collectAreaBucketService.BuildBalancedBucketPlanByColor(color, count);
+                plan[color] = buckets;
+            }
+
+            return plan;
         }
 
         #endregion

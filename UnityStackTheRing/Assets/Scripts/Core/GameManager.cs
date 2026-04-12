@@ -3,11 +3,13 @@ namespace HyperCasualGame.Scripts.Core
     using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.DI;
     using GameFoundationCore.Scripts.Signals;
-    using HyperCasualGame.Scripts.Attraction;
+    using HyperCasualGame.Scripts.Bucket;
+    using HyperCasualGame.Scripts.CollectArea;
     using HyperCasualGame.Scripts.Conveyor;
     using HyperCasualGame.Scripts.Level;
     using HyperCasualGame.Scripts.Ring;
-    using HyperCasualGame.Scripts.Slot;
+    using HyperCasualGame.Scripts.Services;
+    using HyperCasualGame.Scripts.Signals;
     using HyperCasualGame.Scripts.StateMachines.Game;
     using HyperCasualGame.Scripts.StateMachines.Game.States;
     using UniT.Logging;
@@ -20,17 +22,17 @@ namespace HyperCasualGame.Scripts.Core
 
         [Header("References")]
         [SerializeField] private ConveyorController conveyorController;
-        [SerializeField] private SlotManager slotManager;
-        [SerializeField] private AttractionController attractionController;
-        [SerializeField] private CollectorPanel collectorPanel;
+        [SerializeField] private BucketColumnManager bucketColumnManager;
+        [SerializeField] private CollectAreaManager collectAreaManager;
 
         [Header("Prefabs")]
         [SerializeField] private Ball ballPrefab;
         [SerializeField] private RowBall rowBallPrefab;
+        [SerializeField] private Bucket bucketPrefab;
 
         [Header("Configs")]
         [SerializeField] private ConveyorConfig conveyorConfig;
-        [SerializeField] private AttractionConfig attractionConfig;
+        [SerializeField] private int collectAreaCount = GameConstants.CollectAreaConfig.DefaultAreaCount;
 
         #endregion
 
@@ -41,18 +43,21 @@ namespace HyperCasualGame.Scripts.Core
         private GameStateMachine gameStateMachine;
         private ILoggerManager loggerManager;
         private ILogger logger;
+        private CollectAreaBucketService collectAreaBucketService;
 
         public void Inject(
             SignalBus signalBus,
             ILevelManager levelManager,
             GameStateMachine gameStateMachine,
-            ILoggerManager loggerManager)
+            ILoggerManager loggerManager,
+            CollectAreaBucketService collectAreaBucketService)
         {
             this.signalBus = signalBus;
             this.levelManager = levelManager;
             this.gameStateMachine = gameStateMachine;
             this.loggerManager = loggerManager;
             this.logger = loggerManager.GetLogger(this);
+            this.collectAreaBucketService = collectAreaBucketService;
         }
 
         #endregion
@@ -67,29 +72,59 @@ namespace HyperCasualGame.Scripts.Core
 
         #endregion
 
+        #region Private Fields
+
+        private bool isInitialized;
+
+        #endregion
+
         #region Private Methods
 
         private void InitializeSystems()
         {
+            if (this.isInitialized) return;
+            this.isInitialized = true;
+
+            // Initialize conveyor
             this.conveyorController.Initialize(this.signalBus, this.loggerManager);
-            this.slotManager.Initialize(this.signalBus, this.loggerManager);
-            this.collectorPanel.Initialize(this.signalBus, this.loggerManager);
-            this.attractionController.Initialize(
-                this.conveyorController,
-                this.slotManager,
-                this.signalBus,
-                this.loggerManager);
+
+            // Initialize collect areas
+            this.collectAreaManager.SpawnAreas(this.collectAreaCount);
+
+            // Wire up services
+            this.collectAreaBucketService.SetCollectAreaManager(this.collectAreaManager);
+            this.conveyorController.SetCollectAreaBucketService(this.collectAreaBucketService);
+
+            // Initialize bucket manager
+            this.bucketColumnManager.Initialize(this.signalBus, this.collectAreaManager);
+
+            // Subscribe to bucket tap signal
+            this.signalBus.Subscribe<BucketTappedSignal>(this.OnBucketTapped);
 
             var playState = this.gameStateMachine.GetState<GamePlayState>();
             if (playState != null)
             {
                 playState.SetReferences(
                     this.conveyorController,
-                    this.slotManager,
-                    this.attractionController);
+                    this.bucketColumnManager,
+                    this.collectAreaManager,
+                    this.collectAreaBucketService);
             }
 
             this.logger.Info("GameManager initialized");
+        }
+
+        private void OnBucketTapped(BucketTappedSignal signal)
+        {
+            // Find the bucket by index and trigger jump
+            foreach (var bucket in this.bucketColumnManager.SpawnedBuckets)
+            {
+                if (bucket.Data.IndexBucket == signal.BucketIndex)
+                {
+                    this.bucketColumnManager.OnBucketTapped(bucket).Forget();
+                    break;
+                }
+            }
         }
 
         private async UniTask StartGame()
@@ -109,9 +144,11 @@ namespace HyperCasualGame.Scripts.Core
 
         private void SetupLevel(LevelData levelData)
         {
+            // Setup conveyor with balls
             this.conveyorController.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
-            this.slotManager.SetupLevel(levelData);
-            this.collectorPanel.SetupLevel(levelData);
+
+            // Setup bucket grid
+            this.bucketColumnManager.SpawnBuckets(levelData);
 
             this.logger.Info($"Level {levelData.LevelNumber} setup complete");
         }
@@ -147,8 +184,9 @@ namespace HyperCasualGame.Scripts.Core
 
         private void OnDestroy()
         {
-            this.slotManager?.Cleanup();
-            this.collectorPanel?.Cleanup();
+            this.signalBus?.Unsubscribe<BucketTappedSignal>(this.OnBucketTapped);
+            this.bucketColumnManager?.Cleanup();
+            this.collectAreaManager?.Cleanup();
         }
 
         #endregion

@@ -14,31 +14,43 @@ namespace HyperCasualGame.Scripts.Conveyor
         [Range(3f, 15f)]
         public float LoopDuration = 8f;
 
-        [Header("Ring Spacing")]
-        [Tooltip("World-space distance between row centers (like Cocos BALL_SPACING)")]
-        [Range(0.05f, 0.5f)]
-        public float RowSpacing = 0.115f;
+        [Header("Row Spacing")]
+        [Tooltip("World-space distance between row centers")]
+        [Range(0.02f, 0.5f)]
+        public float RowSpacing = 0.06f;
 
-        [Header("Attraction Zone")]
-        [Tooltip("How close to slot position ring must be to get attracted (0-1 path progress)")]
-        [Range(0.01f, 0.1f)]
-        public float AttractionZoneSize = 0.05f;
+        [Header("Ball Configuration")]
+        [Tooltip("Number of balls per row (lane count)")]
+        [Range(1, 7)]
+        public int BallsPerRow = 5;
+
+        [Tooltip("Spacing between balls within a row (perpendicular to path)")]
+        [Range(0.02f, 0.3f)]
+        public float BallLaneSpacing = 0.08f;
+
+        [Tooltip("Scale of each ball")]
+        [Range(0.05f, 0.5f)]
+        public float BallScale = 0.15f;
 
         [Header("Visual")]
         [Tooltip("Height offset for rings on conveyor")]
         public float RingHeightOffset = 0.1f;
 
-        [Header("Multi-Lane")]
-        [Tooltip("Number of parallel lanes for rings (1 = single line, 5 = 5 rows)")]
-        [Range(1, 7)]
-        public int LaneCount = 5;
+        /// <summary>
+        /// Calculate Z positions for balls in a row, centered around 0.
+        /// </summary>
+        public float[] GetBallZPositions()
+        {
+            var positions = new float[this.BallsPerRow];
+            var totalWidth = (this.BallsPerRow - 1) * this.BallLaneSpacing;
+            var startZ = totalWidth / 2f;
 
-        [Tooltip("Spacing between lanes (perpendicular to path)")]
-        [Range(0.05f, 0.3f)]
-        public float LaneSpacing = 0.12f;
+            for (var i = 0; i < this.BallsPerRow; i++)
+            {
+                positions[i] = startZ - i * this.BallLaneSpacing;
+            }
 
-        [Tooltip("Ring scale for dense packing")]
-        [Range(0.05f, 0.3f)]
-        public float RingScale = 0.1f;
+            return positions;
+        }
     }
 }

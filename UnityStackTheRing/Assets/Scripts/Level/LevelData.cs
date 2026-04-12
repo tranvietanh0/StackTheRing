@@ -24,6 +24,11 @@ namespace HyperCasualGame.Scripts.Level
         [Header("Available Collectors")]
         public ColorType[] AvailableCollectors;
 
+        [Header("Bucket Grid Configuration")]
+        public BucketColumn[] BucketColumns;
+        public float BucketColumnSpacing = 1.2f;
+        public float BucketRowSpacing = 1.2f;
+
         [Header("Variations")]
         public bool HasHiddenRings;
         public int BlockedSlotCount;
@@ -49,5 +54,14 @@ namespace HyperCasualGame.Scripts.Level
         public ColorType Color;
         [Range(1, 50)]
         public int Count;
+    }
+
+    /// <summary>
+    /// Bucket column configuration (matches Cocos GridColumn)
+    /// </summary>
+    [Serializable]
+    public class BucketColumn
+    {
+        public ColorType[] BucketColors;
     }
 }
