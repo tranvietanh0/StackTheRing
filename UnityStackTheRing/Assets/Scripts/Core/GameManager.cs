@@ -151,7 +151,7 @@ namespace HyperCasualGame.Scripts.Core
             this.conveyorController.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
 
             // Setup bucket grid
-            this.bucketColumnManager.SpawnBuckets(levelData);
+            this.bucketColumnManager.SpawnBuckets(levelData, this.conveyorController.BallsPerRow);
 
             this.logger.Info($"Level {levelData.LevelNumber} setup complete");
         }

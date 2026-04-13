@@ -59,7 +59,7 @@ namespace HyperCasualGame.Scripts.Bucket
         /// Spawn buckets based on level data.
         /// Matches Cocos GridBucketManager.spawnBuckets()
         /// </summary>
-        public void SpawnBuckets(LevelData levelData)
+        public void SpawnBuckets(LevelData levelData, int ballsPerRow)
         {
             this.Cleanup();
 
@@ -76,7 +76,7 @@ namespace HyperCasualGame.Scripts.Bucket
             }
 
             var columns = levelData.BucketColumns;
-            var totalBallCountByColor = this.CalculateTotalBallCountByColor(levelData);
+            var totalBallCountByColor = this.CalculateTotalBallCountByColor(levelData, ballsPerRow);
             var bucketCountByColor = this.CalculateBucketCountByColor(columns);
             var assignedBucketCountByColor = new Dictionary<ColorType, int>();
 
@@ -313,21 +313,23 @@ namespace HyperCasualGame.Scripts.Bucket
             return baseBallCountPerBucket + (assignedBucketCount < extraBallCount ? 1 : 0);
         }
 
-        private Dictionary<ColorType, int> CalculateTotalBallCountByColor(LevelData levelData)
+        private Dictionary<ColorType, int> CalculateTotalBallCountByColor(LevelData levelData, int ballsPerRow)
         {
             var result = new Dictionary<ColorType, int>();
+            var normalizedBallsPerRow = Mathf.Max(1, ballsPerRow);
 
             if (levelData.Rings != null)
             {
                 foreach (var ring in levelData.Rings)
                 {
+                    var totalBallCount = ring.Count * normalizedBallsPerRow;
                     if (result.ContainsKey(ring.Color))
                     {
-                        result[ring.Color] += ring.Count;
+                        result[ring.Color] += totalBallCount;
                     }
                     else
                     {
-                        result[ring.Color] = ring.Count;
+                        result[ring.Color] = totalBallCount;
                     }
                 }
             }

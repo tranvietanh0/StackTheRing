@@ -57,6 +57,8 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         public bool IsRunning => this.isRunning;
 
+        public int BallsPerRow => this.config != null ? this.config.BallsPerRow : GameConstants.RowBallConfig.MaxBalls;
+
         #endregion
 
         #region Events
@@ -373,6 +375,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             this.activeRowBalls.Clear();
+            this.processingAtEntry.Clear();
         }
 
         #endregion
@@ -448,8 +451,6 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             this.processingAtEntry.Add(rowBall);
-            follower.IsWaitingAtEntry = true;
-
             try
             {
                 Debug.Log($"[ConveyorController] EntryStart row={rowBall.RowId} entry={entryIndex} balls={this.FormatBallList(rowBall.GetActiveBalls())} targets={this.FormatTargetBuckets()}");
@@ -472,7 +473,6 @@ namespace HyperCasualGame.Scripts.Conveyor
             finally
             {
                 Debug.Log($"[ConveyorController] EntryEnd row={rowBall.RowId} entry={entryIndex} remaining={this.FormatBallList(rowBall.GetActiveBalls())} targets={this.FormatTargetBuckets()}");
-                follower.IsWaitingAtEntry = false;
                 this.processingAtEntry.Remove(rowBall);
             }
         }

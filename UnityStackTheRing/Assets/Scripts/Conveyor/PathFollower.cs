@@ -36,8 +36,6 @@ namespace HyperCasualGame.Scripts.Conveyor
         private readonly HashSet<int> triggeredEntryIndices = new();
         private readonly Dictionary<int, float> entryPathDistances = new();
 
-        public bool IsWaitingAtEntry { get; set; }
-
         // Static cache for all followers
         private static readonly Dictionary<Transform, PathFollower> followerCache = new();
 
@@ -220,11 +218,6 @@ namespace HyperCasualGame.Scripts.Conveyor
                     continue;
                 }
 
-                if (this.IsWaitingAtEntry)
-                {
-                    return 0;
-                }
-
                 var otherDist = otherFollower.GetCurrentDistance();
                 var distDiff = this.currentDistance - otherDist;
 
@@ -257,11 +250,6 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         private bool CheckSpacingAndStop()
         {
-            if (this.IsWaitingAtEntry)
-            {
-                return true;
-            }
-
             if (this.transform.parent == null)
             {
                 return false;
@@ -303,7 +291,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 
                     if (absDiff < threshold)
                     {
-                        if (!otherFollower.IsMoving() || otherFollower.IsWaitingAtEntry)
+                        if (!otherFollower.IsMoving())
                         {
                             return true;
                         }
