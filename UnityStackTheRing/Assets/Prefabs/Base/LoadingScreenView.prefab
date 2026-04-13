@@ -220,7 +220,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 1
+  m_FillAmount: 0
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -450,6 +450,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: HyperCasualGame.Scripts::HyperCasualGame.Scripts.Scenes.Screen.LoadingScreenView
   viewRoot: {fileID: 6507332310962056758}
   screenTransition: {fileID: 0}
+  loadingFill: {fileID: 0}
 --- !u!114 &4759038150518753075
 MonoBehaviour:
   m_ObjectHideFlags: 0
