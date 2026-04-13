@@ -1,9 +1,9 @@
-﻿namespace HyperCasualGame.Scripts.Scenes.Main
+namespace HyperCasualGame.Scripts.Scenes.Main
 {
     using System.Linq;
+    using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.DI.VContainer;
     using GameFoundationCore.Scripts.Signals;
-    using HyperCasualGame.Scripts.Core;
     using HyperCasualGame.Scripts.Level;
     using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
@@ -16,7 +16,7 @@
 
     public class MainSceneScope : SceneScope
     {
-        [SerializeField] private GameManager gameManager;
+        [SerializeField] private Transform levelRoot;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -26,7 +26,7 @@
             this.RegisterSignals(builder);
             this.RegisterServices(builder);
             this.RegisterStateMachine(builder);
-            this.RegisterComponents(builder);
+            this.SetupLevelLoading(builder);
         }
 
         private void RegisterSignals(IContainerBuilder builder)
@@ -54,7 +54,11 @@
 
         private void RegisterServices(IContainerBuilder builder)
         {
-            builder.Register<LevelManager>(Lifetime.Singleton).AsImplementedInterfaces();
+            // Register LevelManager with levelRoot parameter
+            builder.Register<LevelManager>(Lifetime.Singleton)
+                .WithParameter("levelRoot", this.levelRoot)
+                .AsImplementedInterfaces();
+
             builder.Register<CollectAreaBucketService>(Lifetime.Scoped);
         }
 
@@ -67,20 +71,40 @@
                 .AsInterfacesAndSelf();
         }
 
-        private void RegisterComponents(IContainerBuilder builder)
+        private void SetupLevelLoading(IContainerBuilder builder)
         {
-            builder.RegisterComponent(this.gameManager).AsImplementedInterfaces();
             builder.RegisterBuildCallback(container =>
             {
-                // Manually inject dependencies into GameManager
-                this.gameManager.Inject(
-                    container.Resolve<SignalBus>(),
-                    container.Resolve<ILevelManager>(),
-                    container.Resolve<GameStateMachine>(),
-                    container.Resolve<UniT.Logging.ILoggerManager>(),
-                    container.Resolve<CollectAreaBucketService>()
-                );
+                var levelManager = container.Resolve<ILevelManager>() as LevelManager;
+                if (levelManager == null) return;
+
+                // Set up inject callback for LevelController
+                levelManager.SetInjectCallback(controller =>
+                {
+                    controller.Inject(
+                        container.Resolve<SignalBus>(),
+                        container.Resolve<ILevelManager>(),
+                        container.Resolve<GameStateMachine>(),
+                        container.Resolve<UniT.Logging.ILoggerManager>(),
+                        container.Resolve<CollectAreaBucketService>()
+                    );
+                });
+
+                // Load first level
+                this.LoadFirstLevel(levelManager).Forget();
             });
+        }
+
+        private async UniTask LoadFirstLevel(ILevelManager levelManager)
+        {
+            // Small delay to ensure all services are ready
+            await UniTask.Yield();
+
+            var controller = await levelManager.LoadLevel(1);
+            if (controller == null)
+            {
+                Debug.LogError("[MainSceneScope] Failed to load first level!");
+            }
         }
     }
 }

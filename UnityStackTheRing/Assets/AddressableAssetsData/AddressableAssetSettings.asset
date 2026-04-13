@@ -42,6 +42,7 @@ MonoBehaviour:
   m_BundleRedirectLimit: -1
   m_SharedBundleSettings: 0
   m_SharedBundleSettingsCustomGroupIndex: 0
+  m_simulatedLoadDelay: 0.1
   m_ContiguousBundles: 1
   m_StripUnityVersionFromBundleBuild: 0
   m_DisableVisibleSubAssetRepresentations: 0
@@ -60,6 +61,7 @@ MonoBehaviour:
   m_BuildAddressablesWithPlayerBuild: 0
   m_overridePlayerVersion: '[UnityEditor.PlayerSettings.bundleVersion]'
   m_GroupAssets:
+  - {fileID: 11400000, guid: a5df26cd5946b504da2bc1b8fefc2a45, type: 2}
   - {fileID: 11400000, guid: dd159b31cca546147a350d585fcd9afb, type: 2}
   - {fileID: 11400000, guid: 58869ebfc699d2e43a0b1513e252b86c, type: 2}
   - {fileID: 11400000, guid: 22e65427e23f03d4e853737064b63830, type: 2}
@@ -81,7 +83,7 @@ MonoBehaviour:
       - m_Id: ca34d6a6924bbda48b809d5d8797f638
         m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
       - m_Id: f2a95ca3705523347a33aa132e12ea95
-        m_Value: 'ServerData/[BuildTarget]'
+        m_Value: ServerData/[BuildTarget]
     m_ProfileEntryNames:
     - m_Id: 22ccda27e23bf1c4a927d07b685b5a30
       m_Name: BuildTarget
