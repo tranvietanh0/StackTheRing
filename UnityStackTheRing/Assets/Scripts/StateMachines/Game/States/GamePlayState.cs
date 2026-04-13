@@ -4,10 +4,12 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
     using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.DI;
     using GameFoundationCore.Scripts.Signals;
+    using GameFoundationCore.Scripts.UIModule.ScreenFlow.Manager;
     using HyperCasualGame.Scripts.Bucket;
     using HyperCasualGame.Scripts.CollectArea;
     using HyperCasualGame.Scripts.Conveyor;
     using HyperCasualGame.Scripts.Level;
+    using HyperCasualGame.Scripts.Scenes.Screen;
     using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
     using HyperCasualGame.Scripts.StateMachines.Game.Interfaces;
@@ -17,18 +19,22 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
     {
         #region Inject
 
-        private readonly SignalBus signalBus;
-        private readonly ILevelManager levelManager;
-        private readonly ILogger logger;
+        private readonly SignalBus      signalBus;
+        private readonly ILevelManager  levelManager;
+        private readonly IScreenManager screenManager;
+        private readonly ILogger        logger;
 
         public GamePlayState(
-            SignalBus signalBus,
-            ILevelManager levelManager,
-            ILoggerManager loggerManager)
+            SignalBus      signalBus,
+            ILevelManager  levelManager,
+            ILoggerManager loggerManager,
+            IScreenManager screenManager
+        )
         {
-            this.signalBus = signalBus;
-            this.levelManager = levelManager;
-            this.logger = loggerManager.GetLogger(this);
+            this.signalBus     = signalBus;
+            this.levelManager  = levelManager;
+            this.screenManager = screenManager;
+            this.logger        = loggerManager.GetLogger(this);
         }
 
         #endregion
@@ -41,9 +47,9 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
 
         #region References (set externally)
 
-        private ConveyorController conveyor;
-        private BucketColumnManager bucketColumnManager;
-        private CollectAreaManager collectAreaManager;
+        private ConveyorController       conveyor;
+        private BucketColumnManager      bucketColumnManager;
+        private CollectAreaManager       collectAreaManager;
         private CollectAreaBucketService collectAreaBucketService;
 
         #endregion
@@ -52,9 +58,9 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
 
         private bool isPlaying;
         private bool hasCollectedThisLoop;
-        private int lastCheckedLoopCount;
-        private int totalBuckets;
-        private int completedBuckets;
+        private int  lastCheckedLoopCount;
+        private int  totalBuckets;
+        private int  completedBuckets;
 
         #endregion
 
@@ -62,14 +68,15 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
 
         public void Enter()
         {
+            this.screenManager.OpenScreen<GameplayScreenPresenter>();
             this.logger.Info("Entering GamePlayState");
 
-            this.isPlaying = true;
+            this.isPlaying            = true;
             this.hasCollectedThisLoop = false;
             this.lastCheckedLoopCount = 0;
 
             // Count total buckets at start
-            this.totalBuckets = this.bucketColumnManager?.SpawnedBuckets.Count ?? 0;
+            this.totalBuckets     = this.bucketColumnManager?.SpawnedBuckets.Count ?? 0;
             this.completedBuckets = 0;
 
             this.signalBus.Subscribe<AllRingsClearedSignal>(this.OnAllBallsCleared);
@@ -110,14 +117,15 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
         #region Public Methods
 
         public void SetReferences(
-            ConveyorController conveyor,
-            BucketColumnManager bucketColumnManager,
-            CollectAreaManager collectAreaManager,
-            CollectAreaBucketService collectAreaBucketService)
+            ConveyorController       conveyor,
+            BucketColumnManager      bucketColumnManager,
+            CollectAreaManager       collectAreaManager,
+            CollectAreaBucketService collectAreaBucketService
+        )
         {
-            this.conveyor = conveyor;
-            this.bucketColumnManager = bucketColumnManager;
-            this.collectAreaManager = collectAreaManager;
+            this.conveyor                 = conveyor;
+            this.bucketColumnManager      = bucketColumnManager;
+            this.collectAreaManager       = collectAreaManager;
             this.collectAreaBucketService = collectAreaBucketService;
 
             // Pass service to conveyor for entry point ball collection
@@ -205,8 +213,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
                 foreach (var ball in rowBall.GetActiveBalls())
                 {
                     // Check if ball color matches any target AND has available slots
-                    if (targetColors.Contains(ball.BallColor) &&
-                        this.collectAreaBucketService.GetAvailableSlotCountByColor(ball.BallColor) > 0)
+                    if (targetColors.Contains(ball.BallColor) && this.collectAreaBucketService.GetAvailableSlotCountByColor(ball.BallColor) > 0)
                     {
                         canCollectAny = true;
                         break;

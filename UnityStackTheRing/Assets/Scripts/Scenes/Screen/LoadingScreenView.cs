@@ -51,6 +51,8 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
 
         public override async UniTask BindData()
         {
+            // Show view immediately so loading bar is visible during loading
+            this.View.Show();
             this.View.SetProgress(0f);
 
             // Phase 1: Load user data (0% - 20%)

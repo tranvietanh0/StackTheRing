@@ -99,9 +99,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4679656257880412043, guid: db4671caad8d7684f8068fee30a5e8a8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7903728701870507626}
-    - targetCorrespondingSourceObject: {fileID: 4679656257880412043, guid: db4671caad8d7684f8068fee30a5e8a8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5348233017709147408}
   m_SourcePrefab: {fileID: 100100000, guid: db4671caad8d7684f8068fee30a5e8a8, type: 3}
 --- !u!1 &3213730946516299088 stripped
 GameObject:
@@ -120,28 +117,3 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!114 &5348233017709147408
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3213730946516299088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d54ac448f7e94c6bb0dbd36e57f8919a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: HyperCasualGame.Scripts::HyperCasualGame.Scripts.Test.HomeScreenView
-  viewRoot: {fileID: 7903728701870507626}
-  screenTransition: {fileID: 4371647055270272604}
---- !u!114 &4371647055270272604 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5819556732852616327, guid: db4671caad8d7684f8068fee30a5e8a8, type: 3}
-  m_PrefabInstance: {fileID: 7811508767910912731}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3213730946516299088}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 435cec95844a48c5926e64b550c419be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GameFoundationCore.UIModule::GameFoundationCore.Scripts.UIModule.Utilities.UIStuff.UIScreenTransition

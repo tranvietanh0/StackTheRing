@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: UIs
   m_GUID: f267f1a4cad58e14c880dd35af88d54d
   m_SerializeEntries:
+  - m_GUID: 5d82429631a96bb4fbe85e5b70f8cf0e
+    m_Address: GameplayScreenView
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e8e8f403f153deb4db24806be9d44f8c
     m_Address: HomeScreenView
     m_ReadOnly: 0
