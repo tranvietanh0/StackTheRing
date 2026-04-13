@@ -209,7 +209,7 @@ MonoBehaviour:
   rowBallContainer: {fileID: 0}
   spline: {fileID: 8298242856976423271}
   rowBallPrefab: {fileID: 3884598768906050512, guid: 87167a3226488694b8279fb6f1a84bbf, type: 3}
-  ballPrefab: {fileID: 4872542811028014548, guid: 250cbfdd8c93acd498d5b294f82b6455, type: 3}
+  ballPrefab: {fileID: 2606195441769280080, guid: 9cf305e283f0b1e45bb21754540bd17d, type: 3}
   entryNodes:
   - {fileID: 9170814852449182378}
 --- !u!1 &3477553487780868938
@@ -1776,7 +1776,7 @@ MonoBehaviour:
   conveyorController: {fileID: 872862299271102759}
   bucketColumnManager: {fileID: 2823216160757224818}
   collectAreaManager: {fileID: 2173181998311461290}
-  ballPrefab: {fileID: 4872542811028014548, guid: 250cbfdd8c93acd498d5b294f82b6455, type: 3}
+  ballPrefab: {fileID: 2606195441769280080, guid: 9cf305e283f0b1e45bb21754540bd17d, type: 3}
   rowBallPrefab: {fileID: 3884598768906050512, guid: 87167a3226488694b8279fb6f1a84bbf, type: 3}
   bucketPrefab: {fileID: 1432595646210183358, guid: 599310a4aad5d6644810f2770587b795, type: 3}
   conveyorConfig: {fileID: 11400000, guid: 3f332d0e8f171ee45a7039196ff7bf93, type: 2}

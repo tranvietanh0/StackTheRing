@@ -16,6 +16,6 @@ MonoBehaviour:
   LoopDuration: 8
   RowSpacing: 0.06
   BallsPerRow: 5
-  BallLaneSpacing: 0.12
-  BallScale: 0.19
+  BallLaneSpacing: 0.107
+  BallScale: 0.25
   RingHeightOffset: 0.1
