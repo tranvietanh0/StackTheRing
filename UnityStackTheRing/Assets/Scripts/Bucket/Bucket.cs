@@ -23,7 +23,6 @@ namespace HyperCasualGame.Scripts.Bucket
 
         [SerializeField] private MeshRenderer[] meshRenderers;
         [SerializeField] private TextMeshPro labelPercent;
-        [SerializeField] private Transform bucketCover;
         [SerializeField] private Transform visualRoot;
 
         #endregion
@@ -65,6 +64,12 @@ namespace HyperCasualGame.Scripts.Bucket
             if (this.visualRoot != null)
             {
                 this.shakeBaseScale = this.visualRoot.localScale;
+            }
+
+            // Auto-find MeshRenderers if not assigned
+            if (this.meshRenderers == null || this.meshRenderers.Length == 0)
+            {
+                this.meshRenderers = this.GetComponentsInChildren<MeshRenderer>();
             }
         }
 
@@ -108,11 +113,6 @@ namespace HyperCasualGame.Scripts.Bucket
 
         public void UpdateState()
         {
-            if (this.bucketCover != null)
-            {
-                this.bucketCover.gameObject.SetActive(false);
-            }
-
             if (this.labelPercent != null)
             {
                 this.labelPercent.gameObject.SetActive(this.IsInCollectArea);
@@ -284,12 +284,6 @@ namespace HyperCasualGame.Scripts.Bucket
         {
             this.HideUIElements();
             this.DestroyAllBalls();
-
-            if (this.bucketCover != null)
-            {
-                this.bucketCover.gameObject.SetActive(true);
-            }
-
             this.ReleaseCollectAreaSlot();
 
             await this.AnimateMoveUp();

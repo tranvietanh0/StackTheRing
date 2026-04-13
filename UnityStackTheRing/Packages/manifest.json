@@ -10,6 +10,7 @@
     "com.unity.feature.development": "1.0.2",
     "com.unity.inputsystem": "1.18.0",
     "com.unity.nuget.newtonsoft-json": "3.2.2",
+    "com.unity.probuilder": "5.2.4",
     "com.unity.textmeshpro": "3.0.9",
     "com.unity.timeline": "1.8.10",
     "com.unity.ugui": "2.0.0",
