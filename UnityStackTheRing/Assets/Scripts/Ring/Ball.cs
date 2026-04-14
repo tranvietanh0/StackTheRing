@@ -35,6 +35,7 @@ namespace HyperCasualGame.Scripts.Ring
             this.isCollected = false;
 
             this.transform.localPosition = localPos;
+            this.transform.localRotation = Quaternion.Euler(0, 0, 90f);
             this.UpdateColor(color);
         }
 

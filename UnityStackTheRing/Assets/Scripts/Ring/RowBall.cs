@@ -89,8 +89,8 @@ namespace HyperCasualGame.Scripts.Ring
 
             if (ball != null)
             {
-                var zPos = this.zPositions[index];
-                ball.Initialize(this.rowId, index, color, new Vector3(0, 0, zPos), this.signalBus);
+                var offset = this.zPositions[index];
+                ball.Initialize(this.rowId, index, color, new Vector3(0, 0, offset), this.signalBus);
                 this.slots[index] = ball;
             }
         }
@@ -159,8 +159,9 @@ namespace HyperCasualGame.Scripts.Ring
             var parent = this.spawnRoot != null ? this.spawnRoot : this.transform;
             ball.transform.SetParent(parent, true);
 
-            var zPos = this.zPositions[slotIndex];
-            ball.transform.localPosition = new Vector3(0, 0, zPos);
+            var offset = this.zPositions[slotIndex];
+            ball.transform.localPosition = new Vector3(0, 0, offset);
+            ball.transform.localRotation = Quaternion.Euler(0, 0, 90f);
 
             ball.RowId = this.rowId;
             ball.BallIndex = slotIndex;
@@ -213,8 +214,9 @@ namespace HyperCasualGame.Scripts.Ring
                     continue;
                 }
 
-                var zPos = this.zPositions[i];
-                ball.transform.localPosition = new Vector3(0, 0, zPos);
+                var offset = this.zPositions[i];
+                ball.transform.localPosition = new Vector3(0, 0, offset);
+                ball.transform.localRotation = Quaternion.Euler(0, 0, 90f);
             }
         }
     }
