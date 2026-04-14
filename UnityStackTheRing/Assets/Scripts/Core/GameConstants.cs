@@ -104,6 +104,60 @@ namespace HyperCasualGame.Scripts.Core
             public const int DefaultAreaCount = 4;
         }
 
+        /// <summary>Ring stack config for landing effect</summary>
+        public static class RingStackConfig
+        {
+            /// <summary>Height per ring in stack (world units)</summary>
+            public const float RingHeight = 0.06f;
+
+            /// <summary>Starting Y position for first ring</summary>
+            public const float BaseStackY = 0.08f;
+
+            /// <summary>Max visible rings before fading oldest</summary>
+            public const int MaxVisibleRings = 10;
+
+            /// <summary>Scale when stacked (relative to original)</summary>
+            public const float RingScaleOnStack = 0.7f;
+
+            /// <summary>Duration for fade out animation of old rings</summary>
+            public const float FadeOutDuration = 0.3f;
+        }
+
+        /// <summary>Wobble animation config for ring landing</summary>
+        public static class WobbleConfig
+        {
+            /// <summary>Max initial tilt angle (degrees)</summary>
+            public const float InitialTiltAngle = 12f;
+
+            /// <summary>Each swing reduces amplitude by this factor</summary>
+            public const float DampingFactor = 0.55f;
+
+            /// <summary>Number of wobble oscillations</summary>
+            public const int OscillationCount = 4;
+
+            /// <summary>Total wobble duration (seconds)</summary>
+            public const float WobbleDuration = 0.45f;
+
+            /// <summary>Small Y bounce height on landing</summary>
+            public const float BounceHeight = 0.03f;
+        }
+
+        /// <summary>Sparkle VFX config for ring landing</summary>
+        public static class SparkleConfig
+        {
+            /// <summary>Number of particles per burst</summary>
+            public const int ParticleCount = 20;
+
+            /// <summary>Particle lifetime (seconds)</summary>
+            public const float ParticleLifetime = 0.35f;
+
+            /// <summary>Particle burst speed</summary>
+            public const float BurstSpeed = 1.8f;
+
+            /// <summary>Particle scale</summary>
+            public const float SparkleScale = 0.015f;
+        }
+
         public static Color GetColor(ColorType colorType)
         {
             return colorType switch

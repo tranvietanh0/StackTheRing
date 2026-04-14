@@ -10,8 +10,10 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
     using UnityEngine;
     using UnityEngine.ResourceManagement.AsyncOperations;
     using UnityEngine.ResourceManagement.ResourceProviders;
+    using UnityEngine.Scripting;
     using UnityEngine.UI;
 
+    [Preserve]
     public class LoadingScreenView : BaseView
     {
         [SerializeField] private Image loadingFill;
@@ -25,6 +27,7 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
         }
     }
 
+    [Preserve]
     [ScreenInfo(nameof(LoadingScreenView))]
     public class LoadingScreenPresenter : BaseScreenPresenter<LoadingScreenView>
     {

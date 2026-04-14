@@ -24,6 +24,7 @@ namespace HyperCasualGame.Scripts.Bucket
         [SerializeField] private MeshRenderer[] meshRenderers;
         [SerializeField] private TextMeshPro labelPercent;
         [SerializeField] private Transform visualRoot;
+        [SerializeField] private Transform stackRoot;
 
         #endregion
 
@@ -31,7 +32,9 @@ namespace HyperCasualGame.Scripts.Bucket
 
         private BucketConfig data;
         private readonly List<Ball> collectedBalls = new();
+        private readonly List<Transform> stackedRings = new();
         private int incomingBalls;
+        private int pendingRingCount;
         private bool isCompleted;
         private bool collectAreaReleased;
         private SignalBus signalBus;
@@ -47,6 +50,9 @@ namespace HyperCasualGame.Scripts.Bucket
         public int TargetBallCount => Mathf.Max(1, this.data.TargetBallCount);
         public int CollectedBallCount => this.collectedBalls.Count;
         public int IncomingBallCount => this.incomingBalls;
+
+        /// <summary>Transform for stacking rings on this bucket</summary>
+        public Transform StackRoot => this.stackRoot != null ? this.stackRoot : this.transform;
 
         #endregion
 
@@ -102,8 +108,10 @@ namespace HyperCasualGame.Scripts.Bucket
             this.signalBus = signalBus;
             this.IsInCollectArea = false;
             this.collectedBalls.Clear();
+            this.stackedRings.Clear();
             this.isCompleted = false;
             this.incomingBalls = 0;
+            this.pendingRingCount = 0;
             this.collectAreaReleased = false;
 
             this.UpdateColor(config.Color);
@@ -241,9 +249,35 @@ namespace HyperCasualGame.Scripts.Bucket
             return (float)projected / this.TargetBallCount;
         }
 
-        #endregion
+        /// <summary>
+        /// Reserve the next stack position for a landing ring.
+        /// Atomically increments pending count to prevent race conditions.
+        /// </summary>
+        public Vector3 ReserveNextStackPosition()
+        {
+            // Include pending rings to avoid position collisions
+            var stackIndex = this.stackedRings.Count + this.pendingRingCount;
+            this.pendingRingCount++;
 
-        #region Private Methods
+            var y = GameConstants.RingStackConfig.BaseStackY
+                  + stackIndex * GameConstants.RingStackConfig.RingHeight;
+            return new Vector3(0, y, 0);
+        }
+
+        /// <summary>
+        /// Add a ring to the visible stack after landing animation completes.
+        /// Decrements pending count reserved by ReserveNextStackPosition.
+        /// </summary>
+        public void AddRingToStack(Transform ringTransform)
+        {
+            // Decrement pending count (self-healing: clamp to 0)
+            this.pendingRingCount = Mathf.Max(0, this.pendingRingCount - 1);
+
+            if (ringTransform == null) return;
+
+            this.stackedRings.Add(ringTransform);
+            // Note: No fade logic - rings stay visible until bucket completes
+        }
 
         private void UpdateProgressUI()
         {
@@ -328,6 +362,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
         private void DestroyAllBalls()
         {
+            // Destroy tracked balls
             foreach (var ball in this.collectedBalls)
             {
                 if (ball != null)
@@ -336,6 +371,16 @@ namespace HyperCasualGame.Scripts.Bucket
                 }
             }
             this.collectedBalls.Clear();
+
+            // Destroy stacked ring visuals
+            foreach (var ringTransform in this.stackedRings)
+            {
+                if (ringTransform != null)
+                {
+                    Destroy(ringTransform.gameObject);
+                }
+            }
+            this.stackedRings.Clear();
         }
 
         private void ReleaseCollectAreaSlot()

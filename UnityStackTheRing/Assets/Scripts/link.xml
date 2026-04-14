@@ -1,0 +1,15 @@
+<linker>
+    <!-- Preserve all types in the game assembly for VContainer DI -->
+    <assembly fullname="HyperCasualGame.Scripts" preserve="all"/>
+
+    <!-- Preserve VContainer types -->
+    <assembly fullname="VContainer" preserve="all"/>
+    <assembly fullname="VContainer.Unity" preserve="all"/>
+
+    <!-- Preserve UniTask -->
+    <assembly fullname="UniTask" preserve="all"/>
+
+    <!-- Preserve GameFoundation assemblies -->
+    <assembly fullname="GameFoundationCore.Scripts" preserve="all"/>
+    <assembly fullname="UITemplate.Scripts" preserve="all"/>
+</linker>

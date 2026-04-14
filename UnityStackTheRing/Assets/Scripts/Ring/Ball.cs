@@ -5,6 +5,7 @@ namespace HyperCasualGame.Scripts.Ring
     using GameFoundationCore.Scripts.Signals;
     using HyperCasualGame.Scripts.Bucket;
     using HyperCasualGame.Scripts.Core;
+    using HyperCasualGame.Scripts.Effects;
     using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
     using UnityEngine;
@@ -115,14 +116,40 @@ namespace HyperCasualGame.Scripts.Ring
                     Vector3.zero
                 );
 
-                // Add to bucket and complete incoming reservation
+                // === Landing Effect Sequence ===
+
+                // 1. Reserve stack position (prevents race condition with concurrent rings)
+                var stackPos = targetBucket.ReserveNextStackPosition();
+
+                // 2. Reparent to bucket's stack root for local space calculations
+                this.transform.SetParent(targetBucket.StackRoot);
+
+                // 3. Play sparkle VFX (fire and forget)
+                SparkleEffectPool.Instance?.PlayAtFireForget(this.transform.position, this.BallColor);
+
+                // 4. Play wobble animation
+                var landingEffect = this.GetComponent<RingLandingEffect>();
+                if (landingEffect == null)
+                {
+                    landingEffect = this.gameObject.AddComponent<RingLandingEffect>();
+                }
+
+                // Scale down for stack
+                this.transform.localScale = Vector3.one * GameConstants.RingStackConfig.RingScaleOnStack;
+
+                await landingEffect.PlayLandingEffect(stackPos);
+
+                // 5. Register with bucket tracking
                 targetBucket.AddBall(this);
+                targetBucket.AddRingToStack(this.transform);
+
+                // === End Landing Effect ===
+
                 targetBucket.CompleteIncomingBall();
                 reservationCompleted = true;
                 Debug.Log($"[Ball] JumpComplete row={this.RowId} ball={this.BallColor}:{this.BallIndex} bucket={targetBucket.Data.IndexBucket} collected={targetBucket.CollectedBallCount} incoming={targetBucket.IncomingBallCount} target={targetBucket.TargetBallCount}");
 
-                // Hide after adding (bucket controls visibility)
-                this.gameObject.SetActive(false);
+                // Ring stays visible on stack (no longer deactivated)
             }
             finally
             {
