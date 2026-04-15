@@ -59,7 +59,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.MarkSiblingsCacheDirty();
         }
 
-        public void Initialize(ConveyorPath conveyorPath, int startIndex = 0, string id = "")
+        public void Initialize(ConveyorPath conveyorPath, float startDistance = 0f, string id = "")
         {
             this.path = conveyorPath;
             this.conveyorId = id;
@@ -72,8 +72,12 @@ namespace HyperCasualGame.Scripts.Conveyor
             if (this.path != null && this.path.GetSampleCount() > 1)
             {
                 this.CalculatePathData();
-                this.currentDistance = this.GetDistanceAtIndex(startIndex);
-                this.lastSegmentIndex = Mathf.Max(0, startIndex - 1);
+                this.currentDistance = this.totalPathLength > 0f
+                    ? (this.LoopPath
+                        ? Mathf.Repeat(startDistance, this.totalPathLength)
+                        : Mathf.Clamp(startDistance, 0f, this.totalPathLength))
+                    : 0f;
+                this.lastSegmentIndex = this.FindSegmentIndex(this.currentDistance);
 
                 // Initialize position and rotation immediately
                 this.UpdatePositionAndRotation(0, true);
@@ -479,21 +483,6 @@ namespace HyperCasualGame.Scripts.Conveyor
                 this.totalPathLength += loopDistance;
                 this.cumulativeDistances.Add(this.totalPathLength);
             }
-        }
-
-        private float GetDistanceAtIndex(int index)
-        {
-            if (index <= 0)
-            {
-                return 0;
-            }
-
-            if (index >= this.cumulativeDistances.Count)
-            {
-                return this.totalPathLength;
-            }
-
-            return this.cumulativeDistances[index];
         }
 
         private void ResetEntryTriggerState()

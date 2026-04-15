@@ -265,9 +265,6 @@ namespace HyperCasualGame.Scripts.Conveyor
                 var color = colorPool[rowIndex];
                 var startDistance = rowIndex * spacing;
 
-                // Calculate start index on path
-                var startIndex = Mathf.RoundToInt((startDistance / pathLength) * (this.conveyorPath.GetSampleCount() - 1));
-
                 // Create RowBall config - all balls same color
                 var ballsPerRow = this.config != null ? this.config.BallsPerRow : GameConstants.RowBallConfig.MaxBalls;
                 var colors = new ColorType[ballsPerRow];
@@ -283,14 +280,14 @@ namespace HyperCasualGame.Scripts.Conveyor
                     RowId = rowIndex
                 };
 
-                this.SpawnRowBall(rowConfig, startIndex);
+                this.SpawnRowBall(rowConfig, startDistance);
             }
 
             var ballsPerRowForLog = this.config != null ? this.config.BallsPerRow : GameConstants.RowBallConfig.MaxBalls;
             this.logger.Info($"Spawned {rowCount} rows ({rowCount * ballsPerRowForLog} balls). Path length: {pathLength:F2}, Max capacity: {maxRows}");
         }
 
-        private void SpawnRowBall(RowBallConfig config, int startIndex)
+        private void SpawnRowBall(RowBallConfig config, float startDistance)
         {
             if (this.rowBallPrefab == null || this.ballPrefab == null)
             {
@@ -324,7 +321,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             // Initialize path following
-            follower.Initialize(this.conveyorPath, startIndex, "MAIN");
+            follower.Initialize(this.conveyorPath, startDistance, "MAIN");
             follower.ComputeEntryPathDistances();
 
             // Initialize RowBall with balls and conveyor config
