@@ -55,6 +55,7 @@ MonoBehaviour:
   - {fileID: 3522591411780567385}
   labelPercent: {fileID: 3503731560453262828}
   visualRoot: {fileID: 3980176325229452792}
+  stackRoot: {fileID: 0}
 --- !u!65 &1767107842040727802
 BoxCollider:
   m_ObjectHideFlags: 0

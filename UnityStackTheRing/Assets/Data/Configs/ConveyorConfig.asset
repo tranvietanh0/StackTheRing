@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BaseSpeed: 1
   LoopDuration: 8
-  RowSpacing: 0.06
+  RowSpacing: 0.053
   BallsPerRow: 5
   BallLaneSpacing: 0.107
   BallScale: 0.25
