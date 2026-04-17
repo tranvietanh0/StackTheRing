@@ -51,22 +51,6 @@ namespace HyperCasualGame.Scripts.Signals
     {
     }
 
-    /// <summary>
-    /// Fired when a row is transferred from queue conveyor to the main ring.
-    /// </summary>
-    public class QueueRowTransferredSignal
-    {
-        public int RowId;
-        public int RemainingQueueRows;
-    }
-
-    /// <summary>
-    /// Fired when all queue rows have been transferred to the ring.
-    /// </summary>
-    public class QueueEmptySignal
-    {
-    }
-
     public class LevelWinSignal
     {
         public int LevelNumber;

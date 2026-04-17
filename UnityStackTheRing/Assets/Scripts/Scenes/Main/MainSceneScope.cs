@@ -50,8 +50,6 @@ namespace HyperCasualGame.Scripts.Scenes.Main
             builder.DeclareSignal<RowBallReachEntrySignal>();
             builder.DeclareSignal<BallCollectedSignal>();
             builder.DeclareSignal<RowBallCompletedLoopSignal>();
-            builder.DeclareSignal<QueueRowTransferredSignal>();
-            builder.DeclareSignal<QueueEmptySignal>();
         }
 
         private void RegisterServices(IContainerBuilder builder)

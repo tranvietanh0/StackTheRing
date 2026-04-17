@@ -70,6 +70,12 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.MarkSiblingsCacheDirty();
         }
 
+        private void OnTransformParentChanged()
+        {
+            this.siblingsCacheDirty = true;
+            this.MarkSiblingsCacheDirty();
+        }
+
         public void Initialize(ConveyorPath conveyorPath, float startDistance = 0f, string id = "")
         {
             this.path = conveyorPath;
@@ -149,6 +155,11 @@ namespace HyperCasualGame.Scripts.Conveyor
         public bool IsSlidingOnPath()
         {
             return this.slideTween != null;
+        }
+
+        public void InvalidateSiblingCache()
+        {
+            this.siblingsCacheDirty = true;
         }
 
         public float GetCurrentDistance()

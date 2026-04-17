@@ -3,7 +3,6 @@ namespace HyperCasualGame.Scripts.Conveyor
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
     using Cysharp.Threading.Tasks;
     using Dreamteck.Splines;
     using GameFoundationCore.Scripts.Signals;
@@ -22,22 +21,6 @@ namespace HyperCasualGame.Scripts.Conveyor
     /// </summary>
     public class ConveyorController : MonoBehaviour
     {
-        public readonly struct QueueInsertReservation
-        {
-            public QueueInsertReservation(float anchorDistance, float desiredSpacing, RowBall downstreamRow, bool isEmptyFlow)
-            {
-                this.AnchorDistance = anchorDistance;
-                this.DesiredSpacing = desiredSpacing;
-                this.DownstreamRow = downstreamRow;
-                this.IsEmptyFlow = isEmptyFlow;
-            }
-
-            public float AnchorDistance { get; }
-            public float DesiredSpacing { get; }
-            public RowBall DownstreamRow { get; }
-            public bool IsEmptyFlow { get; }
-        }
-
         #region Serialized Fields
 
         [SerializeField] private ConveyorConfig config;
@@ -221,6 +204,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             this.activeRowBalls.Remove(rowBall);
+            this.InvalidateActiveFollowerCaches();
             Destroy(rowBall.gameObject);
 
             this.logger.Info($"RowBall removed. Remaining: {this.ActiveRowCount}");
@@ -275,6 +259,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             follower.ComputeEntryPathDistances();
 
             this.activeRowBalls.Add(rowBall);
+            this.InvalidateActiveFollowerCaches();
 
             if (this.isRunning)
             {
@@ -284,27 +269,31 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.logger.Info($"InsertRowBall id={rowBall.RowId} at distance={insertDistance:F2}. Active: {this.ActiveRowCount}");
         }
 
-        public bool TryCreateQueueInsertReservation(Vector3 queueExitPosition, float desiredSpacing, out QueueInsertReservation reservation)
+        public bool TryGetSubInsertDistance(float desiredSpacing, out float insertDistance)
         {
-            reservation = default;
+            insertDistance = 0f;
             if (this.conveyorPath == null)
             {
                 return false;
             }
 
-            var anchorDistance = this.FindClosestPathDistance(this.queueInsertAnchor != null
-                ? this.queueInsertAnchor.position
-                : queueExitPosition);
+            var anchorTransform = this.queueInsertAnchor != null
+                ? this.queueInsertAnchor
+                : (this.entryNodes.Count > 0 ? this.entryNodes[0] : null);
+            if (anchorTransform == null)
+            {
+                return false;
+            }
 
+            var anchorDistance = this.FindClosestPathDistance(anchorTransform.position);
             if (this.activeRowBalls.Count == 0)
             {
-                reservation = new QueueInsertReservation(anchorDistance, desiredSpacing, null, true);
+                insertDistance = anchorDistance;
                 return true;
             }
 
             var pathLength = this.CalculatePathLength();
-            var nearestDownstreamDistance = float.MaxValue;
-            RowBall nearestDownstreamRow = null;
+            var nearestDistanceAroundAnchor = float.MaxValue;
 
             foreach (var rowBall in this.activeRowBalls)
             {
@@ -314,55 +303,32 @@ namespace HyperCasualGame.Scripts.Conveyor
                     continue;
                 }
 
-                var downstreamDistance = follower.GetCurrentDistance() - anchorDistance;
-                if (downstreamDistance < 0f)
+                var anchorDelta = Mathf.Abs(follower.GetCurrentDistance() - anchorDistance);
+                if (anchorDelta > pathLength * 0.5f)
                 {
-                    downstreamDistance += pathLength;
+                    anchorDelta = pathLength - anchorDelta;
                 }
 
-                if (downstreamDistance < nearestDownstreamDistance)
+                if (anchorDelta < nearestDistanceAroundAnchor)
                 {
-                    nearestDownstreamDistance = downstreamDistance;
-                    nearestDownstreamRow = rowBall;
+                    nearestDistanceAroundAnchor = anchorDelta;
                 }
             }
 
-            if (nearestDownstreamDistance == float.MaxValue)
+            if (nearestDistanceAroundAnchor == float.MaxValue)
             {
-                reservation = new QueueInsertReservation(anchorDistance, desiredSpacing, null, true);
+                insertDistance = anchorDistance;
                 return true;
             }
 
             var requiredClearance = desiredSpacing + GameConstants.QueueConveyorConfig.EntryInsertBuffer;
-            if (nearestDownstreamDistance < requiredClearance)
+            if (nearestDistanceAroundAnchor < requiredClearance)
             {
                 return false;
             }
 
-            reservation = new QueueInsertReservation(anchorDistance, desiredSpacing, nearestDownstreamRow, false);
+            insertDistance = anchorDistance;
             return true;
-        }
-
-        public UniTask<bool> HandoffRowBallFromQueueAsync(RowBall rowBall, Vector3 queueExitPosition, QueueInsertReservation reservation, CancellationToken cancellationToken)
-        {
-            if (rowBall == null || cancellationToken.IsCancellationRequested)
-            {
-                return UniTask.FromResult(false);
-            }
-
-            if (reservation.DownstreamRow != null && !this.activeRowBalls.Contains(reservation.DownstreamRow))
-            {
-                return UniTask.FromResult(false);
-            }
-
-            var insertDistance = this.GetReservedInsertDistance(reservation, 0f);
-            var targetPosition = this.GetPositionAtDistance(insertDistance);
-            var targetRotation = this.GetRotationAtDistance(insertDistance);
-            rowBall.transform.position = targetPosition;
-            rowBall.transform.rotation = targetRotation;
-            this.InsertRowBall(rowBall, insertDistance);
-
-            return UniTask.FromResult(true);
         }
 
         /// <summary>
@@ -561,26 +527,18 @@ namespace HyperCasualGame.Scripts.Conveyor
             return Mathf.Repeat(closestDistance, pathLength);
         }
 
-        private float GetReservedInsertDistance(QueueInsertReservation reservation, float elapsed)
-        {
-            var pathLength = this.CalculatePathLength();
-            if (reservation.IsEmptyFlow || reservation.DownstreamRow == null)
-            {
-                return Mathf.Repeat(reservation.AnchorDistance + (this.baseSpeed * elapsed), pathLength);
-            }
-
-            var downstreamFollower = reservation.DownstreamRow.GetComponent<PathFollower>();
-            if (downstreamFollower == null)
-            {
-                return Mathf.Repeat(reservation.AnchorDistance + (this.baseSpeed * elapsed), pathLength);
-            }
-
-            return Mathf.Repeat(downstreamFollower.GetCurrentDistance() - reservation.DesiredSpacing, pathLength);
-        }
-
         private bool IsLoopPathSegment(int sampleIndex, int sampleCount)
         {
             return sampleIndex < sampleCount - 1 || (sampleIndex == sampleCount - 1 && sampleCount > 1);
+        }
+
+        private void InvalidateActiveFollowerCaches()
+        {
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall != null ? rowBall.GetComponent<PathFollower>() : null;
+                follower?.InvalidateSiblingCache();
+            }
         }
 
         private void SpawnRowBall(RowBallConfig config, float startDistance)
