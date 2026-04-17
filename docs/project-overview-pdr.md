@@ -1,43 +1,135 @@
-# Project Overview & Product Development Requirements — Stack The Ring
+# Project Overview & PDR - Stack The Ring
 
-## Tổng quan dự án / Project Overview
-- **Tiếng Việt**: Stack The Ring là game mobile hyper-casual Unity 6000.3.10f1 với luồng gameplay dây chuyền (conveyor) ➜ bucket ➜ CollectArea, sử dụng VContainer/UniTask/MessagePipe làm xương sống kiến trúc.
-- **English**: Stack The Ring is a Unity 6000.3.10f1 hyper-casual mobile game where spline-driven row balls travel along a conveyor, fill bucket columns, and land in CollectAreas; the project relies on VContainer, UniTask, and MessagePipe for DI, async, and signaling.
+## 1. Tong quan du an
 
-## Yêu cầu phát triển sản phẩm / Product Development Requirements
+Stack The Ring la mot game hyper-casual Unity dang duoc to chuc quanh gameplay:
 
-### Yêu cầu chức năng / Functional Requirements
-1. **Cấu hình level dữ liệu / Level data configuration**
-   - **Tiếng Việt**: `LevelData` ScriptableObject bao gồm `Rings`, `AvailableCollectors`, `BucketColumns`, `BucketColumnSpacing` và `BucketRowSpacing` để điều chỉnh số lượng ring, màu và lưới bucket từng level.
-   - **English**: The `LevelData` ScriptableObject exposes `Rings`, `AvailableCollectors`, `BucketColumns`, and spacing parameters so designers can tune ring counts, collector palettes, and bucket grid layouts without touching code.
-2. **Bucket → CollectArea → CollectAreaBucketService**
-   - **Tiếng Việt**: `BucketColumnManager` sinh cột bucket theo `LevelData`, `CollectAreaManager` quản lý vị trí hạ cánh, `BucketInputController` bắt tap, và `CollectAreaBucketService` cung cấp thông tin màu/số slot còn lại để tính toán chiến lược thu thập.
-   - **English**: `BucketColumnManager` spawns bucket columns per `LevelData`, `CollectAreaManager` tracks landing pads, `BucketInputController` drives taps, and `CollectAreaBucketService` exposes bucket colors and remaining slots so gameplay logic knows which balls can still be collected.
-3. **JumpService và hiệu ứng**
-   - **Tiếng Việt**: `JumpService` cung cấp quỹ đạo nhảy hình parabol khi bucket/ball chuyển vào CollectArea và giữ lại tham số cấu hình `JumpConfig.DefaultBucket`/`DefaultBall` để đồng nhất animation.
-   - **English**: `JumpService` animates parabolic jumps for buckets and balls landing in CollectAreas, using shared `JumpConfig.DefaultBucket` and `DefaultBall` presets so motion stays consistent.
-4. **Luồng game & điều kiện chiến thắng/thua**
-   - **Tiếng Việt**: `GameManager` khởi tạo `ConveyorController`, `BucketColumnManager`, `CollectAreaManager`, nối signal `BucketTappedSignal` → `OnBucketTapped`, và `GamePlayState` xử lý `AllRingsClearedSignal`, `RowBallCompletedLoopSignal`, `BucketCompletedSignal`, kiểm tra mất nước move bằng `CollectAreaBucketService`.
-   - **English**: The `GameManager` wires conveyor, bucket, and collect area systems, routes `BucketTappedSignal`, and `GamePlayState` subscribes to `AllRingsClearedSignal`, `RowBallCompletedLoopSignal`, and `BucketCompletedSignal` while using `CollectAreaBucketService` to detect no-move losses.
-5. **State machine & screen flow**
-   - **Tiếng Việt**: `GameStateMachine` (auto-discover `IGameState`) chuyển giữa `GameHomeState`, `GamePlayState`, `GameWinState`, `GameLoseState`; `ScreenManager` sử dụng MVP pattern toàn bộ trong file `{Name}ScreenView.cs`.
-   - **English**: `GameStateMachine` auto-discovers `IGameState` implementations and transitions between home/play/win/lose states, while `ScreenManager` renders UI using the in-file MVP (`{Name}ScreenView.cs`) convention from GameFoundationCore.
+`main conveyor -> bucket vao collect area -> ball nhay vao bucket -> bucket hoan thanh -> giai phong slot`
 
-### Yêu cầu phi chức năng / Non-functional Requirements
-1. **Dependency Injection & lifetime**
-   - **Tiếng Việt**: Root `GameLifetimeScope` đăng ký `RegisterGameFoundation()` + `RegisterUITemplate()`, mỗi scene có `SceneScope` (Loading/Main) cài đặt service riêng; mọi dependency được inject qua constructor (no `[Inject]`).
-   - **English**: `GameLifetimeScope` registers `RegisterGameFoundation()` and `RegisterUITemplate()`, scene-specific `SceneScope`s configure their services, and all dependencies are constructor-injected (no `[Inject]` attributes) to preserve clarity.
-2. **Performance & async flow**
-   - **Tiếng Việt**: Mọi thao tác bất đồng bộ/animation dùng `UniTask`, DOTween, Addressables cache; CPU-bound logic cục bộ (bucket checks, row loops) được giới hạn trong `ITickable.Tick()` và `ITickable`/`ITickable` cycles.
-   - **English**: All async work uses `UniTask`, DOTween, and Addressables caching; CPU-bound loops (bucket eligibility, row updates) live inside `ITickable.Tick()` or signal callbacks so the update loop stays deterministic.
-3. **Hệ thống logging và tín hiệu**
-   - **Tiếng Việt**: Dùng `SignalBus` (MessagePipe wrapper) với signal class (`BucketCompletedSignal`, `RowBallCompletedLoopSignal`, `AllRingsClearedSignal`, v.v.) và `ILogger` từ `ILoggerManager` để ghi trạng thái gameplay.
-   - **English**: The project uses `SignalBus` (MessagePipe) with class-based signals (`BucketCompletedSignal`, `RowBallCompletedLoopSignal`, `AllRingsClearedSignal`, etc.) and `ILoggerManager` to log game state transitions.
+Codebase hien tai cho thay du an dang o giai doan refactor tu template/logic cu sang pipeline bucket + collect area + queue conveyor. Tai lieu cu nhac den `GameManager` va Unity 6000 da khong con dung voi ma nguon hien tai.
 
-### Ràng buộc / Constraints
-1. **Phiên bản Unity & thư viện**
-   - **Tiếng Việt**: Giữ nguyên Unity 6000.3.10f1, OpenUPM packages: VContainer 1.16.9, UniTask 2.5.10, MessagePipe 1.8.1, Addressables 2.9.0, InputSystem 1.18.0.
-   - **English**: Maintain Unity 6000.3.10f1 and OpenUPM packages: VContainer 1.16.9, UniTask 2.5.10, MessagePipe 1.8.1, Addressables 2.9.0, InputSystem 1.18.0.
-2. **docs/ là nguồn chính**
-   - **Tiếng Việt**: Tất cả thông tin onboarding/kiến trúc/fonction đều nằm trong `docs/` (Project overview, code standards, system architecture, PDR, roadmap, changelog).
-   - **English**: `docs/` is the single source of truth for onboarding, architecture, code standards, and planning (project overview, code standards, system architecture, PDR, roadmap, changelog).
+## 2. Trang thai codebase hien tai
+
+- Unity project thuc te: `UnityStackTheRing/`
+- Unity version thuc te: `2022.3.35f1`
+- Runtime bootstrap:
+  - `GameLifetimeScope` dang ky core services
+  - `LoadingSceneScope` mo `LoadingScreenPresenter`
+  - `LoadingScreenPresenter` load user data, preload `Level_01`, sau do load `1.MainScene`
+  - `MainSceneScope` dang ky signals, `LevelManager`, `CollectAreaBucketService`, `GameStateMachine`
+  - `MainSceneScope` gan inject callback cho `LevelController` va auto load level 1
+  - `LevelController` moi la diem orchestration chinh cua gameplay trong scene hien tai
+
+## 3. Muc tieu san pham o code hien tai
+
+### 3.1 Muc tieu gameplay
+
+- Sinh cac `RowBall` chay tren conveyor theo `LevelData`
+- Cho phep bucket hop le roi khoi luoi va nhay vao `CollectArea`
+- Tu entry point cua conveyor, thu nhung ball trung mau vao bucket dang nam trong collect area
+- Ho tro queue conveyor de bo sung row moi khi tren vong chinh xuat hien khoang trong
+- Tinh toan thang/thua dua tren:
+  - tat ca ball da duoc xoa / tat ca bucket hoan thanh
+  - hoac khong con nuoc di hop le khi collect area da day
+
+### 3.2 Muc tieu ky thuat
+
+- Dung VContainer cho DI va scene scope
+- Dung SignalBus/MessagePipe cho event flow
+- Dung UniTask cho async/loading/jump orchestration
+- Dung Addressables de load scene va level prefab, co fallback sang `Resources`
+- Giu `docs/` lam nguon su that cho onboarding va kien truc
+
+## 4. PDR hien tai
+
+### 4.1 Functional requirements
+
+1. **Loading flow**
+   - Game phai bat dau tu `0.LoadingScene`
+   - Loading screen phai load user data, preload `Level_01`, sau do chuyen sang `1.MainScene`
+
+2. **Level loading**
+   - `LevelManager` phai load level prefab theo key `Level_XX`
+   - Thu tu uu tien: Addressables truoc, `Resources/Levels` sau
+   - Level prefab phai co `LevelController`
+
+3. **Main conveyor**
+   - `ConveyorController` phai spawn `RowBall` tu `LevelData.Rings`
+   - Moi row gom nhieu `Ball` cung mau
+   - Conveyor phai loop tren spline va kiem tra entry points khi dang chay
+
+4. **Bucket grid**
+   - `BucketColumnManager` phai spawn bucket theo `LevelData.BucketColumns`
+   - Moi bucket co `TargetBallCount` duoc phan bo theo tong so ball cung mau
+   - Chi bucket dau moi cot moi duoc phep nhay vao collect area
+
+5. **Collect area**
+   - `CollectAreaManager` phai sinh so luong slot hoat dong cho level
+   - Moi slot luu bucket dang chiem cho service va lose-check su dung
+
+6. **Bucket collection logic**
+   - `CollectAreaBucketService` phai xac dinh bucket hop le theo mau
+   - `ConveyorController` phai thu cac ball trung mau tai entry point vao bucket dang target
+   - Bucket phai theo doi `incoming` + `collected` de tranh vuot qua suc chua
+
+7. **Queue conveyor**
+   - Neu `LevelData.HasQueue = true`, queue conveyor phai spawn them rows tu `QueueRings`
+   - `ConveyorFeeder` phai tim gap lon nhat tren main conveyor va chen row tu queue vao khi du dieu kien
+
+8. **Win/Lose**
+   - Win khi tat ca ball da clear va queue rong, hoac khi tat ca bucket da completed
+   - Lose khi moi collect area deu occupied va khong con ball nao tren conveyor/queue co the vao bucket hop le
+
+### 4.2 Non-functional requirements
+
+1. **DI va lifecycle**
+   - Root scope va scene scope phai tiep tuc tach biet ro rang
+   - Dependency uu tien constructor injection; hien tai `LevelController` dung inject callback tu `MainSceneScope`
+
+2. **Async va animation**
+   - Async phai dung `UniTask`
+   - Chuyen dong nhay bucket/ball dung DOTween
+
+3. **Observability**
+   - Signal quan trong phai di qua `SignalBus`
+   - He thong log qua `ILoggerManager`
+
+4. **Tai lieu**
+   - Moi thay doi kien truc/gameplay can cap nhat trong `docs/` truoc README
+
+## 5. Pham vi he thong hien tai
+
+### Co san trong code
+
+- Loading scene + main scene
+- Main conveyor va queue conveyor
+- Bucket grid, collect area, ball-to-bucket assignment
+- State machine gom `GameHomeState`, `GamePlayState`, `GameWinState`, `GameLoseState`
+- Addressables groups cho `Levels`, `Scenes`, `UIs`
+
+### Chua hoan thien / can luu y
+
+- `GameWinState` va `GameLoseState` chua mo popup that su
+- Van con legacy signals va naming tu giai doan truoc
+- Script `Setup.bat` / `Setup.sh` mang tinh template bootstrap cu, khong mo ta dung setup hang ngay hien tai
+
+## 6. File tham chieu chinh
+
+- `UnityStackTheRing/ProjectSettings/ProjectVersion.txt`
+- `UnityStackTheRing/Packages/manifest.json`
+- `UnityStackTheRing/Assets/Scripts/Scenes/GameLifetimeScope.cs`
+- `UnityStackTheRing/Assets/Scripts/Scenes/Loading/LoadingSceneScope.cs`
+- `UnityStackTheRing/Assets/Scripts/Scenes/Main/MainSceneScope.cs`
+- `UnityStackTheRing/Assets/Scripts/Scenes/Screen/LoadingScreenView.cs`
+- `UnityStackTheRing/Assets/Scripts/Level/LevelManager.cs`
+- `UnityStackTheRing/Assets/Scripts/Level/LevelController.cs`
+- `UnityStackTheRing/Assets/Scripts/Level/LevelData.cs`
+- `UnityStackTheRing/Assets/Scripts/Conveyor/ConveyorController.cs`
+- `UnityStackTheRing/Assets/Scripts/Conveyor/QueueConveyor.cs`
+- `UnityStackTheRing/Assets/Scripts/Conveyor/ConveyorFeeder.cs`
+- `UnityStackTheRing/Assets/Scripts/Bucket/BucketColumnManager.cs`
+- `UnityStackTheRing/Assets/Scripts/Bucket/Bucket.cs`
+- `UnityStackTheRing/Assets/Scripts/CollectArea/CollectAreaManager.cs`
+- `UnityStackTheRing/Assets/Scripts/Services/CollectAreaBucketService.cs`
+- `UnityStackTheRing/Assets/Scripts/StateMachines/Game/GameStateMachine.cs`
+- `UnityStackTheRing/Assets/Scripts/StateMachines/Game/States/GamePlayState.cs`

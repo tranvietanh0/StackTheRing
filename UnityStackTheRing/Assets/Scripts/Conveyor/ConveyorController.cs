@@ -3,6 +3,7 @@ namespace HyperCasualGame.Scripts.Conveyor
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using Cysharp.Threading.Tasks;
     using Dreamteck.Splines;
     using GameFoundationCore.Scripts.Signals;
@@ -21,6 +22,22 @@ namespace HyperCasualGame.Scripts.Conveyor
     /// </summary>
     public class ConveyorController : MonoBehaviour
     {
+        public readonly struct QueueInsertReservation
+        {
+            public QueueInsertReservation(float anchorDistance, float desiredSpacing, RowBall downstreamRow, bool isEmptyFlow)
+            {
+                this.AnchorDistance = anchorDistance;
+                this.DesiredSpacing = desiredSpacing;
+                this.DownstreamRow = downstreamRow;
+                this.IsEmptyFlow = isEmptyFlow;
+            }
+
+            public float AnchorDistance { get; }
+            public float DesiredSpacing { get; }
+            public RowBall DownstreamRow { get; }
+            public bool IsEmptyFlow { get; }
+        }
+
         #region Serialized Fields
 
         [SerializeField] private ConveyorConfig config;
@@ -28,6 +45,7 @@ namespace HyperCasualGame.Scripts.Conveyor
         [SerializeField] private SplineComputer spline;
         [SerializeField] private RowBall rowBallPrefab;
         [SerializeField] private Ball ballPrefab;
+        [SerializeField] private Transform queueInsertAnchor;
 
         [Header("Entry Points")]
         [SerializeField] private List<Transform> entryNodes = new();
@@ -41,6 +59,7 @@ namespace HyperCasualGame.Scripts.Conveyor
         private ConveyorPath conveyorPath;
         private float baseSpeed = 1f;
         private bool isRunning;
+        private bool hasQueueRows;
         private SignalBus signalBus;
         private ILogger logger;
         private CollectAreaBucketService collectAreaBucketService;
@@ -58,6 +77,8 @@ namespace HyperCasualGame.Scripts.Conveyor
         public bool IsRunning => this.isRunning;
 
         public int BallsPerRow => this.config != null ? this.config.BallsPerRow : GameConstants.RowBallConfig.MaxBalls;
+
+        public ConveyorPath Path => this.conveyorPath;
 
         #endregion
 
@@ -204,11 +225,205 @@ namespace HyperCasualGame.Scripts.Conveyor
 
             this.logger.Info($"RowBall removed. Remaining: {this.ActiveRowCount}");
 
-            if (this.TotalBallCount == 0)
+            if (this.TotalBallCount == 0 && !this.hasQueueRows)
             {
                 this.OnAllBallsCleared?.Invoke();
                 this.signalBus.Fire(new AllRingsClearedSignal());
             }
+        }
+
+        /// <summary>
+        /// Set whether the queue still has rows to send.
+        /// Prevents premature AllRingsClearedSignal.
+        /// </summary>
+        public void SetHasQueueRows(bool hasRows)
+        {
+            this.hasQueueRows = hasRows;
+        }
+
+        /// <summary>
+        /// Insert a RowBall from the queue conveyor into the ring at the given distance.
+        /// Re-parents the row, configures PathFollower for loop path.
+        /// </summary>
+        public void InsertRowBall(RowBall rowBall, float insertDistance)
+        {
+            if (rowBall == null)
+            {
+                return;
+            }
+
+            var container = this.rowBallContainer != null ? this.rowBallContainer : this.transform;
+            rowBall.transform.SetParent(container, true);
+
+            // Reconfigure PathFollower for the ring (loop path)
+            var follower = rowBall.GetComponent<PathFollower>();
+            if (follower == null)
+            {
+                follower = rowBall.gameObject.AddComponent<PathFollower>();
+            }
+
+            follower.MoveSpeed = this.baseSpeed;
+            follower.LoopPath = true;
+            follower.ReverseDirection = false;
+
+            if (this.entryNodes.Count > 0)
+            {
+                follower.SetEntryNodes(this.entryNodes);
+            }
+
+            follower.Initialize(this.conveyorPath, insertDistance, "MAIN");
+            follower.ComputeEntryPathDistances();
+
+            this.activeRowBalls.Add(rowBall);
+
+            if (this.isRunning)
+            {
+                follower.StartMoving();
+            }
+
+            this.logger.Info($"InsertRowBall id={rowBall.RowId} at distance={insertDistance:F2}. Active: {this.ActiveRowCount}");
+        }
+
+        public bool TryCreateQueueInsertReservation(Vector3 queueExitPosition, float desiredSpacing, out QueueInsertReservation reservation)
+        {
+            reservation = default;
+            if (this.conveyorPath == null)
+            {
+                return false;
+            }
+
+            var anchorDistance = this.FindClosestPathDistance(this.queueInsertAnchor != null
+                ? this.queueInsertAnchor.position
+                : queueExitPosition);
+
+            if (this.activeRowBalls.Count == 0)
+            {
+                reservation = new QueueInsertReservation(anchorDistance, desiredSpacing, null, true);
+                return true;
+            }
+
+            var pathLength = this.CalculatePathLength();
+            var nearestDownstreamDistance = float.MaxValue;
+            RowBall nearestDownstreamRow = null;
+
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall.GetComponent<PathFollower>();
+                if (follower == null)
+                {
+                    continue;
+                }
+
+                var downstreamDistance = follower.GetCurrentDistance() - anchorDistance;
+                if (downstreamDistance < 0f)
+                {
+                    downstreamDistance += pathLength;
+                }
+
+                if (downstreamDistance < nearestDownstreamDistance)
+                {
+                    nearestDownstreamDistance = downstreamDistance;
+                    nearestDownstreamRow = rowBall;
+                }
+            }
+
+            if (nearestDownstreamDistance == float.MaxValue)
+            {
+                reservation = new QueueInsertReservation(anchorDistance, desiredSpacing, null, true);
+                return true;
+            }
+
+            var requiredClearance = desiredSpacing + GameConstants.QueueConveyorConfig.EntryInsertBuffer;
+            if (nearestDownstreamDistance < requiredClearance)
+            {
+                return false;
+            }
+
+            reservation = new QueueInsertReservation(anchorDistance, desiredSpacing, nearestDownstreamRow, false);
+            return true;
+        }
+
+        public UniTask<bool> HandoffRowBallFromQueueAsync(RowBall rowBall, Vector3 queueExitPosition, QueueInsertReservation reservation, CancellationToken cancellationToken)
+        {
+            if (rowBall == null || cancellationToken.IsCancellationRequested)
+            {
+                return UniTask.FromResult(false);
+            }
+
+            if (reservation.DownstreamRow != null && !this.activeRowBalls.Contains(reservation.DownstreamRow))
+            {
+                return UniTask.FromResult(false);
+            }
+
+            var insertDistance = this.GetReservedInsertDistance(reservation, 0f);
+            var targetPosition = this.GetPositionAtDistance(insertDistance);
+            var targetRotation = this.GetRotationAtDistance(insertDistance);
+            rowBall.transform.position = targetPosition;
+            rowBall.transform.rotation = targetRotation;
+            this.InsertRowBall(rowBall, insertDistance);
+
+            return UniTask.FromResult(true);
+        }
+
+        /// <summary>
+        /// Find the largest gap on the ring conveyor path.
+        /// Returns the distance at the center of the gap and the gap size.
+        /// </summary>
+        public bool FindLargestGap(out float gapCenterDistance, out float gapSize)
+        {
+            gapCenterDistance = 0f;
+            gapSize = 0f;
+
+            if (this.activeRowBalls.Count == 0)
+            {
+                // Entire path is empty
+                var totalLength = this.CalculatePathLength();
+                gapCenterDistance = totalLength / 2f;
+                gapSize = totalLength;
+                return true;
+            }
+
+            // Collect all distances and sort
+            var distances = new List<float>();
+            foreach (var rowBall in this.activeRowBalls)
+            {
+                var follower = rowBall.GetComponent<PathFollower>();
+                if (follower != null)
+                {
+                    distances.Add(follower.GetCurrentDistance());
+                }
+            }
+
+            if (distances.Count == 0) return false;
+
+            distances.Sort();
+
+            var pathLength = this.CalculatePathLength();
+            var bestGap = 0f;
+            var bestCenter = 0f;
+
+            // Check gaps between consecutive rows
+            for (var i = 0; i < distances.Count - 1; i++)
+            {
+                var gap = distances[i + 1] - distances[i];
+                if (gap > bestGap)
+                {
+                    bestGap = gap;
+                    bestCenter = distances[i] + gap / 2f;
+                }
+            }
+
+            // Check wrap-around gap (last to first)
+            var wrapGap = pathLength - distances[^1] + distances[0];
+            if (wrapGap > bestGap)
+            {
+                bestGap = wrapGap;
+                bestCenter = (distances[^1] + wrapGap / 2f) % pathLength;
+            }
+
+            gapCenterDistance = bestCenter;
+            gapSize = bestGap;
+            return bestGap > 0;
         }
 
         public Vector3 GetPositionAtDistance(float distance)
@@ -233,6 +448,21 @@ namespace HyperCasualGame.Scripts.Conveyor
             var p2 = this.conveyorPath.GetSample((index + 1) % sampleCount);
 
             return Vector3.Lerp(p1, p2, frac);
+        }
+
+        public Quaternion GetRotationAtDistance(float distance)
+        {
+            var position = this.GetPositionAtDistance(distance);
+            var nextPosition = this.GetPositionAtDistance(distance + 0.2f);
+            var direction = nextPosition - position;
+
+            if (direction.sqrMagnitude <= 0.0001f)
+            {
+                return Quaternion.identity;
+            }
+
+            direction.Normalize();
+            return Quaternion.LookRotation(direction, Vector3.up) * Quaternion.Euler(0f, 90f, 0f);
         }
 
         #endregion
@@ -287,6 +517,72 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.logger.Info($"Spawned {rowCount} rows ({rowCount * ballsPerRowForLog} balls). Path length: {pathLength:F2}, Max capacity: {maxRows}");
         }
 
+        private float FindClosestPathDistance(Vector3 worldPosition)
+        {
+            var pathLength = this.CalculatePathLength();
+            if (pathLength <= 0f || this.conveyorPath == null)
+            {
+                return 0f;
+            }
+
+            var sampleCount = this.conveyorPath.GetSampleCount();
+            var closestDistance = 0f;
+            var closestMagnitude = float.MaxValue;
+            var distanceCursor = 0f;
+
+            for (var sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
+            {
+                var current = this.conveyorPath.GetSample(sampleIndex);
+                var next = this.conveyorPath.GetSample((sampleIndex + 1) % sampleCount);
+                var segment = next - current;
+                var segmentLength = segment.magnitude;
+                if (segmentLength <= 0.0001f)
+                {
+                    continue;
+                }
+
+                var direction = segment / segmentLength;
+                var projection = Mathf.Clamp(Vector3.Dot(worldPosition - current, direction), 0f, segmentLength);
+                var pointOnSegment = current + (direction * projection);
+                var magnitude = Vector3.SqrMagnitude(pointOnSegment - worldPosition);
+                if (magnitude < closestMagnitude)
+                {
+                    closestMagnitude = magnitude;
+                    closestDistance = distanceCursor + projection;
+                }
+
+                distanceCursor += segmentLength;
+                if (!this.IsLoopPathSegment(sampleIndex, sampleCount))
+                {
+                    break;
+                }
+            }
+
+            return Mathf.Repeat(closestDistance, pathLength);
+        }
+
+        private float GetReservedInsertDistance(QueueInsertReservation reservation, float elapsed)
+        {
+            var pathLength = this.CalculatePathLength();
+            if (reservation.IsEmptyFlow || reservation.DownstreamRow == null)
+            {
+                return Mathf.Repeat(reservation.AnchorDistance + (this.baseSpeed * elapsed), pathLength);
+            }
+
+            var downstreamFollower = reservation.DownstreamRow.GetComponent<PathFollower>();
+            if (downstreamFollower == null)
+            {
+                return Mathf.Repeat(reservation.AnchorDistance + (this.baseSpeed * elapsed), pathLength);
+            }
+
+            return Mathf.Repeat(downstreamFollower.GetCurrentDistance() - reservation.DesiredSpacing, pathLength);
+        }
+
+        private bool IsLoopPathSegment(int sampleIndex, int sampleCount)
+        {
+            return sampleIndex < sampleCount - 1 || (sampleIndex == sampleCount - 1 && sampleCount > 1);
+        }
+
         private void SpawnRowBall(RowBallConfig config, float startDistance)
         {
             if (this.rowBallPrefab == null || this.ballPrefab == null)
@@ -336,7 +632,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
         }
 
-        private float CalculatePathLength()
+        public float CalculatePathLength()
         {
             if (this.conveyorPath == null)
             {

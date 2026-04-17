@@ -1,6 +1,8 @@
 namespace HyperCasualGame.Scripts.Conveyor
 {
     using System.Collections.Generic;
+    using Cysharp.Threading.Tasks;
+    using DG.Tweening;
     using HyperCasualGame.Scripts.Core;
     using UnityEngine;
 
@@ -35,6 +37,11 @@ namespace HyperCasualGame.Scripts.Conveyor
         private readonly List<Transform> entryNodes = new();
         private readonly HashSet<int> triggeredEntryIndices = new();
         private readonly Dictionary<int, float> entryPathDistances = new();
+        private Tween slideTween;
+        private Tween blendToPathTween;
+        private Vector3 blendStartOffset;
+        private float blendArcHeight;
+        private float blendProgress = 1f;
 
         // Static cache for all followers
         private static readonly Dictionary<Transform, PathFollower> followerCache = new();
@@ -49,12 +56,16 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         private void OnDisable()
         {
+            this.slideTween?.Kill();
+            this.blendToPathTween?.Kill();
             followerCache.Remove(this.transform);
             this.MarkSiblingsCacheDirty();
         }
 
         private void OnDestroy()
         {
+            this.slideTween?.Kill();
+            this.blendToPathTween?.Kill();
             followerCache.Remove(this.transform);
             this.MarkSiblingsCacheDirty();
         }
@@ -130,6 +141,16 @@ namespace HyperCasualGame.Scripts.Conveyor
             return this.isMoving;
         }
 
+        public bool IsBlendingToPath()
+        {
+            return this.blendToPathTween != null;
+        }
+
+        public bool IsSlidingOnPath()
+        {
+            return this.slideTween != null;
+        }
+
         public float GetCurrentDistance()
         {
             return this.currentDistance;
@@ -140,10 +161,106 @@ namespace HyperCasualGame.Scripts.Conveyor
             return this.totalPathLength;
         }
 
+        public async UniTask SlideToDistance(float targetDistance, float duration)
+        {
+            if (this.path == null)
+            {
+                return;
+            }
+
+            this.slideTween?.Kill();
+            this.isMoving = false;
+
+            var normalizedTargetDistance = this.NormalizeDistance(targetDistance);
+            if (Mathf.Approximately(this.currentDistance, normalizedTargetDistance) || duration <= 0f)
+            {
+                this.currentDistance = normalizedTargetDistance;
+                this.UpdatePositionAndRotation(0f, true);
+                return;
+            }
+
+            var completionSource = new UniTaskCompletionSource();
+            this.slideTween = DOTween
+                .To(() => this.currentDistance, value =>
+                {
+                    this.currentDistance = value;
+                    this.UpdatePositionAndRotation(0f, true);
+                }, normalizedTargetDistance, duration)
+                .SetEase(Ease.Linear)
+                .OnComplete(() =>
+                {
+                    this.slideTween = null;
+                    completionSource.TrySetResult();
+                })
+                .OnKill(() =>
+                {
+                    this.slideTween = null;
+                    completionSource.TrySetResult();
+                });
+
+            await completionSource.Task;
+        }
+
+        public void BlendFromWorldPosition(Vector3 worldStartPosition, float duration, float arcHeight)
+        {
+            if (this.path == null)
+            {
+                return;
+            }
+
+            this.blendToPathTween?.Kill();
+            var pathPosition = this.GetPositionAtDistance(this.currentDistance, false);
+            this.blendStartOffset = worldStartPosition - pathPosition;
+            this.blendArcHeight = arcHeight;
+            this.blendProgress = 0f;
+
+            if (duration <= 0f)
+            {
+                this.blendProgress = 1f;
+                return;
+            }
+
+            this.blendToPathTween = DOTween.To(() => this.blendProgress, value => this.blendProgress = value, 1f, duration)
+                .SetEase(Ease.Linear)
+                .OnKill(() =>
+                {
+                    this.blendProgress = 1f;
+                    this.blendToPathTween = null;
+                })
+                .OnComplete(() =>
+                {
+                    this.blendProgress = 1f;
+                    this.blendToPathTween = null;
+                });
+        }
+
+        public void SnapToDistanceWithBlend(float targetDistance, float duration)
+        {
+            if (this.path == null)
+            {
+                return;
+            }
+
+            var worldPosition = this.transform.position;
+            this.currentDistance = this.NormalizeDistance(targetDistance);
+            this.UpdatePositionAndRotation(0f, true);
+            this.BlendFromWorldPosition(worldPosition, duration, 0f);
+        }
+
         private void Update()
         {
-            if (!this.isMoving || this.path == null)
+            if (this.path == null)
             {
+                return;
+            }
+
+            if (!this.isMoving)
+            {
+                if (this.blendToPathTween != null)
+                {
+                    this.UpdatePositionAndRotation(Time.deltaTime, false);
+                }
+
                 return;
             }
 
@@ -361,7 +478,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             var pos = this.GetPositionAtDistance(this.currentDistance, true);
-            this.transform.position = pos;
+            this.transform.position = pos + this.GetBlendOffset();
 
             var lookAhead = this.ReverseDirection ? -0.2f : 0.2f;
             var nextPos = this.GetPositionAtDistance(this.currentDistance + lookAhead, false);
@@ -488,6 +605,33 @@ namespace HyperCasualGame.Scripts.Conveyor
         private void ResetEntryTriggerState()
         {
             this.triggeredEntryIndices.Clear();
+        }
+
+        private float NormalizeDistance(float targetDistance)
+        {
+            if (this.totalPathLength <= 0f)
+            {
+                return 0f;
+            }
+
+            if (this.LoopPath)
+            {
+                return Mathf.Repeat(targetDistance, this.totalPathLength);
+            }
+
+            return Mathf.Clamp(targetDistance, 0f, this.totalPathLength);
+        }
+
+        private Vector3 GetBlendOffset()
+        {
+            if (this.blendProgress >= 1f)
+            {
+                return Vector3.zero;
+            }
+
+            var offset = Vector3.Lerp(this.blendStartOffset, Vector3.zero, this.blendProgress);
+            offset.y += Mathf.Sin(this.blendProgress * Mathf.PI) * this.blendArcHeight;
+            return offset;
         }
 
         public float GetDistanceFromEntry()

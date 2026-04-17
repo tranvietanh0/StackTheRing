@@ -28,6 +28,10 @@ namespace HyperCasualGame.Scripts.Level
         [SerializeField] private BucketColumnManager bucketColumnManager;
         [SerializeField] private CollectAreaManager collectAreaManager;
 
+        [Header("Queue Conveyor (Optional)")]
+        [SerializeField] private QueueConveyor queueConveyor;
+        [SerializeField] private ConveyorFeeder conveyorFeeder;
+
         [Header("Prefabs")]
         [SerializeField] private Ball ballPrefab;
         [SerializeField] private RowBall rowBallPrefab;
@@ -102,6 +106,20 @@ namespace HyperCasualGame.Scripts.Level
             // Initialize conveyor
             this.conveyorController.Initialize(this.signalBus, this.loggerManager);
 
+            // Initialize queue conveyor if present
+            if (this.levelData != null && this.levelData.HasQueue && (this.queueConveyor == null || this.conveyorFeeder == null))
+            {
+                throw new MissingReferenceException("Queue level requires QueueConveyor and ConveyorFeeder references.");
+            }
+
+            var hasQueue = this.levelData != null && this.levelData.HasQueue && this.queueConveyor != null;
+            Debug.Log($"[LevelController] hasQueue={hasQueue}, levelData.HasQueue={this.levelData?.HasQueue}, queueConveyor null={this.queueConveyor == null}, conveyorFeeder null={this.conveyorFeeder == null}");
+
+            if (hasQueue)
+            {
+                this.queueConveyor.Initialize(this.signalBus, this.loggerManager);
+            }
+
             // Initialize collect areas
             this.collectAreaManager.SpawnAreas(this.collectAreaCount);
 
@@ -113,6 +131,15 @@ namespace HyperCasualGame.Scripts.Level
             // Initialize bucket manager
             this.bucketColumnManager.Initialize(this.signalBus, this.collectAreaManager);
 
+            // Initialize feeder if queue is present
+            if (hasQueue && this.conveyorFeeder != null)
+            {
+                this.conveyorFeeder.Initialize(
+                    this.conveyorController,
+                    this.queueConveyor,
+                    this.loggerManager);
+            }
+
             // Subscribe to bucket tap signal
             this.signalBus.Subscribe<BucketTappedSignal>(this.OnBucketTapped);
 
@@ -123,7 +150,9 @@ namespace HyperCasualGame.Scripts.Level
                     this.conveyorController,
                     this.bucketColumnManager,
                     this.collectAreaManager,
-                    this.collectAreaBucketService);
+                    this.collectAreaBucketService,
+                    this.queueConveyor,
+                    this.conveyorFeeder);
             }
 
             this.logger.Info("LevelController initialized");
@@ -163,10 +192,18 @@ namespace HyperCasualGame.Scripts.Level
             // Setup conveyor with balls
             this.conveyorController.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
 
-            // Setup bucket grid
+            // Setup queue conveyor if present
+            if (levelData.HasQueue && this.queueConveyor != null)
+            {
+                this.queueConveyor.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
+            }
+
+            this.conveyorController.SetHasQueueRows(levelData.HasQueue && this.queueConveyor != null && !this.queueConveyor.IsEmpty);
+
+            // Setup bucket grid — include queue balls in target count
             this.bucketColumnManager.SpawnBuckets(levelData, this.conveyorController.BallsPerRow);
 
-            this.logger.Info($"Level {levelData.LevelNumber} setup complete");
+            this.logger.Info($"Level {levelData.LevelNumber} setup complete (queue={levelData.HasQueue})");
         }
 
         #endregion
@@ -200,6 +237,7 @@ namespace HyperCasualGame.Scripts.Level
             this.signalBus?.Unsubscribe<BucketTappedSignal>(this.OnBucketTapped);
             this.bucketColumnManager?.Cleanup();
             this.collectAreaManager?.Cleanup();
+            this.conveyorFeeder?.StopFeeding();
         }
 
         #endregion

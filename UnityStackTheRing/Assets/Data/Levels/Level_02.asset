@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc87aff43b3044a409c13c778837ccd7, type: 3}
+  m_Name: Level_02
+  m_EditorClassIdentifier: 
+  LevelNumber: 2
+  ConveyorSpeed: 1
+  StackLimit: 8
+  Rings:
+  - Color: 0
+    Count: 18
+  - Color: 3
+    Count: 14
+  - Color: 1
+    Count: 14
+  - Color: 2
+    Count: 14
+  - Color: 3
+    Count: 14
+  - Color: 1
+    Count: 14
+  - Color: 2
+    Count: 14
+  - Color: 0
+    Count: 18
+  AvailableCollectors: 03000000000000000100000002000000
+  BucketColumns:
+  - BucketColors: 00000000
+  - BucketColors: 02000000
+  - BucketColors: 0300000001000000
+  BucketColumnSpacing: 1.2
+  BucketRowSpacing: 1.2
+  HasQueue: 1
+  QueueRings:
+  - Color: 0
+    Count: 24
+  QueueSpeed: 1
+  HasHiddenRings: 0
+  BlockedSlotCount: 0

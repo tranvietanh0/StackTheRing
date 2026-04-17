@@ -1,69 +1,202 @@
-# System Architecture — Stack The Ring
+# System Architecture - Stack The Ring
 
-## Kiến trúc tổng quan / High-Level Architecture
+## 1. So do tong quan
+
+```text
+GameLifetimeScope
+|- RegisterGameFoundation()
+`- RegisterUITemplate()
+
+0.LoadingScene
+`- LoadingSceneScope
+   `- LoadingScreenPresenter
+      |- Load user data
+      |- Preload Level_01
+      `- Load 1.MainScene
+
+1.MainScene
+`- MainSceneScope
+   |- Register signals
+   |- Register LevelManager
+   |- Register CollectAreaBucketService
+   |- Register GameStateMachine
+   |- Set LevelController inject callback
+   `- Auto load level 1
+
+LevelManager
+`- Instantiate Level_01 prefab
+   `- LevelController
+      |- ConveyorController
+      |- QueueConveyor (optional)
+      |- ConveyorFeeder (optional)
+      |- BucketColumnManager
+      |- CollectAreaManager
+      `- Bind references into GamePlayState
 ```
-Unity Engine
-└── GameLifetimeScope (RegisterGameFoundation + RegisterUITemplate)
-    ├── LoadingSceneScope (0.LoadingScene)
-    │   └── LoadingScreenPresenter (await user data, load 1.MainScene)
-    └── MainSceneScope (1.MainScene)
-        ├── LevelManager (loads LevelData SO)
-        ├── GameManager (conveyor + bucket + CollectArea wiring)
-        └── GameStateMachine (states auto-discovered via IGameState)
-```
-- **Tiếng Việt**: Root `GameLifetimeScope` giữ DI core; `LoadingSceneScope` chỉ mở màn hình load, `MainSceneScope` xây dựng bộ dịch vụ gameplay.
-- **English**: `GameLifetimeScope` hosts the DI core; `LoadingSceneScope` handles loading presenter while `MainSceneScope` builds gameplay services.
 
-## Hệ thống chính / Core Systems
-1. **GameManager + GameStateMachine**
-   - **Tiếng Việt**: `GameManager` inject `SignalBus`, `LevelManager`, `GameStateMachine`, `CollectAreaBucketService`; khởi tạo `ConveyorController`, `BucketColumnManager`, `CollectAreaManager`, đăng ký `BucketTappedSignal`, gọi `SetupLevel()` và chuyển trạng thái sang `GamePlayState`.
-   - **English**: `GameManager` receives `SignalBus`, `LevelManager`, `GameStateMachine`, and `CollectAreaBucketService`; it wires the controller/manager trio, subscribes to `BucketTappedSignal`, sets up the level, and transitions into `GamePlayState`.
-2. **ConveyorController / RowBall**
-   - **Tiếng Việt**: `ConveyorController.SetupLevel()` sinh `RowBall` theo `LevelData.Rings`, `PathFollower` giữ bánh răng/tốc độ, `ConveyorConfig` cung cấp tham số.
-   - **English**: `ConveyorController.SetupLevel()` spawns `RowBall` sequences from `LevelData.Rings`, uses `PathFollower` to move along Dreamteck Splines, and respects `ConveyorConfig` (speed, spacing).
-3. **BucketColumnManager + Bucket / JumpService**
-   - **Tiếng Việt**: `BucketColumnManager.SpawnBuckets()` tạo cột bucket với `BucketConfig`, cân bằng `TargetBallCount`, `BucketInputController` raycast chạm, `Bucket.JumpToCollectArea()` gọi `JumpService.JumpToDestination`.
-   - **English**: `BucketColumnManager.SpawnBuckets()` arranges bucket columns via `BucketConfig`, balances `TargetBallCount`, listens for taps via `BucketInputController`, and uses `JumpService.JumpToDestination` to animate bucket flight.
-4. **CollectAreaManager + CollectAreaBucketService**
-   - **Tiếng Việt**: `CollectAreaManager.SpawnAreas()` tạo landing pad, `CollectAreaBucketService` cung cấp danh sách màu bucket hiện tại, slot trống và kế hoạch cân bằng (`BuildBalancedBucketPlanByColor`).
-   - **English**: `CollectAreaManager.SpawnAreas()` spawns landing pads, `CollectAreaBucketService` shares current bucket colors, available slots, and balanced bucket plans (`BuildBalancedBucketPlanByColor`).
+## 2. Thanh phan va vai tro
 
-## Luồng khởi động / Startup Flow
-1. **LoadingScene**
-   - **Tiếng Việt**: `LoadingScreenPresenter.BindData()` tải `UserLocalData` qua `IHandleUserDataServices`, sau đó gọi `GameAssets.LoadSceneAsync("1.MainScene")` để mở scene chính.
-   - **English**: `LoadingScreenPresenter.BindData()` loads `UserLocalData` via `IHandleUserDataServices`, then calls `GameAssets.LoadSceneAsync("1.MainScene")` to open the main scene.
-2. **MainScene**
-   - **Tiếng Việt**: `MainSceneScope.Configure()` đăng ký `LevelManager`, `GameManager`, `GameStateMachine`; VContainer khởi tạo mọi `IInitializable`.
-   - **English**: `MainSceneScope.Configure()` registers `LevelManager`, `GameManager`, and `GameStateMachine` while VContainer resolves all `IInitializable` services.
-3. **GameManager.Initialize()**
-   - **Tiếng Việt**: `collectAreaManager.SpawnAreas(collectAreaCount)` → `collectAreaBucketService.SetCollectAreaManager(...)` → `bucketColumnManager.Initialize(...)` → `signalBus.Subscribe<BucketTappedSignal>()` → `levelManager.LoadLevel(1)` → `GameStateMachine.TransitionTo<GamePlayState>()`.
-   - **English**: `collectAreaManager.SpawnAreas(collectAreaCount)` → `collectAreaBucketService.SetCollectAreaManager(...)` → `bucketColumnManager.Initialize(...)` → `signalBus.Subscribe<BucketTappedSignal>()` → `levelManager.LoadLevel(1)` → `GameStateMachine.TransitionTo<GamePlayState>()`.
+### 2.1 Lifetime va scene scopes
 
-## Luồng gameplay / Gameplay Flow
-1. **GamePlayState.Enter()**
-   - **Tiếng Việt**: Bật conveyor, subscribe `AllRingsClearedSignal`, `RowBallCompletedLoopSignal`, `BallCollectedSignal`, `BucketCompletedSignal`.
-   - **English**: Start the conveyor and subscribe to `AllRingsClearedSignal`, `RowBallCompletedLoopSignal`, `BallCollectedSignal`, and `BucketCompletedSignal`.
-2. **RowBall + Conveyor**
-   - **Tiếng Việt**: `ConveyorController` đẩy `RowBall` trong `ActiveRowBalls` dọc spline do `PathFollower` điều khiển.
-   - **English**: `ConveyorController` pushes each `RowBall` in `ActiveRowBalls` along a spline driven by `PathFollower`.
-3. **Bucket tap flow**
-   - **Tiếng Việt**: `BucketColumnManager.OnBucketTapped()` chọn bucket eligible, lấy `CollectAreaManager.GetFirstEmptyArea()`, gọi `Bucket.JumpToCollectArea()`, `signalBus.Fire(new BucketJumpedToAreaSignal { ... })`.
-   - **English**: `BucketColumnManager.OnBucketTapped()` picks the eligible bucket, fetches an empty CollectArea, triggers `Bucket.JumpToCollectArea()`, and fires `BucketJumpedToAreaSignal`.
-4. **Bucket fill lifecycle**
-   - **Tiếng Việt**: `Bucket.AddBall()` gọi `StartIncomingBall()`/`CompleteIncomingBall()`, cập nhật UI pro tiến trình, phát `BucketCompletedSignal` khi đủ `TargetBallCount` và không còn incoming.
-   - **English**: `Bucket.AddBall()` balances `StartIncomingBall()`/`CompleteIncomingBall()`, updates UI progress, and fires `BucketCompletedSignal` once target capacity and incoming slots are cleared.
-5. **Win / Lose checks**
-   - **Tiếng Việt**: `GamePlayState.CheckLoseCondition()` nếu mọi CollectArea đầy và `CollectAreaBucketService.GetAvailableSlotCountByColor(ballColor)` = 0 thì `LevelLoseState`; `AllRingsClearedSignal` hoặc tất cả bucket hoàn thành → `GameWinState`.
-   - **English**: `GamePlayState.CheckLoseCondition()` transitions to `LevelLoseState` when all CollectAreas are full and every `CollectAreaBucketService.GetAvailableSlotCountByColor(ballColor)` returns 0; `AllRingsClearedSignal` or all buckets complete triggers `GameWinState`.
+- `GameLifetimeScope`
+  - root DI scope
+  - dang ky framework services tu GameFoundationCore + UITemplate
+- `LoadingSceneScope`
+  - chi khoi tao loading screen presenter
+- `MainSceneScope`
+  - noi tap trung dang ky signal/service/state machine cho runtime gameplay
 
-## Dữ liệu & config / Data & Configuration
-- **Tiếng Việt**: `LevelData` gồm `Rings[]`, `AvailableCollectors[]`, `BucketColumns[]`, `BucketColumnSpacing`, `BucketRowSpacing`, `StackLimit`. `GameConstants` gom color map, bucket config, collect area spacing, jump heights, coefficient rung.
-- **English**: `LevelData` wires `Rings[]`, `AvailableCollectors[]`, `BucketColumns[]`, spacing, and stack limit. `GameConstants` centralizes color maps, bucket/collect area configs, jump heights, and other thresholds (FillPoint, RowBall spacing).
+### 2.2 Loading pipeline
 
-## Tín hiệu & observability / Signals & Observability
-- **Tiếng Việt**: `SignalBus` (MessagePipe wrapper) khai báo `BucketSignals`, `GameSignals`; `GameManager`/`GamePlayState` đăng ký ghi log qua `ILoggerManager.GetLogger(this)` đối với event quan trọng.
-- **English**: `SignalBus` (MessagePipe) declares `BucketSignals` and `GameSignals`; `GameManager` and `GamePlayState` log key transitions via `ILoggerManager.GetLogger(this)`.
+- `LoadingScreenPresenter`
+  - show loading progress UI
+  - load user data qua `UserDataManager`
+  - preload `Level_01`
+  - load `1.MainScene` qua `IGameAssets.LoadSceneAsync(...)`
 
-## Tài nguyên ngoài / External Resources
-- **Tiếng Việt**: Submodule `GameFoundationCore` cung cấp DI helpers, `ScreenManager`, `SignalBus`; `UITemplate` cung cấp `StateMachine` base. OpenUPM packages: VContainer, UniTask, MessagePipe, Addressables, InputSystem, DOTween Pro, Dreamteck Splines.
-- **English**: `GameFoundationCore` handles DI utilities, `ScreenManager`, `SignalBus`, while `UITemplate` provides the base `StateMachine`. OpenUPM packages include VContainer, UniTask, MessagePipe, Addressables, InputSystem, DOTween Pro, Dreamteck Splines.
+### 2.3 Level orchestration
+
+- `LevelManager`
+  - load level prefab theo key `Level_XX`
+  - uu tien Addressables, fallback sang `Resources`
+  - instantiate level prefab vao `levelRoot`
+  - luu `CurrentLevel`, `HighestUnlockedLevel`, progress
+- `LevelController`
+  - la runtime coordinator chinh cua level instance
+  - initialize conveyor, collect areas, bucket manager, queue feeder
+  - connect `CollectAreaBucketService`
+  - subscribe `BucketTappedSignal`
+  - chuyen state sang `GamePlayState`
+
+## 3. Gameplay architecture
+
+### 3.1 Main conveyor
+
+- `ConveyorController`
+  - dung Dreamteck spline de tao vong loop
+  - spawn `RowBall` tu `LevelData.Rings`
+  - theo doi `ActiveRowBalls`
+  - kiem tra entry point trong `Update()`
+  - khi row den entry, tim target bucket theo mau va cho ball nhay vao bucket
+
+### 3.2 Queue subsystem
+
+- `QueueConveyor`
+  - giu them row cho level co queue
+  - spawn tu `LevelData.QueueRings`
+  - chay tren non-loop path
+- `ConveyorFeeder`
+  - tim gap lon nhat tren main conveyor
+  - chuyen front row tu queue vao ring khi du gap
+  - dong bo co/khong con queue rows cho main conveyor
+
+### 3.3 Bucket subsystem
+
+- `BucketColumnManager`
+  - spawn dynamic columns tu `LevelData.BucketColumns`
+  - tinh `TargetBallCount` cho tung bucket theo tong so ball cung mau
+  - chi bucket dau moi cot duoc xem la eligible
+  - dua bucket hop le vao collect area dau tien con trong
+- `Bucket`
+  - giu state cua bucket: color, target, incoming, collected
+  - cho ball nhay vao, cap nhat progress, xu ly complete
+  - khi complete: animate, phat `BucketCompletedSignal`, release collect area slot, destroy self
+
+### 3.4 Collect area subsystem
+
+- `CollectAreaManager`
+  - spawn va query slot collect area
+  - kiem tra tat ca slot da occupied hay chua
+- `CollectAreaBucketService`
+  - doc bucket dang o trong collect area
+  - tim stable target bucket theo color
+  - tinh available slots theo color
+  - co balanced plan helpers cho assignment
+
+## 4. State machine architecture
+
+- `GameStateMachine`
+  - build tu danh sach `IGameState` auto-discover
+  - `Initialize()` transition thang sang `GamePlayState`
+- `GameHomeState`
+  - mo `HomeScreenPresenter`
+- `GamePlayState`
+  - mo `GameplayScreenPresenter`
+  - start/stop conveyor, queue, feeder
+  - subscribe signal de quyet dinh win/lose
+- `GameWinState` / `GameLoseState`
+  - da ton tai nhung popup flow chua hoan tat
+
+## 5. Signal flow quan trong
+
+### Bucket tap flow
+
+1. Player tap bucket
+2. `BucketTappedSignal` duoc fire
+3. `LevelController.OnBucketTapped(...)` tim bucket theo index
+4. `BucketColumnManager.OnBucketTapped(...)` dua bucket vao collect area
+5. `BucketJumpedToAreaSignal` duoc fire
+
+### Ball collection flow
+
+1. `ConveyorController` phat hien row den entry point
+2. `CollectAreaBucketService` tra ve bucket dang target theo mau
+3. `Bucket.StartIncomingBall()` duoc goi de reserve slot
+4. `Ball` nhay vao bucket
+5. `Bucket.AddBall()` + `Bucket.CompleteIncomingBall()`
+6. `BallCollectedSignal` ho tro gameplay state tracking
+
+### Bucket complete flow
+
+1. Bucket du target va khong con incoming
+2. Bucket chay completion animation
+3. `BucketCompletedSignal` duoc fire
+4. `GamePlayState` tang so bucket completed
+5. Neu du tong bucket, level win
+
+### Lose-check flow
+
+1. `GamePlayState.Tick()` goi `CheckLoseCondition()`
+2. Neu moi collect area da occupied
+3. Quet ball tren main conveyor va queue conveyor
+4. Neu khong co ball nao con the vao bucket hop le theo mau/slot
+5. `LevelLoseSignal` + transition `GameLoseState`
+
+## 6. Data architecture
+
+### `LevelData`
+
+- Basic:
+  - `LevelNumber`
+- Main conveyor:
+  - `ConveyorSpeed`
+  - `Rings[]`
+- Bucket layout:
+  - `BucketColumns[]`
+  - `BucketColumnSpacing`
+  - `BucketRowSpacing`
+- Queue:
+  - `HasQueue`
+  - `QueueRings[]`
+  - `QueueSpeed`
+- Extra placeholders:
+  - `AvailableCollectors`
+  - `StackLimit`
+  - `HasHiddenRings`
+  - `BlockedSlotCount`
+
+## 7. Kien truc asset loading
+
+- Scenes va level duoc ho tro boi Addressables
+- `LevelManager` van fallback sang `Resources` cho level prefab
+- Hien dang co song song:
+  - `Assets/Prefabs/Levels/Level_01.prefab`
+  - `Assets/Resources/Levels/Level_01.prefab`
+  - `Assets/Data/Levels/Level_01.asset`
+  - `Assets/Resources/Levels/Level_01.asset`
+
+## 8. Architectural notes
+
+- Tai lieu cu nhac `GameManager`, nhung runtime hien tai duoc dieu phoiboi `LevelController`
+- Codebase the hien dau vet migration tu he thong cu/template/Cocos, vi vay can tach ro `legacy` va `active architecture` khi mo rong tiep
+- `docs/` nen tiep tuc mo ta architecture theo ma nguon hien tai, khong theo template goc

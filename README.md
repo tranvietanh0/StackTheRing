@@ -1,31 +1,67 @@
 # Stack The Ring
 
-## Giới thiệu / Introduction
-- **Tiếng Việt**: Stack The Ring là game hyper-casual Unity 6000.3.10f1, định hình lại gameplay qua conveyor → bucket → CollectArea, tất cả được điều phối bằng VContainer/UniTask/SignalBus.
-- **English**: Stack The Ring is a Unity 6000.3.10f1 hyper-casual game where spline-driven row balls feed bucket columns that land in CollectAreas, all orchestrated via VContainer, UniTask, and SignalBus.
+Stack The Ring la Unity project hyper-casual hien dang phat trien quanh gameplay conveyor + bucket + collect area + queue conveyor.
 
-## Bắt đầu nhanh / Quick Start
-- **Tiếng Việt**: Mở `UnityStackTheRing` bằng Unity 6000.3.10f1, chạy `Setup.bat` / `Setup.sh` để sync submodule và packages, sau đó play `0.LoadingScene` qua Addressables.
-- **English**: Open `UnityStackTheRing` in Unity 6000.3.10f1, run `Setup.bat`/`Setup.sh` to sync submodules + packages, then launch `0.LoadingScene` so `LoadingScreenPresenter` pulls `1.MainScene` via Addressables.
-- **Tiếng Việt**: Đọc chuỗi tài liệu trong `docs/` trước khi thay đổi logic: `codebase-summary`, `system-architecture`, `code-standards`, `project-overview-pdr`, `development-roadmap`, `project-changelog`.
-- **English**: Review the `docs/` bundle before modifying gameplay: `codebase-summary`, `system-architecture`, `code-standards`, `project-overview-pdr`, `development-roadmap`, `project-changelog`.
+## Hien trang nhanh
 
-## Cấu trúc repository / Repository layout
-- **Tiếng Việt**: `UnityStackTheRing/Assets/Scripts` chứa các hệ thống Conveyor, Bucket, CollectArea, Level, Ring, Services, Signals và StateMachines; `Assets/Submodules` là GameFoundationCore/UITemplate/Extensions/Logging; `docs/` là single source of truth.
-- **English**: `UnityStackTheRing/Assets/Scripts` holds Conveyor, Bucket, CollectArea, Level, Ring, Services, Signals, and StateMachines while `Assets/Submodules` hosts GameFoundationCore, UITemplate, Extensions, Logging; keep `docs/` as the single source of truth.
+- Unity project: `UnityStackTheRing/`
+- Unity version thuc te: `2022.3.35f1`
+- Scenes chinh:
+  - `UnityStackTheRing/Assets/Scenes/0.LoadingScene.unity`
+  - `UnityStackTheRing/Assets/Scenes/1.MainScene.unity`
+- Tech stack chinh:
+  - VContainer
+  - UniTask
+  - MessagePipe / SignalBus
+  - Addressables
+  - Dreamteck Splines
+  - DOTween
 
-## Kiến trúc chính / Architecture highlights
-- **Tiếng Việt**: Game vận hành qua `GameLifetimeScope` → `LoadingSceneScope` → `MainSceneScope` với `GameStateMachine` auto-discover states.
-- **English**: The runtime flows through `GameLifetimeScope` → `LoadingSceneScope` → `MainSceneScope`, with `GameStateMachine` auto-discovering states.
-- **Tiếng Việt**: `GameManager` kết nối `ConveyorController`, `BucketColumnManager`, `CollectAreaManager`, `CollectAreaBucketService`, xử lý `BucketTappedSignal`, `GamePlayState` tính win/lose.
-- **English**: `GameManager` wires the conveyor/bucket/CollectArea trio, handles `BucketTappedSignal`, and lets `GamePlayState` drive win/lose logic.
-- **Tiếng Việt**: `BucketColumnManager` dùng `LevelData.BucketColumns`, `CollectAreaBucketService` trả về slot/bucket màu, `JumpService` đa năng cho bucket/ball.
-- **English**: `BucketColumnManager` reads `LevelData.BucketColumns`, `CollectAreaBucketService` provides slot/bucket color info, and `JumpService` animates both bucket and ball arcs.
+## Runtime flow
 
-## Tài liệu chi tiết / Docs index
-- **Tiếng Việt**: `docs/project-overview-pdr.md` (overview + PDR), `docs/codebase-summary.md`, `docs/system-architecture.md`, `docs/code-standards.md`, `docs/development-roadmap.md`, `docs/project-changelog.md`.
-- **English**: Key docs include `docs/project-overview-pdr.md` (overview + PDR), `docs/codebase-summary.md`, `docs/system-architecture.md`, `docs/code-standards.md`, `docs/development-roadmap.md`, and `docs/project-changelog.md`.
+1. `0.LoadingScene` khoi tao `LoadingScreenPresenter`
+2. Presenter load user data, preload `Level_01`, sau do load `1.MainScene`
+3. `MainSceneScope` dang ky services + state machine + signals
+4. `LevelManager` load level prefab
+5. `LevelController` initialize gameplay systems va chuyen sang `GamePlayState`
 
-## Lưu ý / Notes
-- **Tiếng Việt**: Injection qua constructor, signal là `class`, MVP trong `{Name}ScreenView.cs`.
-- **English**: Continue constructor-injection, keep signals as classes, and house MVP per screen inside `{Name}ScreenView.cs`.
+## Gameplay architecture
+
+- `ConveyorController`: main loop conveyor, entry point detection, collect ball vao bucket
+- `QueueConveyor`: queue row bo sung cho level co queue
+- `ConveyorFeeder`: chen row tu queue vao ring khi co gap
+- `BucketColumnManager`: spawn bucket grid, dua bucket hop le vao collect area
+- `Bucket`: track target/incoming/collected, completion animation
+- `CollectAreaManager`: quan ly collect area slots
+- `CollectAreaBucketService`: target bucket theo color, slot availability, balanced assignment
+- `GamePlayState`: start/stop runtime systems, check win/lose
+
+## Thu muc quan trong
+
+```text
+StackTheRing/
+|- UnityStackTheRing/
+|  |- Assets/Scripts/
+|  |- Assets/Scenes/
+|  |- Assets/Submodules/
+|  |- Packages/
+|  `- ProjectSettings/
+|- docs/
+`- plans/
+```
+
+## Doc truoc khi sua code
+
+`docs/` la source of truth:
+
+- `docs/project-overview-pdr.md`
+- `docs/codebase-summary.md`
+- `docs/code-standards.md`
+- `docs/system-architecture.md`
+
+## Ghi chu quan trong
+
+- Docs cu tung nhac Unity 6000 va `GameManager`; code hien tai khong con nhu vay
+- Runtime coordinator hien tai la `LevelController` + `LevelManager` + `MainSceneScope`
+- `GameWinState` va `GameLoseState` da ton tai nhung popup flow chua hoan tat
+- `Setup.bat` / `Setup.sh` mang dau vet template bootstrap cu, khong nen xem la tai lieu kien truc hien tai

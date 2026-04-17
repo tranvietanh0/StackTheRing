@@ -318,9 +318,27 @@ namespace HyperCasualGame.Scripts.Bucket
             var result = new Dictionary<ColorType, int>();
             var normalizedBallsPerRow = Mathf.Max(1, ballsPerRow);
 
+            // Count main ring balls
             if (levelData.Rings != null)
             {
                 foreach (var ring in levelData.Rings)
+                {
+                    var totalBallCount = ring.Count * normalizedBallsPerRow;
+                    if (result.ContainsKey(ring.Color))
+                    {
+                        result[ring.Color] += totalBallCount;
+                    }
+                    else
+                    {
+                        result[ring.Color] = totalBallCount;
+                    }
+                }
+            }
+
+            // Include queue balls in target count when queue is enabled
+            if (levelData.HasQueue && levelData.QueueRings != null)
+            {
+                foreach (var ring in levelData.QueueRings)
                 {
                     var totalBallCount = ring.Count * normalizedBallsPerRow;
                     if (result.ContainsKey(ring.Color))

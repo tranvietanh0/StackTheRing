@@ -51,6 +51,8 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
         private BucketColumnManager      bucketColumnManager;
         private CollectAreaManager       collectAreaManager;
         private CollectAreaBucketService collectAreaBucketService;
+        private QueueConveyor            queueConveyor;
+        private ConveyorFeeder           conveyorFeeder;
 
         #endregion
 
@@ -120,13 +122,17 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             ConveyorController       conveyor,
             BucketColumnManager      bucketColumnManager,
             CollectAreaManager       collectAreaManager,
-            CollectAreaBucketService collectAreaBucketService
+            CollectAreaBucketService collectAreaBucketService,
+            QueueConveyor            queueConveyor = null,
+            ConveyorFeeder           conveyorFeeder = null
         )
         {
             this.conveyor                 = conveyor;
             this.bucketColumnManager      = bucketColumnManager;
             this.collectAreaManager       = collectAreaManager;
             this.collectAreaBucketService = collectAreaBucketService;
+            this.queueConveyor            = queueConveyor;
+            this.conveyorFeeder           = conveyorFeeder;
 
             // Pass service to conveyor for entry point ball collection
             this.conveyor?.SetCollectAreaBucketService(collectAreaBucketService);
@@ -139,16 +145,27 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
         private void StartGameplay()
         {
             this.conveyor?.StartConveyor();
+            this.queueConveyor?.StartQueue();
+            this.conveyorFeeder?.StartFeeding();
         }
 
         private void StopGameplay()
         {
             this.conveyor?.StopConveyor();
+            this.queueConveyor?.StopQueue();
+            this.conveyorFeeder?.StopFeeding();
         }
 
         private void OnAllBallsCleared()
         {
             if (!this.isPlaying) return;
+
+            // Don't win yet if queue still has rows to feed
+            if (this.queueConveyor != null && !this.queueConveyor.IsEmpty)
+            {
+                this.logger.Info("Ring cleared but queue still has rows — continuing");
+                return;
+            }
 
             this.logger.Info("All balls cleared - WIN!");
             this.isPlaying = false;
@@ -212,7 +229,6 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             {
                 foreach (var ball in rowBall.GetActiveBalls())
                 {
-                    // Check if ball color matches any target AND has available slots
                     if (targetColors.Contains(ball.BallColor) && this.collectAreaBucketService.GetAvailableSlotCountByColor(ball.BallColor) > 0)
                     {
                         canCollectAny = true;
@@ -220,6 +236,23 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
                     }
                 }
                 if (canCollectAny) break;
+            }
+
+            // Also check queue balls — if queue has matching balls, don't lose yet
+            if (!canCollectAny && this.queueConveyor != null && !this.queueConveyor.IsEmpty)
+            {
+                foreach (var rowBall in this.queueConveyor.PendingRowBalls)
+                {
+                    foreach (var ball in rowBall.GetActiveBalls())
+                    {
+                        if (targetColors.Contains(ball.BallColor) && this.collectAreaBucketService.GetAvailableSlotCountByColor(ball.BallColor) > 0)
+                        {
+                            canCollectAny = true;
+                            break;
+                        }
+                    }
+                    if (canCollectAny) break;
+                }
             }
 
             if (!canCollectAny)

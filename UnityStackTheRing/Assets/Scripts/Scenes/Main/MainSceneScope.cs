@@ -50,6 +50,8 @@ namespace HyperCasualGame.Scripts.Scenes.Main
             builder.DeclareSignal<RowBallReachEntrySignal>();
             builder.DeclareSignal<BallCollectedSignal>();
             builder.DeclareSignal<RowBallCompletedLoopSignal>();
+            builder.DeclareSignal<QueueRowTransferredSignal>();
+            builder.DeclareSignal<QueueEmptySignal>();
         }
 
         private void RegisterServices(IContainerBuilder builder)
@@ -100,7 +102,7 @@ namespace HyperCasualGame.Scripts.Scenes.Main
             // Small delay to ensure all services are ready
             await UniTask.Yield();
 
-            var controller = await levelManager.LoadLevel(1);
+            var controller = await levelManager.LoadLevel(2);
             if (controller == null)
             {
                 Debug.LogError("[MainSceneScope] Failed to load first level!");

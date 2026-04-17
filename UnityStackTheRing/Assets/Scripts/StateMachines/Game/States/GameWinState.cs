@@ -2,6 +2,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
 {
     using GameFoundationCore.Scripts.Signals;
     using GameFoundationCore.Scripts.UIModule.ScreenFlow.Manager;
+    using HyperCasualGame.Scripts.Scenes.Screen;
     using HyperCasualGame.Scripts.StateMachines.Game.Interfaces;
     using UniT.Logging;
     using ILogger = UniT.Logging.ILogger;
@@ -52,8 +53,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
 
         private async void ShowWinScreen()
         {
-            // TODO: Open win popup
-            // await this.screenManager.OpenScreen<WinPopupPresenter>();
+            await this.screenManager.OpenScreen<WinScreenPresenter>();
         }
 
         #endregion

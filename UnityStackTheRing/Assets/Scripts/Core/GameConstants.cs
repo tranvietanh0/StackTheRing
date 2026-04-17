@@ -158,6 +158,37 @@ namespace HyperCasualGame.Scripts.Core
             public const float SparkleScale = 0.015f;
         }
 
+        /// <summary>Queue conveyor config</summary>
+        public static class QueueConveyorConfig
+        {
+            /// <summary>Minimum gap (in path distance) on ring to accept a new row from queue</summary>
+            public const float MinGapForTransfer = 0.15f;
+
+            /// <summary>Distance threshold to consider a row "at the transfer point"</summary>
+            public const float TransferPointThreshold = 0.3f;
+
+            /// <summary>Delay between consecutive row transfers (seconds)</summary>
+            public const float TransferCooldown = 0.2f;
+
+            /// <summary>Default queue conveyor speed</summary>
+            public const float DefaultQueueSpeed = 1f;
+
+            /// <summary>How close the front row must be to queue entry before transfer</summary>
+            public const float EntryReadyThreshold = 0.02f;
+
+            /// <summary>Extra clearance required after main entry before accepting a queued row</summary>
+            public const float EntryInsertBuffer = 0.001f;
+
+            /// <summary>Duration for queue compact slide</summary>
+            public const float CompactDuration = 0.25f;
+
+            /// <summary>Duration for queue-to-main handoff tween</summary>
+            public const float HandoffDuration = 0.22f;
+
+            /// <summary>Vertical arc used while handing off a row to the main conveyor</summary>
+            public const float HandoffArcHeight = 0.12f;
+        }
+
         public static Color GetColor(ColorType colorType)
         {
             return colorType switch
