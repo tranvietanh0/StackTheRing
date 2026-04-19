@@ -273,15 +273,22 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         public bool TryGetSubInsertDistance(float desiredSpacing, out float insertDistance)
         {
+            return this.TryGetSubInsertDistance(this.queueInsertAnchor, desiredSpacing, out insertDistance);
+        }
+
+        public bool TryGetSubInsertDistance(Transform insertAnchorOverride, float desiredSpacing, out float insertDistance)
+        {
             insertDistance = 0f;
             if (this.conveyorPath == null)
             {
                 return false;
             }
 
-            var anchorTransform = this.queueInsertAnchor != null
-                ? this.queueInsertAnchor
-                : (this.entryNodes.Count > 0 ? this.entryNodes[0] : null);
+            var anchorTransform = insertAnchorOverride != null
+                ? insertAnchorOverride
+                : (this.queueInsertAnchor != null
+                    ? this.queueInsertAnchor
+                    : (this.entryNodes.Count > 0 ? this.entryNodes[0] : null));
             if (anchorTransform == null)
             {
                 return false;

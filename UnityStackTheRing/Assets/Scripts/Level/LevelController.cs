@@ -1,5 +1,6 @@
 namespace HyperCasualGame.Scripts.Level
 {
+    using System;
     using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.DI;
     using GameFoundationCore.Scripts.Signals;
@@ -31,6 +32,7 @@ namespace HyperCasualGame.Scripts.Level
         [Header("Queue Conveyor (Optional)")]
         [SerializeField] private QueueConveyor queueConveyor;
         [SerializeField] private ConveyorFeeder conveyorFeeder;
+        [SerializeField] private QueueLaneBinding[] queueLaneBindings;
 
         [Header("Prefabs")]
         [SerializeField] private Ball ballPrefab;
@@ -51,6 +53,7 @@ namespace HyperCasualGame.Scripts.Level
         private ILoggerManager loggerManager;
         private ILogger logger;
         private CollectAreaBucketService collectAreaBucketService;
+        private MultiQueueCoordinator multiQueueCoordinator;
 
         public void Inject(
             SignalBus signalBus,
@@ -107,17 +110,26 @@ namespace HyperCasualGame.Scripts.Level
             this.conveyorController.Initialize(this.signalBus, this.loggerManager);
 
             // Initialize queue conveyor if present
-            if (this.levelData != null && this.levelData.HasQueue && (this.queueConveyor == null || this.conveyorFeeder == null))
+            var activeQueueLanes = this.levelData != null ? this.levelData.GetActiveQueueLanes() : Array.Empty<QueueLaneData>();
+            var useExplicitQueueLanes = this.levelData != null && this.levelData.QueueLanes != null && this.levelData.QueueLanes.Length > 0;
+            var effectiveQueueBindings = this.GetEffectiveQueueBindings(!useExplicitQueueLanes);
+            if (activeQueueLanes.Length > 0 && effectiveQueueBindings.Length == 0)
             {
-                throw new MissingReferenceException("Queue level requires QueueConveyor and ConveyorFeeder references.");
+                throw new MissingReferenceException("Queue level requires queue lane bindings.");
             }
 
-            var hasQueue = this.levelData != null && this.levelData.HasQueue && this.queueConveyor != null;
-            Debug.Log($"[LevelController] hasQueue={hasQueue}, levelData.HasQueue={this.levelData?.HasQueue}, queueConveyor null={this.queueConveyor == null}, conveyorFeeder null={this.conveyorFeeder == null}");
-
-            if (hasQueue)
+            if (effectiveQueueBindings.Length > 0 && activeQueueLanes.Length > effectiveQueueBindings.Length)
             {
-                this.queueConveyor.Initialize(this.signalBus, this.loggerManager);
+                throw new MissingReferenceException("Queue lane bindings count is smaller than active queue lanes count.");
+            }
+
+            this.multiQueueCoordinator = new MultiQueueCoordinator(this.loggerManager);
+            if (activeQueueLanes.Length > 0)
+            {
+                this.multiQueueCoordinator.Initialize(
+                    this.conveyorController,
+                    this.signalBus,
+                    effectiveQueueBindings);
             }
 
             // Initialize collect areas
@@ -131,15 +143,6 @@ namespace HyperCasualGame.Scripts.Level
             // Initialize bucket manager
             this.bucketColumnManager.Initialize(this.signalBus, this.collectAreaManager);
 
-            // Initialize feeder if queue is present
-            if (hasQueue && this.conveyorFeeder != null)
-            {
-                this.conveyorFeeder.Initialize(
-                    this.conveyorController,
-                    this.queueConveyor,
-                    this.loggerManager);
-            }
-
             // Subscribe to bucket tap signal
             this.signalBus.Subscribe<BucketTappedSignal>(this.OnBucketTapped);
 
@@ -151,8 +154,7 @@ namespace HyperCasualGame.Scripts.Level
                     this.bucketColumnManager,
                     this.collectAreaManager,
                     this.collectAreaBucketService,
-                    this.queueConveyor,
-                    this.conveyorFeeder);
+                    this.multiQueueCoordinator);
             }
 
             this.logger.Info("LevelController initialized");
@@ -192,16 +194,15 @@ namespace HyperCasualGame.Scripts.Level
             // Setup conveyor with balls
             this.conveyorController.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
 
-            // Setup queue conveyor if present
-            if (levelData.HasQueue && this.queueConveyor != null)
+            if (this.multiQueueCoordinator != null && levelData.HasAnyQueue)
             {
-                this.queueConveyor.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
+                this.multiQueueCoordinator.SetupLevel(levelData, this.ballPrefab, this.rowBallPrefab);
             }
 
-            this.conveyorController.SetHasQueueRows(levelData.HasQueue && this.queueConveyor != null && !this.queueConveyor.IsEmpty);
+            this.multiQueueCoordinator?.SyncMainQueueState();
 
             // Setup bucket grid — include queue balls in target count
-            this.bucketColumnManager.SpawnBuckets(levelData, this.conveyorController.BallsPerRow);
+            this.bucketColumnManager.SpawnBuckets(levelData, this.conveyorController.BallsPerRow, this.multiQueueCoordinator);
 
             this.logger.Info($"Level {levelData.LevelNumber} setup complete (queue={levelData.HasQueue})");
         }
@@ -237,7 +238,31 @@ namespace HyperCasualGame.Scripts.Level
             this.signalBus?.Unsubscribe<BucketTappedSignal>(this.OnBucketTapped);
             this.bucketColumnManager?.Cleanup();
             this.collectAreaManager?.Cleanup();
-            this.conveyorFeeder?.StopFeeding();
+            this.multiQueueCoordinator?.Stop();
+        }
+
+        private QueueLaneBinding[] GetEffectiveQueueBindings(bool allowLegacyFallback)
+        {
+            if (this.queueLaneBindings != null && this.queueLaneBindings.Length > 0)
+            {
+                return this.queueLaneBindings;
+            }
+
+            if (allowLegacyFallback && this.queueConveyor != null && this.conveyorFeeder != null)
+            {
+                return new[]
+                {
+                    new QueueLaneBinding
+                    {
+                        LaneId = "queue-0",
+                        QueueConveyor = this.queueConveyor,
+                        ConveyorFeeder = this.conveyorFeeder,
+                        InsertAnchor = null
+                    }
+                };
+            }
+
+            return Array.Empty<QueueLaneBinding>();
         }
 
         #endregion

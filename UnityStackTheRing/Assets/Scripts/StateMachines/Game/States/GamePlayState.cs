@@ -9,6 +9,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
     using HyperCasualGame.Scripts.CollectArea;
     using HyperCasualGame.Scripts.Conveyor;
     using HyperCasualGame.Scripts.Level;
+    using HyperCasualGame.Scripts.Ring;
     using HyperCasualGame.Scripts.Scenes.Screen;
     using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
@@ -51,8 +52,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
         private BucketColumnManager      bucketColumnManager;
         private CollectAreaManager       collectAreaManager;
         private CollectAreaBucketService collectAreaBucketService;
-        private QueueConveyor            queueConveyor;
-        private ConveyorFeeder           conveyorFeeder;
+        private MultiQueueCoordinator    multiQueueCoordinator;
 
         #endregion
 
@@ -111,6 +111,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
         {
             if (!this.isPlaying) return;
 
+            this.multiQueueCoordinator?.SyncMainQueueState();
             this.CheckLoseCondition();
         }
 
@@ -123,16 +124,14 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             BucketColumnManager      bucketColumnManager,
             CollectAreaManager       collectAreaManager,
             CollectAreaBucketService collectAreaBucketService,
-            QueueConveyor            queueConveyor = null,
-            ConveyorFeeder           conveyorFeeder = null
+            MultiQueueCoordinator    multiQueueCoordinator = null
         )
         {
             this.conveyor                 = conveyor;
             this.bucketColumnManager      = bucketColumnManager;
             this.collectAreaManager       = collectAreaManager;
             this.collectAreaBucketService = collectAreaBucketService;
-            this.queueConveyor            = queueConveyor;
-            this.conveyorFeeder           = conveyorFeeder;
+            this.multiQueueCoordinator    = multiQueueCoordinator;
 
             // Pass service to conveyor for entry point ball collection
             this.conveyor?.SetCollectAreaBucketService(collectAreaBucketService);
@@ -145,15 +144,13 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
         private void StartGameplay()
         {
             this.conveyor?.StartConveyor();
-            this.queueConveyor?.StartQueue();
-            this.conveyorFeeder?.StartFeeding();
+            this.multiQueueCoordinator?.Start();
         }
 
         private void StopGameplay()
         {
             this.conveyor?.StopConveyor();
-            this.queueConveyor?.StopQueue();
-            this.conveyorFeeder?.StopFeeding();
+            this.multiQueueCoordinator?.Stop();
         }
 
         private void OnAllBallsCleared()
@@ -161,7 +158,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             if (!this.isPlaying) return;
 
             // Don't win yet if queue still has rows to feed
-            if (this.queueConveyor != null && !this.queueConveyor.IsEmpty)
+            if (this.multiQueueCoordinator != null && this.multiQueueCoordinator.HasPendingRows)
             {
                 this.logger.Info("Ring cleared but queue still has rows — continuing");
                 return;
@@ -239,9 +236,9 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             }
 
             // Also check queue balls — if queue has matching balls, don't lose yet
-            if (!canCollectAny && this.queueConveyor != null && !this.queueConveyor.IsEmpty)
+            if (!canCollectAny && this.multiQueueCoordinator != null)
             {
-                foreach (var rowBall in this.queueConveyor.PendingRowBalls)
+                foreach (var rowBall in this.multiQueueCoordinator.ReadyRows)
                 {
                     foreach (var ball in rowBall.GetActiveBalls())
                     {

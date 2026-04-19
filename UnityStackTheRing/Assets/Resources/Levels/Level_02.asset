@@ -17,21 +17,21 @@ MonoBehaviour:
   StackLimit: 8
   Rings:
   - Color: 0
-    Count: 25
+    Count: 36
   - Color: 3
-    Count: 25
+    Count: 35
   - Color: 1
-    Count: 25
+    Count: 35
   - Color: 2
-    Count: 25
+    Count: 35
   - Color: 3
-    Count: 25
+    Count: 35
   - Color: 1
-    Count: 25
+    Count: 35
   - Color: 2
-    Count: 25
+    Count: 35
   - Color: 0
-    Count: 25
+    Count: 35
   AvailableCollectors: 03000000000000000100000002000000
   BucketColumns:
   - BucketColors: 00000000

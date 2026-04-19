@@ -9,6 +9,8 @@ namespace HyperCasualGame.Scripts.Conveyor
     {
         private ConveyorController ringConveyor;
         private QueueConveyor queueConveyor;
+        private Transform insertAnchor;
+        private System.Action queueStateChanged;
         private ILogger logger;
         private bool isActive;
 
@@ -18,10 +20,14 @@ namespace HyperCasualGame.Scripts.Conveyor
         public void Initialize(
             ConveyorController ringConveyor,
             QueueConveyor queueConveyor,
+            Transform insertAnchor,
+            System.Action queueStateChanged,
             ILoggerManager loggerManager)
         {
             this.ringConveyor = ringConveyor;
             this.queueConveyor = queueConveyor;
+            this.insertAnchor = insertAnchor;
+            this.queueStateChanged = queueStateChanged;
             this.logger = loggerManager.GetLogger(this);
             this.logger.Info("ConveyorFeeder initialized");
         }
@@ -51,7 +57,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             var desiredSpacing = this.queueConveyor.GetDesiredRowSpacing();
-            if (!this.ringConveyor.TryGetSubInsertDistance(desiredSpacing, out var insertDistance))
+            if (!this.ringConveyor.TryGetSubInsertDistance(this.insertAnchor, desiredSpacing, out var insertDistance))
             {
                 return;
             }
@@ -63,7 +69,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             this.ringConveyor.InsertRowBall(row, insertDistance);
-            this.ringConveyor.SetHasQueueRows(!this.queueConveyor.IsEmpty);
+            this.queueStateChanged?.Invoke();
         }
     }
 }

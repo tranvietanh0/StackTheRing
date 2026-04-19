@@ -32,6 +32,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         public IReadOnlyList<RowBall> QueuedRowBalls => this.queuedRowBalls;
         public IEnumerable<RowBall> PendingRowBalls => this.queuedRowBalls;
+        public IEnumerable<RowBall> ReadyRows => this.readyToFill;
         public bool IsEmpty => this.queuedRowBalls.Count == 0;
         public bool IsRunning => this.isRunning;
         public bool HasReadyRow => this.readyToFill.Count > 0;
@@ -54,15 +55,15 @@ namespace HyperCasualGame.Scripts.Conveyor
                 : 0f;
         }
 
-        public void SetupLevel(LevelData levelData, Ball ballPrefab, RowBall rowBallPrefab)
+        public void SetupLevel(QueueLaneData laneData, Ball ballPrefab, RowBall rowBallPrefab, float conveyorSpeed)
         {
             this.ClearAllRows();
 
             this.ballPrefab = ballPrefab;
             this.rowBallPrefab = rowBallPrefab;
-            this.queueSpeed = levelData.QueueSpeed > 0 ? levelData.QueueSpeed : levelData.ConveyorSpeed;
+            this.queueSpeed = laneData.QueueSpeed > 0 ? laneData.QueueSpeed : conveyorSpeed;
 
-            this.SpawnQueueRows(levelData);
+            this.SpawnQueueRows(laneData);
             this.RefreshReadyRows();
         }
 
@@ -212,9 +213,9 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.UpdateQueueSlots();
         }
 
-        private void SpawnQueueRows(LevelData levelData)
+        private void SpawnQueueRows(QueueLaneData laneData)
         {
-            if (levelData.QueueRings == null || levelData.QueueRings.Length == 0)
+            if (laneData.QueueRings == null || laneData.QueueRings.Length == 0)
             {
                 return;
             }
@@ -224,7 +225,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             var spawnableLength = Mathf.Max(0f, pathLength - this.queueEntryDistance);
 
             var colorPool = new List<ColorType>();
-            foreach (var ringSpawn in levelData.QueueRings)
+            foreach (var ringSpawn in laneData.QueueRings)
             {
                 for (var count = 0; count < ringSpawn.Count; count++)
                 {
