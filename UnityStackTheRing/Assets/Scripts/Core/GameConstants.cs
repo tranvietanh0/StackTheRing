@@ -193,10 +193,14 @@ namespace HyperCasualGame.Scripts.Core
         {
             return colorType switch
             {
-                ColorType.Red => new Color(0.9f, 0.2f, 0.2f),
-                ColorType.Yellow => new Color(0.95f, 0.8f, 0.2f),
-                ColorType.Green => new Color(0.2f, 0.8f, 0.3f),
-                ColorType.Blue => new Color(0.2f, 0.5f, 0.9f),
+                ColorType.Red => new Color(0.9059f, 0.2980f, 0.2353f),
+                ColorType.Yellow => new Color(0.9451f, 0.7686f, 0.0588f),
+                ColorType.Green => new Color(0.1804f, 0.8000f, 0.4431f),
+                ColorType.Blue => new Color(0.2039f, 0.5961f, 0.8588f),
+                ColorType.Purple => new Color(0.6078f, 0.3490f, 0.7137f),
+                ColorType.Orange => new Color(0.9529f, 0.6118f, 0.0706f),
+                ColorType.Cyan => new Color(0.1020f, 0.7373f, 0.6118f),
+                ColorType.DarkGray => new Color(0.3804f, 0.4157f, 0.4196f),
                 _ => Color.white
             };
         }

@@ -10,42 +10,60 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc87aff43b3044a409c13c778837ccd7, type: 3}
-  m_Name: Level_03
+  m_Name: Level_06
   m_EditorClassIdentifier: 
-  LevelNumber: 3
+  LevelNumber: 6
   ConveyorSpeed: 1
   StackLimit: 8
   Rings:
   - Color: 0
-    Count: 30
+    Count: 35
   - Color: 2
-    Count: 30
+    Count: 35
   - Color: 1
-    Count: 30
-  - Color: 5
-    Count: 30
-  - Color: 0
-    Count: 30
-  - Color: 5
-    Count: 30
+    Count: 35
   - Color: 3
-    Count: 30
+    Count: 35
+  - Color: 0
+    Count: 35
+  - Color: 3
+    Count: 35
+  - Color: 5
+    Count: 35
   AvailableCollectors: 03000000000000000100000002000000
   BucketColumns:
-  - BucketColors: 0000000003000000
-  - BucketColors: 02000000
+  - BucketColors: 0200000000000000
+  - BucketColors: 0400000003000000
   - BucketColors: 0500000001000000
   BucketColumnSpacing: 1.2
   BucketRowSpacing: 1.2
   HasQueue: 1
   QueueRings:
-  - Color: 3
+  - Color: 0
+    Count: 12
+  - Color: 1
     Count: 12
   - Color: 2
     Count: 12
-  - Color: 5
-    Count: 12
   QueueSpeed: 1
-  QueueLanes: []
+  QueueLanes:
+  - LaneId: LeftQueue
+    DisplayName: LeftQueue
+    Enabled: 1
+    QueueRings:
+    - Color: 4
+      Count: 15
+    - Color: 1
+      Count: 15
+    QueueSpeed: 1
+  - LaneId: RightQueue
+    DisplayName: RightQueue
+    Enabled: 1
+    QueueRings:
+    - Color: 4
+      Count: 15
+    - Color: 2
+      Count: 15
+    QueueSpeed: 1
   HasHiddenRings: 0
   BlockedSlotCount: 0

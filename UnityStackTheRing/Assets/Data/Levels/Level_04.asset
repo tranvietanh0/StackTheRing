@@ -10,40 +10,42 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc87aff43b3044a409c13c778837ccd7, type: 3}
-  m_Name: Level_03
+  m_Name: Level_04
   m_EditorClassIdentifier: 
   LevelNumber: 3
   ConveyorSpeed: 1
   StackLimit: 8
   Rings:
   - Color: 0
-    Count: 30
-  - Color: 2
-    Count: 30
+    Count: 100
   - Color: 1
-    Count: 30
-  - Color: 5
-    Count: 30
-  - Color: 0
-    Count: 30
-  - Color: 5
-    Count: 30
+    Count: 100
   - Color: 3
-    Count: 30
+    Count: 100
+  - Color: 2
+    Count: 100
+  - Color: 0
+    Count: 100
+  - Color: 1
+    Count: 100
+  - Color: 2
+    Count: 100
+  - Color: 0
+    Count: 100
   AvailableCollectors: 03000000000000000100000002000000
   BucketColumns:
-  - BucketColors: 0000000003000000
-  - BucketColors: 02000000
-  - BucketColors: 0500000001000000
+  - BucketColors: 00000000
+  - BucketColors: 01000000
+  - BucketColors: 0300000002000000
   BucketColumnSpacing: 1.2
   BucketRowSpacing: 1.2
   HasQueue: 1
   QueueRings:
-  - Color: 3
+  - Color: 0
+    Count: 12
+  - Color: 1
     Count: 12
   - Color: 2
-    Count: 12
-  - Color: 5
     Count: 12
   QueueSpeed: 1
   QueueLanes: []
