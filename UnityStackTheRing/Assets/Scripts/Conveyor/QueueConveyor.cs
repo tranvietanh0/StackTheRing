@@ -88,14 +88,14 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         public RowBall PopReadyRow()
         {
-            if (this.readyToFill.Count == 0)
+            if (this.readyToFill.Count == 0 || this.queuedRowBalls.Count == 0)
             {
                 return null;
             }
 
-            var rowBall = this.readyToFill[0];
+            var rowBall = this.queuedRowBalls[0];
             this.readyToFill.RemoveAt(0);
-            this.queuedRowBalls.Remove(rowBall);
+            this.queuedRowBalls.RemoveAt(0);
 
             var follower = rowBall.GetComponent<PathFollower>();
             follower?.StopMoving();
@@ -135,15 +135,41 @@ namespace HyperCasualGame.Scripts.Conveyor
                 return;
             }
 
-            this.RefreshReadyRows();
-            this.ResumeActiveRows();
+            this.UpdateQueueSlots();
         }
 
         private void RefreshReadyRows()
         {
-            foreach (var row in this.queuedRowBalls)
+            this.readyToFill.Clear();
+
+            if (this.queuedRowBalls.Count == 0)
             {
-                if (row == null || this.readyToFill.Contains(row))
+                return;
+            }
+
+            var frontRow = this.queuedRowBalls[0];
+            var frontFollower = frontRow != null ? frontRow.GetComponent<PathFollower>() : null;
+            if (frontFollower == null)
+            {
+                return;
+            }
+
+            if (Mathf.Abs(frontFollower.GetCurrentDistance() - this.queueEntryDistance) <= GameConstants.QueueConveyorConfig.EntryReadyThreshold)
+            {
+                frontFollower.StopMoving();
+                this.readyToFill.Add(frontRow);
+            }
+        }
+
+        private void UpdateQueueSlots()
+        {
+            var spacing = this.GetDesiredRowSpacing();
+            var pathLength = this.CalculatePathLength();
+
+            for (var index = 0; index < this.queuedRowBalls.Count; index++)
+            {
+                var row = this.queuedRowBalls[index];
+                if (row == null)
                 {
                     continue;
                 }
@@ -154,43 +180,36 @@ namespace HyperCasualGame.Scripts.Conveyor
                     continue;
                 }
 
-                if (Mathf.Abs(follower.GetCurrentDistance() - this.queueEntryDistance) <= GameConstants.QueueConveyorConfig.EntryReadyThreshold)
+                var targetDistance = Mathf.Min(pathLength, this.queueEntryDistance + (index * spacing));
+                var currentDistance = follower.GetCurrentDistance();
+                var delta = currentDistance - targetDistance;
+
+                if (delta > GameConstants.QueueConveyorConfig.EntryReadyThreshold)
                 {
-                    follower.StopMoving();
-                    this.readyToFill.Add(row);
+                    follower.MoveTowardDistance(targetDistance, Time.deltaTime);
+                }
+                else if (delta < -GameConstants.QueueConveyorConfig.EntryReadyThreshold)
+                {
+                    follower.SetDistance(targetDistance);
+                }
+                else
+                {
+                    follower.SetDistance(targetDistance);
                 }
             }
 
-            this.readyToFill.Sort((left, right) =>
+            foreach (var row in this.queuedRowBalls)
             {
-                var leftFollower = left != null ? left.GetComponent<PathFollower>() : null;
-                var rightFollower = right != null ? right.GetComponent<PathFollower>() : null;
-                var leftDistance = leftFollower != null ? Mathf.Abs(leftFollower.GetCurrentDistance() - this.queueEntryDistance) : float.MaxValue;
-                var rightDistance = rightFollower != null ? Mathf.Abs(rightFollower.GetCurrentDistance() - this.queueEntryDistance) : float.MaxValue;
-                return leftDistance.CompareTo(rightDistance);
-            });
+                var follower = row != null ? row.GetComponent<PathFollower>() : null;
+                follower?.InvalidateSiblingCache();
+            }
+
+            this.RefreshReadyRows();
         }
 
         private void ResumeActiveRows()
         {
-            foreach (var row in this.queuedRowBalls)
-            {
-                if (row == null || this.readyToFill.Contains(row))
-                {
-                    continue;
-                }
-
-                var follower = row.GetComponent<PathFollower>();
-                if (follower == null)
-                {
-                    continue;
-                }
-
-                if (follower.GetCurrentDistance() > this.queueEntryDistance + GameConstants.QueueConveyorConfig.EntryReadyThreshold)
-                {
-                    follower.StartMoving();
-                }
-            }
+            this.UpdateQueueSlots();
         }
 
         private void SpawnQueueRows(LevelData levelData)
@@ -258,6 +277,8 @@ namespace HyperCasualGame.Scripts.Conveyor
             follower.MoveSpeed = this.queueSpeed;
             follower.LoopPath = false;
             follower.ReverseDirection = true;
+            follower.UseSiblingSpacing = false;
+            follower.UseExternalMovement = true;
             follower.Initialize(this.queuePath, startDistance, "QUEUE");
 
             rowBall.Initialize(rowConfig, this.ballPrefab, this.signalBus, this.config);

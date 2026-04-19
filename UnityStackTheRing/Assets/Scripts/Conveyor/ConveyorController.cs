@@ -249,6 +249,8 @@ namespace HyperCasualGame.Scripts.Conveyor
             follower.MoveSpeed = this.baseSpeed;
             follower.LoopPath = true;
             follower.ReverseDirection = false;
+            follower.UseSiblingSpacing = true;
+            follower.UseExternalMovement = false;
 
             if (this.entryNodes.Count > 0)
             {

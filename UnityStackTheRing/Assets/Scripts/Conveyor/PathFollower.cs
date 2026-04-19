@@ -17,6 +17,8 @@ namespace HyperCasualGame.Scripts.Conveyor
         public float RotationSpeed = 10f;
         public bool LoopPath = true;
         public bool ReverseDirection = false;
+        public bool UseSiblingSpacing = true;
+        public bool UseExternalMovement = false;
 
         private ConveyorPath path;
         private bool isMoving;
@@ -167,6 +169,23 @@ namespace HyperCasualGame.Scripts.Conveyor
             return this.currentDistance;
         }
 
+        public void SetDistance(float targetDistance, bool updateImmediately = true)
+        {
+            this.currentDistance = this.NormalizeDistance(targetDistance);
+            if (updateImmediately)
+            {
+                this.UpdatePositionAndRotation(0f, true);
+            }
+        }
+
+        public void MoveTowardDistance(float targetDistance, float deltaTime)
+        {
+            var normalizedTargetDistance = this.NormalizeDistance(targetDistance);
+            var step = this.MoveSpeed * deltaTime;
+            this.currentDistance = Mathf.MoveTowards(this.currentDistance, normalizedTargetDistance, step);
+            this.UpdatePositionAndRotation(deltaTime, false);
+        }
+
         public float GetTotalPathLength()
         {
             return this.totalPathLength;
@@ -265,6 +284,11 @@ namespace HyperCasualGame.Scripts.Conveyor
                 return;
             }
 
+            if (this.UseExternalMovement)
+            {
+                return;
+            }
+
             if (!this.isMoving)
             {
                 if (this.blendToPathTween != null)
@@ -339,6 +363,11 @@ namespace HyperCasualGame.Scripts.Conveyor
             var desiredSpacing = GameConstants.DistanceThresholds.BallSpacing;
             var maxMovement = this.MoveSpeed * dt;
 
+            if (!this.UseSiblingSpacing)
+            {
+                return maxMovement;
+            }
+
             var closestAheadDistance = float.MaxValue;
 
             this.RebuildSiblingCacheIfNeeded();
@@ -382,6 +411,11 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         private bool CheckSpacingAndStop()
         {
+            if (!this.UseSiblingSpacing)
+            {
+                return false;
+            }
+
             if (this.transform.parent == null)
             {
                 return false;
