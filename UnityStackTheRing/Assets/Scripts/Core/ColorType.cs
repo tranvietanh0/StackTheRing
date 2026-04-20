@@ -10,6 +10,7 @@ namespace HyperCasualGame.Scripts.Core
         Orange = 5,
         Cyan = 6,
         DarkGray = 7,
-        Pink = 8
+        Pink = 8,
+        Brown = 9
     }
 }

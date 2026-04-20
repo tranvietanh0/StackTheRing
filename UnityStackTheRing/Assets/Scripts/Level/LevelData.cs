@@ -438,7 +438,8 @@ namespace HyperCasualGame.Scripts.Level
         Orange = ColorType.Orange,
         Cyan = ColorType.Cyan,
         DarkGray = ColorType.DarkGray,
-        Pink = ColorType.Pink
+        Pink = ColorType.Pink,
+        Brown = ColorType.Brown
     }
 
     public readonly struct BucketLayoutCell
