@@ -1,6 +1,7 @@
 namespace HyperCasualGame.Scripts.Bucket
 {
     using System.Collections.Generic;
+    using System.Linq;
     using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.Signals;
     using HyperCasualGame.Scripts.CollectArea;
@@ -71,61 +72,54 @@ namespace HyperCasualGame.Scripts.Bucket
                 return;
             }
 
-            if (levelData.BucketColumns == null || levelData.BucketColumns.Length == 0)
+            var layoutCells = levelData.EnumerateBucketLayout().ToArray();
+            if (layoutCells.Length == 0)
             {
-                Debug.LogWarning("[BucketColumnManager] No bucket columns in level data!");
+                Debug.LogWarning("[BucketColumnManager] No bucket grid layout in level data!");
                 return;
             }
 
-            var columns = levelData.BucketColumns;
+            var width = levelData.BucketGridWidth;
             var totalBallCountByColor = this.CalculateTotalBallCountByColor(levelData, ballsPerRow, multiQueueCoordinator);
-            var bucketCountByColor = this.CalculateBucketCountByColor(columns);
+            var bucketCountByColor = this.CalculateBucketCountByColor(layoutCells);
             var assignedBucketCountByColor = new Dictionary<ColorType, int>();
 
             var spacing = levelData.BucketColumnSpacing > 0 ? levelData.BucketColumnSpacing : this.columnSpacing;
             var rowSpace = levelData.BucketRowSpacing > 0 ? levelData.BucketRowSpacing : this.rowSpacing;
 
-            this.CreateDynamicColumns(columns.Length, spacing);
+            this.CreateDynamicColumns(width, spacing);
 
             var globalIndex = 0;
 
-            for (var col = 0; col < columns.Length; col++)
+            foreach (var layoutCell in layoutCells.OrderBy(cell => cell.Column).ThenBy(cell => cell.Row))
             {
-                var columnNode = this.dynamicColumnNodes[col];
+                var columnNode = this.dynamicColumnNodes[layoutCell.Column];
                 if (columnNode == null) continue;
 
-                var bucketColors = columns[col].BucketColors;
+                var zOffset = -layoutCell.Row * rowSpace;
+                var bucketObj = Instantiate(this.bucketPrefab, columnNode);
+                bucketObj.transform.localPosition = new Vector3(0f, 0f, zOffset);
 
-                for (var row = 0; row < bucketColors.Length; row++)
+                var bucketConfig = new BucketConfig
                 {
-                    var bucketColor = bucketColors[row];
-                    var zOffset = -row * rowSpace;  // Negative so row 0 is at top (higher z)
+                    IndexBucket = globalIndex++,
+                    Row = layoutCell.Row,
+                    Column = layoutCell.Column,
+                    Color = layoutCell.Color,
+                    TargetBallCount = this.ResolveTargetBallCountForBucket(
+                        layoutCell.Color,
+                        totalBallCountByColor,
+                        bucketCountByColor,
+                        assignedBucketCountByColor
+                    )
+                };
 
-                    var bucketObj = Instantiate(this.bucketPrefab, columnNode);
-                    bucketObj.transform.localPosition = new Vector3(0f, 0f, zOffset);
-
-                    var bucketConfig = new BucketConfig
-                    {
-                        IndexBucket = globalIndex++,
-                        Row = row,
-                        Column = col,
-                        Color = bucketColor,
-                        TargetBallCount = this.ResolveTargetBallCountForBucket(
-                            bucketColor,
-                            totalBallCountByColor,
-                            bucketCountByColor,
-                            assignedBucketCountByColor
-                        )
-                    };
-
-                    bucketObj.Initialize(bucketConfig, this.signalBus);
-                    bucketObj.name = $"Bucket_{col}_{row}_{bucketColor}";
-
-                    this.spawnedBuckets.Add(bucketObj);
-                }
+                bucketObj.Initialize(bucketConfig, this.signalBus);
+                bucketObj.name = $"Bucket_{layoutCell.Column}_{layoutCell.Row}_{layoutCell.Color}";
+                this.spawnedBuckets.Add(bucketObj);
             }
 
-            Debug.Log($"[BucketColumnManager] Spawned {this.spawnedBuckets.Count} buckets in {columns.Length} columns");
+            Debug.Log($"[BucketColumnManager] Spawned {this.spawnedBuckets.Count} buckets in {width} columns");
         }
 
         /// <summary>
@@ -381,24 +375,19 @@ namespace HyperCasualGame.Scripts.Bucket
             return result;
         }
 
-        private Dictionary<ColorType, int> CalculateBucketCountByColor(BucketColumn[] columns)
+        private Dictionary<ColorType, int> CalculateBucketCountByColor(IEnumerable<BucketLayoutCell> layoutCells)
         {
             var result = new Dictionary<ColorType, int>();
 
-            foreach (var column in columns)
+            foreach (var layoutCell in layoutCells)
             {
-                if (column.BucketColors == null) continue;
-
-                foreach (var color in column.BucketColors)
+                if (result.ContainsKey(layoutCell.Color))
                 {
-                    if (result.ContainsKey(color))
-                    {
-                        result[color]++;
-                    }
-                    else
-                    {
-                        result[color] = 1;
-                    }
+                    result[layoutCell.Color]++;
+                }
+                else
+                {
+                    result[layoutCell.Color] = 1;
                 }
             }
 

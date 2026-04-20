@@ -201,6 +201,7 @@ namespace HyperCasualGame.Scripts.Core
                 ColorType.Orange => new Color(0.9529f, 0.6118f, 0.0706f),
                 ColorType.Cyan => new Color(0.1020f, 0.7373f, 0.6118f),
                 ColorType.DarkGray => new Color(0.3804f, 0.4157f, 0.4196f),
+                ColorType.Pink => new Color(0.9569f, 0.4275f, 0.6980f),
                 _ => Color.white
             };
         }

@@ -18,7 +18,9 @@
         "DOTween.Modules",
         "DOTweenPro.Scripts",
         "Dreamteck.Splines",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Sirenix.OdinInspector.Attributes",
+        "Sirenix.Serialization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -179,7 +179,6 @@ namespace HyperCasualGame.Scripts.Bucket
             }
 
             this.UpdateNextBucketInColumn(columnParent);
-            this.MoveRemainingBucketsInColumn(columnParent);
         }
 
         /// <summary>
@@ -433,26 +432,6 @@ namespace HyperCasualGame.Scripts.Bucket
                 }
             }
         }
-
-        private void MoveRemainingBucketsInColumn(Transform columnParent)
-        {
-            if (columnParent == null) return;
-
-            const float moveDistance = 1.2f;  // Positive to move UP (higher z) when front bucket leaves
-
-            foreach (Transform child in columnParent)
-            {
-                var bucket = child.GetComponent<Bucket>();
-                if (bucket != null && !bucket.IsInCollectArea)
-                {
-                    var currentPos = child.localPosition;
-                    var targetZ = currentPos.z + moveDistance;
-
-                    child.DOLocalMoveZ(targetZ, 0.2f).SetEase(Ease.OutSine);
-                }
-            }
-        }
-
         #endregion
     }
 }

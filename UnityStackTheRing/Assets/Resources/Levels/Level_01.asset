@@ -12,6 +12,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc87aff43b3044a409c13c778837ccd7, type: 3}
   m_Name: Level_01
   m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: BucketGrid
+      Entry: 7
+      Data: 0|HyperCasualGame.Scripts.Level.BucketCellType[,], HyperCasualGame.Scripts
+    - Name: 
+      Entry: 12
+      Data: 6
+    - Name: ranks
+      Entry: 1
+      Data: 3|2
+    - Name: 
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 3
+      Data: 18446744073709551615
+    - Name: 
+      Entry: 3
+      Data: 3
+    - Name: 
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 3
+      Data: 18446744073709551615
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
   LevelNumber: 1
   ConveyorSpeed: 1
   StackLimit: 8
@@ -24,12 +66,16 @@ MonoBehaviour:
     Count: 70
   - Color: 2
     Count: 70
-  AvailableCollectors: 03000000000000000100000002000000
+  AvailableCollectors: 
   BucketColumns:
   - BucketColors: 0000000003000000
   - BucketColors: 0100000002000000
   - BucketColors: 0000000001000000
   BucketColumnSpacing: 1.2
   BucketRowSpacing: 1.2
+  HasQueue: 0
+  QueueRings: []
+  QueueSpeed: 1
+  QueueLanes: []
   HasHiddenRings: 0
   BlockedSlotCount: 0

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc87aff43b3044a409c13c778837ccd7, type: 3}
-  m_Name: Level_05
+  m_Name: Level_11
   m_EditorClassIdentifier: 
   serializationData:
     SerializedFormat: 2
@@ -26,31 +26,19 @@ MonoBehaviour:
       Data: 0|HyperCasualGame.Scripts.Level.BucketCellType[,], HyperCasualGame.Scripts
     - Name: 
       Entry: 12
-      Data: 9
+      Data: 15
     - Name: ranks
       Entry: 1
-      Data: 3|3
-    - Name: 
-      Entry: 3
-      Data: 2
-    - Name: 
-      Entry: 3
-      Data: 5
-    - Name: 
-      Entry: 3
-      Data: 18446744073709551615
-    - Name: 
-      Entry: 3
-      Data: 0
+      Data: 3|5
     - Name: 
       Entry: 3
       Data: 6
     - Name: 
       Entry: 3
-      Data: 18446744073709551615
+      Data: 3
     - Name: 
       Entry: 3
-      Data: 4
+      Data: 18446744073709551615
     - Name: 
       Entry: 3
       Data: 1
@@ -58,53 +46,111 @@ MonoBehaviour:
       Entry: 3
       Data: 3
     - Name: 
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 3
+      Data: 18446744073709551615
+    - Name: 
+      Entry: 3
+      Data: 18446744073709551615
+    - Name: 
+      Entry: 3
+      Data: 5
+    - Name: 
+      Entry: 3
+      Data: 7
+    - Name: 
+      Entry: 3
+      Data: 5
+    - Name: 
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 3
+      Data: 4
+    - Name: 
+      Entry: 3
+      Data: 4
+    - Name: 
       Entry: 13
       Data: 
     - Name: 
       Entry: 8
       Data: 
-  LevelNumber: 5
+  LevelNumber: 11
   ConveyorSpeed: 1
   StackLimit: 8
   Rings:
-  - Color: 4
-    Count: 30
+  - Color: 3
+    Count: 20
   - Color: 6
-    Count: 30
+    Count: 20
   - Color: 1
-    Count: 30
-  - Color: 5
-    Count: 30
+    Count: 20
   - Color: 0
-    Count: 30
-  - Color: 5
-    Count: 30
+    Count: 20
   - Color: 4
-    Count: 30
+    Count: 20
+  - Color: 5
+    Count: 20
+  - Color: 3
+    Count: 20
   - Color: 2
-    Count: 30
+    Count: 20
+  - Color: 7
+    Count: 20
+  - Color: 1
+    Count: 20
+  - Color: 7
+    Count: 20
+  - Color: 2
+    Count: 20
   - Color: 0
-    Count: 30
-  - Color: 2
-    Count: 30
-  AvailableCollectors: 03000000000000000100000002000000
+    Count: 20
+  AvailableCollectors: 
   BucketColumns:
-  - BucketColors: 0200000005000000
-  - BucketColors: 0000000006000000
-  - BucketColors: 040000000100000003000000
+  - BucketColors: 00000000060000000100000003000000
+  - BucketColors: 030000000200000004000000
+  - BucketColors: 05000000000000000200000001000000
   BucketColumnSpacing: 1.2
   BucketRowSpacing: 1.2
   HasQueue: 1
-  QueueRings:
-  - Color: 6
-    Count: 12
-  - Color: 3
-    Count: 12
-  - Color: 1
-    Count: 12
-  - Color: 3
-    Count: 12
+  QueueRings: []
   QueueSpeed: 1
-  QueueLanes: []
+  QueueLanes:
+  - LaneId: LeftQueue
+    DisplayName: LeftQueue
+    Enabled: 1
+    QueueRings:
+    - Color: 5
+      Count: 15
+    - Color: 5
+      Count: 15
+    - Color: 4
+      Count: 15
+    - Color: 1
+      Count: 15
+    QueueSpeed: 1
+  - LaneId: RightQueue
+    DisplayName: RightQueue
+    Enabled: 1
+    QueueRings:
+    - Color: 4
+      Count: 15
+    - Color: 3
+      Count: 15
+    - Color: 1
+      Count: 15
+    - Color: 3
+      Count: 15
+    - Color: 4
+      Count: 15
+    - Color: 6
+      Count: 15
+    QueueSpeed: 1
   HasHiddenRings: 0
   BlockedSlotCount: 0
