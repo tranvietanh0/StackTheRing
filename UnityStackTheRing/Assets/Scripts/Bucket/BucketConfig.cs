@@ -10,6 +10,8 @@ namespace HyperCasualGame.Scripts.Bucket
         public int Row;
         public int Column;
         public ColorType Color;
+        public bool IsHidden;
+        public bool ShowQuestionMark;
         public int TargetBallCount;
     }
 }

@@ -21,6 +21,7 @@ namespace HyperCasualGame.Scripts.Bucket
         #region Serialized Fields
 
         [SerializeField] private Bucket bucketPrefab;
+        [SerializeField] private Bucket hiddenBucketPrefab;
         [SerializeField] private Transform bucketContainer;
         [SerializeField] private float columnSpacing = 1.2f;
         [SerializeField] private float rowSpacing = 1.2f;
@@ -31,6 +32,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
         private readonly List<Transform> dynamicColumnNodes = new();
         private readonly List<Bucket> spawnedBuckets = new();
+        private readonly Dictionary<Vector2Int, Bucket> bucketsByGridPosition = new();
         private SignalBus signalBus;
         private CollectAreaManager collectAreaManager;
 
@@ -66,6 +68,8 @@ namespace HyperCasualGame.Scripts.Bucket
         {
             this.Cleanup();
 
+            levelData?.ValidateBucketGridForRuntime();
+
             if (this.bucketPrefab == null)
             {
                 Debug.LogError("[BucketColumnManager] bucketPrefab is null!");
@@ -96,8 +100,13 @@ namespace HyperCasualGame.Scripts.Bucket
                 var columnNode = this.dynamicColumnNodes[layoutCell.Column];
                 if (columnNode == null) continue;
 
+                levelData.TryGetHiddenBucketConfig(layoutCell.Column, layoutCell.Row, out var hiddenBucketConfig);
+
                 var zOffset = -layoutCell.Row * rowSpace;
-                var bucketObj = Instantiate(this.bucketPrefab, columnNode);
+                var prefab = hiddenBucketConfig != null && this.hiddenBucketPrefab != null
+                    ? this.hiddenBucketPrefab
+                    : this.bucketPrefab;
+                var bucketObj = Instantiate(prefab, columnNode);
                 bucketObj.transform.localPosition = new Vector3(0f, 0f, zOffset);
 
                 var bucketConfig = new BucketConfig
@@ -106,6 +115,8 @@ namespace HyperCasualGame.Scripts.Bucket
                     Row = layoutCell.Row,
                     Column = layoutCell.Column,
                     Color = layoutCell.Color,
+                    IsHidden = hiddenBucketConfig != null,
+                    ShowQuestionMark = hiddenBucketConfig?.ShowQuestionMark ?? false,
                     TargetBallCount = this.ResolveTargetBallCountForBucket(
                         layoutCell.Color,
                         totalBallCountByColor,
@@ -117,6 +128,7 @@ namespace HyperCasualGame.Scripts.Bucket
                 bucketObj.Initialize(bucketConfig, this.signalBus);
                 bucketObj.name = $"Bucket_{layoutCell.Column}_{layoutCell.Row}_{layoutCell.Color}";
                 this.spawnedBuckets.Add(bucketObj);
+                this.bucketsByGridPosition[new Vector2Int(layoutCell.Column, layoutCell.Row)] = bucketObj;
             }
 
             Debug.Log($"[BucketColumnManager] Spawned {this.spawnedBuckets.Count} buckets in {width} columns");
@@ -140,7 +152,11 @@ namespace HyperCasualGame.Scripts.Bucket
                     var bucket = child.GetComponent<Bucket>();
                     if (bucket != null && !bucket.IsInCollectArea)
                     {
-                        eligibleBuckets.Add(bucket);
+                        if (!bucket.IsHidden)
+                        {
+                            eligibleBuckets.Add(bucket);
+                        }
+
                         break;
                     }
                 }
@@ -196,6 +212,7 @@ namespace HyperCasualGame.Scripts.Bucket
             // DO NOT fire it again here to avoid loop
 
             await bucket.JumpToCollectArea(targetArea.transform);
+            this.RevealNeighborHiddenBuckets(bucket);
 
             this.signalBus?.Fire(new BucketJumpedToAreaSignal
             {
@@ -225,6 +242,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
                 targetArea.Occupy(bucket.transform);
                 await bucket.JumpToCollectArea(targetArea.transform);
+                this.RevealNeighborHiddenBuckets(bucket);
 
                 this.signalBus?.Fire(new BucketJumpedToAreaSignal
                 {
@@ -252,6 +270,7 @@ namespace HyperCasualGame.Scripts.Bucket
             }
 
             this.spawnedBuckets.Clear();
+            this.bucketsByGridPosition.Clear();
 
             foreach (var columnNode in this.dynamicColumnNodes)
             {
@@ -307,6 +326,28 @@ namespace HyperCasualGame.Scripts.Bucket
             var extraBallCount = totalBallCount % totalBucketCount;
 
             return baseBallCountPerBucket + (assignedBucketCount < extraBallCount ? 1 : 0);
+        }
+
+        private void RevealNeighborHiddenBuckets(Bucket sourceBucket)
+        {
+            this.RevealHiddenBucketAt(sourceBucket.Data.Column, sourceBucket.Data.Row + 1);
+            this.RevealHiddenBucketAt(sourceBucket.Data.Column - 1, sourceBucket.Data.Row);
+            this.RevealHiddenBucketAt(sourceBucket.Data.Column + 1, sourceBucket.Data.Row);
+        }
+
+        private void RevealHiddenBucketAt(int column, int row)
+        {
+            if (column < 0 || row < 0)
+            {
+                return;
+            }
+
+            if (!this.bucketsByGridPosition.TryGetValue(new Vector2Int(column, row), out var bucket) || bucket == null || !bucket.IsHidden)
+            {
+                return;
+            }
+
+            bucket.Reveal();
         }
 
         private Dictionary<ColorType, int> CalculateTotalBallCountByColor(LevelData levelData, int ballsPerRow, MultiQueueCoordinator multiQueueCoordinator)

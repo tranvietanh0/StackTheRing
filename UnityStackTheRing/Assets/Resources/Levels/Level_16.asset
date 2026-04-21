@@ -88,6 +88,13 @@ MonoBehaviour:
   - Color: 6
     Count: 25
   AvailableCollectors: 
+  HiddenBuckets:
+  - Column: 0
+    Row: 1
+    ShowQuestionMark: 1
+  - Column: 2
+    Row: 1
+    ShowQuestionMark: 1
   BucketColumns:
   - BucketColors: 00000000060000000100000003000000
   - BucketColors: 030000000200000004000000

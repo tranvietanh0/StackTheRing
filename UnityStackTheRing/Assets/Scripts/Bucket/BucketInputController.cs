@@ -65,7 +65,7 @@ namespace HyperCasualGame.Scripts.Bucket
                     bucket = hit.collider.GetComponentInParent<Bucket>();
                 }
 
-                if (bucket != null && !bucket.IsInCollectArea)
+                if (bucket != null && !bucket.IsInCollectArea && !bucket.IsHidden)
                 {
                     Debug.Log($"[BucketInputController] Tapped bucket: {bucket.name}");
 

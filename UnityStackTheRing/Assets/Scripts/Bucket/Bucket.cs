@@ -23,6 +23,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
         [SerializeField] private MeshRenderer[] meshRenderers;
         [SerializeField] private TextMeshPro labelPercent;
+        [SerializeField] private GameObject hiddenIndicator;
         [SerializeField] private Transform visualRoot;
         [SerializeField] private Transform stackRoot;
 
@@ -37,6 +38,7 @@ namespace HyperCasualGame.Scripts.Bucket
         private int pendingRingCount;
         private bool isCompleted;
         private bool collectAreaReleased;
+        private bool isHidden;
         private SignalBus signalBus;
         private Vector3 shakeBaseScale = Vector3.one;
         private Tween shakeTween;
@@ -47,6 +49,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
         public BucketConfig Data => this.data;
         public bool IsInCollectArea { get; private set; }
+        public bool IsHidden => this.isHidden;
         public int TargetBallCount => Mathf.Max(1, this.data.TargetBallCount);
         public int CollectedBallCount => this.collectedBalls.Count;
         public int IncomingBallCount => this.incomingBalls;
@@ -86,7 +89,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
         private void OnMouseDown()
         {
-            if (this.IsInCollectArea)
+            if (this.IsInCollectArea || this.isHidden)
             {
                 return;
             }
@@ -113,8 +116,22 @@ namespace HyperCasualGame.Scripts.Bucket
             this.incomingBalls = 0;
             this.pendingRingCount = 0;
             this.collectAreaReleased = false;
+            this.isHidden = config.IsHidden;
 
-            this.UpdateColor(config.Color);
+            this.UpdateColor(this.isHidden ? ColorType.Black : config.Color);
+            this.UpdateProgressUI();
+            this.UpdateState();
+        }
+
+        public void Reveal()
+        {
+            if (!this.isHidden)
+            {
+                return;
+            }
+
+            this.isHidden = false;
+            this.UpdateColor(this.data.Color);
             this.UpdateProgressUI();
             this.UpdateState();
         }
@@ -123,7 +140,13 @@ namespace HyperCasualGame.Scripts.Bucket
         {
             if (this.labelPercent != null)
             {
-                this.labelPercent.gameObject.SetActive(this.IsInCollectArea);
+                var shouldShowFallbackQuestionMark = this.isHidden && this.data.ShowQuestionMark && this.hiddenIndicator == null;
+                this.labelPercent.gameObject.SetActive(this.IsInCollectArea || shouldShowFallbackQuestionMark);
+            }
+
+            if (this.hiddenIndicator != null)
+            {
+                this.hiddenIndicator.SetActive(this.isHidden && this.data.ShowQuestionMark && !this.IsInCollectArea);
             }
         }
 
@@ -281,6 +304,12 @@ namespace HyperCasualGame.Scripts.Bucket
         private void UpdateProgressUI()
         {
             if (this.labelPercent == null) return;
+
+            if (this.isHidden && this.data.ShowQuestionMark && !this.IsInCollectArea)
+            {
+                this.labelPercent.text = "?";
+                return;
+            }
 
             var percent = Mathf.Min(100, Mathf.FloorToInt((float)this.collectedBalls.Count / this.TargetBallCount * 100));
             this.labelPercent.text = $"%{percent}";

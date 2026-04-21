@@ -210,6 +210,7 @@ MonoBehaviour:
   spline: {fileID: 8298242856976423271}
   rowBallPrefab: {fileID: 3884598768906050512, guid: 87167a3226488694b8279fb6f1a84bbf, type: 3}
   ballPrefab: {fileID: 2606195441769280080, guid: 9cf305e283f0b1e45bb21754540bd17d, type: 3}
+  queueInsertAnchor: {fileID: 0}
   entryNodes:
   - {fileID: 9170814852449182378}
 --- !u!1 &3477553487780868938
@@ -1598,6 +1599,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bucketPrefab: {fileID: 1432595646210183358, guid: 599310a4aad5d6644810f2770587b795, type: 3}
+  hiddenBucketPrefab: {fileID: 1432595646210183358, guid: 412b244a2702929458dcc5c3cade8bd9, type: 3}
   bucketContainer: {fileID: 1303279448800396021}
   columnSpacing: 1.2
   rowSpacing: 1.2
@@ -1778,6 +1780,7 @@ MonoBehaviour:
   collectAreaManager: {fileID: 2173181998311461290}
   queueConveyor: {fileID: 0}
   conveyorFeeder: {fileID: 0}
+  queueLaneBindings: []
   ballPrefab: {fileID: 2606195441769280080, guid: 9cf305e283f0b1e45bb21754540bd17d, type: 3}
   rowBallPrefab: {fileID: 3884598768906050512, guid: 87167a3226488694b8279fb6f1a84bbf, type: 3}
   bucketPrefab: {fileID: 1432595646210183358, guid: 599310a4aad5d6644810f2770587b795, type: 3}

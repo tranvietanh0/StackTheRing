@@ -100,7 +100,7 @@ namespace HyperCasualGame.Scripts.Scenes.Main
             // Small delay to ensure all services are ready
             await UniTask.Yield();
 
-            var controller = await levelManager.LoadLevel(16);
+            var controller = await levelManager.LoadLevel(21);
             if (controller == null)
             {
                 Debug.LogError("[MainSceneScope] Failed to load first level!");

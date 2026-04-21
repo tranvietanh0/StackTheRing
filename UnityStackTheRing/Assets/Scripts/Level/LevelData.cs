@@ -28,12 +28,24 @@ namespace HyperCasualGame.Scripts.Level
         [HideInInspector]
         public ColorType[] AvailableCollectors;
 
+        [Serializable]
+        public class HiddenBucketConfig
+        {
+            [MinValue(0)] public int Column;
+            [MinValue(0)] public int Row;
+            public bool ShowQuestionMark = true;
+        }
+
         [Header("Bucket Grid Configuration")]
         [InfoBox("BucketGrid matches play mode directly: horizontal = column, vertical = row, access = grid[col, row].")]
         [OdinSerialize]
         [ValidateInput(nameof(IsBucketGridValid), "BucketGrid contains unsupported data.")]
         [TableMatrix(SquareCells = true, ResizableColumns = false, DrawElementMethod = nameof(DrawBucketCell))]
         public BucketCellType[,] BucketGrid;
+
+        [ShowIf(nameof(HasBucketGrid))]
+        [ListDrawerSettings(Expanded = true)]
+        public HiddenBucketConfig[] HiddenBuckets;
 
         [ShowInInspector, ReadOnly, PropertyOrder(-18)]
         private bool HasLegacyBucketColumns => this.BucketColumns != null && this.BucketColumns.Length > 0;
@@ -152,6 +164,31 @@ namespace HyperCasualGame.Scripts.Level
 
         public bool HasBucketGrid => this.BucketGrid != null && this.BucketGrid.Length > 0;
 
+        public bool TryGetHiddenBucketConfig(int column, int row, out HiddenBucketConfig hiddenBucketConfig)
+        {
+            hiddenBucketConfig = null;
+            if (this.HiddenBuckets == null)
+            {
+                return false;
+            }
+
+            foreach (var item in this.HiddenBuckets)
+            {
+                if (item == null)
+                {
+                    continue;
+                }
+
+                if (item.Column == column && item.Row == row)
+                {
+                    hiddenBucketConfig = item;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool DoesBucketGridMatchLegacyColumns()
         {
             if (!this.HasBucketGrid || !this.HasLegacyBucketColumns)
@@ -259,6 +296,39 @@ namespace HyperCasualGame.Scripts.Level
                     }
                 }
             }
+
+            if (this.HiddenBuckets == null)
+            {
+                return;
+            }
+
+            var uniquePositions = new HashSet<(int Column, int Row)>();
+            foreach (var hiddenBucket in this.HiddenBuckets)
+            {
+                if (hiddenBucket == null)
+                {
+                    continue;
+                }
+
+                var position = (hiddenBucket.Column, hiddenBucket.Row);
+                if (!uniquePositions.Add(position))
+                {
+                    throw new InvalidOperationException($"Hidden bucket config duplicates cell [{hiddenBucket.Column}, {hiddenBucket.Row}].");
+                }
+
+                if (hiddenBucket.Column < 0 || hiddenBucket.Column >= this.BucketGrid.GetLength(0)
+                    || hiddenBucket.Row < 0 || hiddenBucket.Row >= this.BucketGrid.GetLength(1))
+                {
+                    throw new InvalidOperationException($"Hidden bucket config [{hiddenBucket.Column}, {hiddenBucket.Row}] is out of BucketGrid range.");
+                }
+
+                if (this.BucketGrid[hiddenBucket.Column, hiddenBucket.Row] == BucketCellType.Empty)
+                {
+                    throw new InvalidOperationException($"Hidden bucket config [{hiddenBucket.Column}, {hiddenBucket.Row}] points to an empty BucketGrid cell.");
+                }
+            }
+
+            this.ValidateHiddenBucketReachability();
         }
 
         public void ValidateBucketGridForLegacySync()
@@ -311,6 +381,75 @@ namespace HyperCasualGame.Scripts.Level
             {
                 return false;
             }
+        }
+
+        private void ValidateHiddenBucketReachability()
+        {
+            if (this.HiddenBuckets == null || this.HiddenBuckets.Length == 0)
+            {
+                return;
+            }
+
+            var allBucketPositions = new HashSet<(int Column, int Row)>();
+            var revealedBucketPositions = new HashSet<(int Column, int Row)>();
+            var movedBucketPositions = new HashSet<(int Column, int Row)>();
+
+            for (var column = 0; column < this.BucketGrid.GetLength(0); column++)
+            {
+                for (var row = 0; row < this.BucketGrid.GetLength(1); row++)
+                {
+                    if (this.BucketGrid[column, row] == BucketCellType.Empty)
+                    {
+                        continue;
+                    }
+
+                    allBucketPositions.Add((column, row));
+                    if (!this.TryGetHiddenBucketConfig(column, row, out _))
+                    {
+                        revealedBucketPositions.Add((column, row));
+                    }
+                }
+            }
+
+            var madeProgress = true;
+            while (madeProgress)
+            {
+                madeProgress = false;
+                for (var column = 0; column < this.BucketGrid.GetLength(0); column++)
+                {
+                    (int Column, int Row)? eligibleBucket = null;
+                    for (var row = 0; row < this.BucketGrid.GetLength(1); row++)
+                    {
+                        var position = (column, row);
+                        if (!allBucketPositions.Contains(position) || movedBucketPositions.Contains(position))
+                        {
+                            continue;
+                        }
+
+                        eligibleBucket = position;
+                        break;
+                    }
+
+                    if (!eligibleBucket.HasValue || !revealedBucketPositions.Contains(eligibleBucket.Value))
+                    {
+                        continue;
+                    }
+
+                    movedBucketPositions.Add(eligibleBucket.Value);
+                    revealedBucketPositions.Add((eligibleBucket.Value.Column, eligibleBucket.Value.Row + 1));
+                    revealedBucketPositions.Add((eligibleBucket.Value.Column - 1, eligibleBucket.Value.Row));
+                    revealedBucketPositions.Add((eligibleBucket.Value.Column + 1, eligibleBucket.Value.Row));
+                    madeProgress = true;
+                }
+            }
+
+            if (movedBucketPositions.Count == allBucketPositions.Count)
+            {
+                return;
+            }
+
+            var unreachableCount = allBucketPositions.Count - movedBucketPositions.Count;
+            throw new InvalidOperationException($"BucketGrid contains {unreachableCount} unreachable buckets. Hidden bucket reveal chain soft-locks this level.");
         }
 
         private static bool AreBucketGridsEqual(BucketCellType[,] left, BucketCellType[,] right)
@@ -439,7 +578,8 @@ namespace HyperCasualGame.Scripts.Level
         Cyan = ColorType.Cyan,
         DarkGray = ColorType.DarkGray,
         Pink = ColorType.Pink,
-        Brown = ColorType.Brown
+        Brown = ColorType.Brown,
+        Lime = ColorType.Lime
     }
 
     public readonly struct BucketLayoutCell

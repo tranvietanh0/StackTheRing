@@ -1388,6 +1388,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bucketPrefab: {fileID: 1432595646210183358, guid: 599310a4aad5d6644810f2770587b795, type: 3}
+  hiddenBucketPrefab: {fileID: 1432595646210183358, guid: 412b244a2702929458dcc5c3cade8bd9, type: 3}
   bucketContainer: {fileID: 1303279448800396021}
   columnSpacing: 1.2
   rowSpacing: 1.2
