@@ -32,9 +32,11 @@ namespace HyperCasualGame.Scripts.Bucket
 
         private readonly List<Transform> dynamicColumnNodes = new();
         private readonly List<Bucket> spawnedBuckets = new();
+        private readonly List<Bucket> lockedBuckets = new();
         private readonly Dictionary<Vector2Int, Bucket> bucketsByGridPosition = new();
         private SignalBus signalBus;
         private CollectAreaManager collectAreaManager;
+        private int collectedUnlockBallCount;
 
         #endregion
 
@@ -84,6 +86,7 @@ namespace HyperCasualGame.Scripts.Bucket
             }
 
             var width = levelData.BucketGridWidth;
+            this.collectedUnlockBallCount = 0;
             var totalBallCountByColor = this.CalculateTotalBallCountByColor(levelData, ballsPerRow, multiQueueCoordinator);
             var bucketCountByColor = this.CalculateBucketCountByColor(layoutCells);
             var assignedBucketCountByColor = new Dictionary<ColorType, int>();
@@ -101,6 +104,7 @@ namespace HyperCasualGame.Scripts.Bucket
                 if (columnNode == null) continue;
 
                 levelData.TryGetHiddenBucketConfig(layoutCell.Column, layoutCell.Row, out var hiddenBucketConfig);
+                levelData.TryGetLockedBucketConfig(layoutCell.Column, layoutCell.Row, out var lockedBucketConfig);
 
                 var zOffset = -layoutCell.Row * rowSpace;
                 var prefab = hiddenBucketConfig != null && this.hiddenBucketPrefab != null
@@ -117,6 +121,8 @@ namespace HyperCasualGame.Scripts.Bucket
                     Color = layoutCell.Color,
                     IsHidden = hiddenBucketConfig != null,
                     ShowQuestionMark = hiddenBucketConfig?.ShowQuestionMark ?? false,
+                    IsLocked = lockedBucketConfig != null,
+                    RequiredBallsToUnlock = lockedBucketConfig?.RequiredBallsToUnlock ?? 0,
                     TargetBallCount = this.ResolveTargetBallCountForBucket(
                         layoutCell.Color,
                         totalBallCountByColor,
@@ -126,8 +132,14 @@ namespace HyperCasualGame.Scripts.Bucket
                 };
 
                 bucketObj.Initialize(bucketConfig, this.signalBus);
+                bucketObj.RefreshLockedProgress(this.collectedUnlockBallCount);
+                bucketObj.OnBallAdded += this.OnBucketBallAdded;
                 bucketObj.name = $"Bucket_{layoutCell.Column}_{layoutCell.Row}_{layoutCell.Color}";
                 this.spawnedBuckets.Add(bucketObj);
+                if (bucketObj.IsLocked)
+                {
+                    this.lockedBuckets.Add(bucketObj);
+                }
                 this.bucketsByGridPosition[new Vector2Int(layoutCell.Column, layoutCell.Row)] = bucketObj;
             }
 
@@ -152,7 +164,7 @@ namespace HyperCasualGame.Scripts.Bucket
                     var bucket = child.GetComponent<Bucket>();
                     if (bucket != null && !bucket.IsInCollectArea)
                     {
-                        if (!bucket.IsHidden)
+                        if (!bucket.IsHidden && !bucket.IsLocked)
                         {
                             eligibleBuckets.Add(bucket);
                         }
@@ -187,7 +199,7 @@ namespace HyperCasualGame.Scripts.Bucket
         /// </summary>
         public async UniTask OnBucketTapped(Bucket bucket)
         {
-            if (bucket == null || bucket.IsInCollectArea)
+            if (bucket == null || bucket.IsInCollectArea || bucket.IsLocked)
             {
                 return;
             }
@@ -265,11 +277,13 @@ namespace HyperCasualGame.Scripts.Bucket
             {
                 if (bucket != null)
                 {
+                    bucket.OnBallAdded -= this.OnBucketBallAdded;
                     Destroy(bucket.gameObject);
                 }
             }
 
             this.spawnedBuckets.Clear();
+            this.lockedBuckets.Clear();
             this.bucketsByGridPosition.Clear();
 
             foreach (var columnNode in this.dynamicColumnNodes)
@@ -281,11 +295,42 @@ namespace HyperCasualGame.Scripts.Bucket
             }
 
             this.dynamicColumnNodes.Clear();
+            this.collectedUnlockBallCount = 0;
         }
 
         #endregion
 
         #region Private Methods
+
+        private void OnBucketBallAdded(Bucket bucket, Ball _)
+        {
+            if (bucket == null || !bucket.IsInCollectArea || this.lockedBuckets.Count == 0)
+            {
+                return;
+            }
+
+            this.collectedUnlockBallCount++;
+            this.RefreshLockedBuckets();
+        }
+
+        private void RefreshLockedBuckets()
+        {
+            for (var index = this.lockedBuckets.Count - 1; index >= 0; index--)
+            {
+                var lockedBucket = this.lockedBuckets[index];
+                if (lockedBucket == null)
+                {
+                    this.lockedBuckets.RemoveAt(index);
+                    continue;
+                }
+
+                lockedBucket.RefreshLockedProgress(this.collectedUnlockBallCount);
+                if (!lockedBucket.IsLocked)
+                {
+                    this.lockedBuckets.RemoveAt(index);
+                }
+            }
+        }
 
         private void CreateDynamicColumns(int numberOfColumns, float spacing)
         {

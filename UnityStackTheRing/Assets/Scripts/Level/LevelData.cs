@@ -36,6 +36,14 @@ namespace HyperCasualGame.Scripts.Level
             public bool ShowQuestionMark = true;
         }
 
+        [Serializable]
+        public class LockedBucketConfig
+        {
+            [MinValue(0)] public int Column;
+            [MinValue(0)] public int Row;
+            [MinValue(1)] public int RequiredBallsToUnlock = 1;
+        }
+
         [Header("Bucket Grid Configuration")]
         [InfoBox("BucketGrid matches play mode directly: horizontal = column, vertical = row, access = grid[col, row].")]
         [OdinSerialize]
@@ -46,6 +54,10 @@ namespace HyperCasualGame.Scripts.Level
         [ShowIf(nameof(HasBucketGrid))]
         [ListDrawerSettings(Expanded = true)]
         public HiddenBucketConfig[] HiddenBuckets;
+
+        [ShowIf(nameof(HasBucketGrid))]
+        [ListDrawerSettings(Expanded = true)]
+        public LockedBucketConfig[] LockedBuckets;
 
         [ShowInInspector, ReadOnly, PropertyOrder(-18)]
         private bool HasLegacyBucketColumns => this.BucketColumns != null && this.BucketColumns.Length > 0;
@@ -189,6 +201,31 @@ namespace HyperCasualGame.Scripts.Level
             return false;
         }
 
+        public bool TryGetLockedBucketConfig(int column, int row, out LockedBucketConfig lockedBucketConfig)
+        {
+            lockedBucketConfig = null;
+            if (this.LockedBuckets == null)
+            {
+                return false;
+            }
+
+            foreach (var item in this.LockedBuckets)
+            {
+                if (item == null)
+                {
+                    continue;
+                }
+
+                if (item.Column == column && item.Row == row)
+                {
+                    lockedBucketConfig = item;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool DoesBucketGridMatchLegacyColumns()
         {
             if (!this.HasBucketGrid || !this.HasLegacyBucketColumns)
@@ -297,34 +334,71 @@ namespace HyperCasualGame.Scripts.Level
                 }
             }
 
-            if (this.HiddenBuckets == null)
+            var hiddenBucketPositions = new HashSet<(int Column, int Row)>();
+            if (this.HiddenBuckets != null)
             {
-                return;
+                foreach (var hiddenBucket in this.HiddenBuckets)
+                {
+                    if (hiddenBucket == null)
+                    {
+                        continue;
+                    }
+
+                    var position = (hiddenBucket.Column, hiddenBucket.Row);
+                    if (!hiddenBucketPositions.Add(position))
+                    {
+                        throw new InvalidOperationException($"Hidden bucket config duplicates cell [{hiddenBucket.Column}, {hiddenBucket.Row}].");
+                    }
+
+                    if (hiddenBucket.Column < 0 || hiddenBucket.Column >= this.BucketGrid.GetLength(0)
+                        || hiddenBucket.Row < 0 || hiddenBucket.Row >= this.BucketGrid.GetLength(1))
+                    {
+                        throw new InvalidOperationException($"Hidden bucket config [{hiddenBucket.Column}, {hiddenBucket.Row}] is out of BucketGrid range.");
+                    }
+
+                    if (this.BucketGrid[hiddenBucket.Column, hiddenBucket.Row] == BucketCellType.Empty)
+                    {
+                        throw new InvalidOperationException($"Hidden bucket config [{hiddenBucket.Column}, {hiddenBucket.Row}] points to an empty BucketGrid cell.");
+                    }
+                }
             }
 
-            var uniquePositions = new HashSet<(int Column, int Row)>();
-            foreach (var hiddenBucket in this.HiddenBuckets)
+            var lockedBucketPositions = new HashSet<(int Column, int Row)>();
+            if (this.LockedBuckets != null)
             {
-                if (hiddenBucket == null)
+                foreach (var lockedBucket in this.LockedBuckets)
                 {
-                    continue;
-                }
+                    if (lockedBucket == null)
+                    {
+                        continue;
+                    }
 
-                var position = (hiddenBucket.Column, hiddenBucket.Row);
-                if (!uniquePositions.Add(position))
-                {
-                    throw new InvalidOperationException($"Hidden bucket config duplicates cell [{hiddenBucket.Column}, {hiddenBucket.Row}].");
-                }
+                    var position = (lockedBucket.Column, lockedBucket.Row);
+                    if (!lockedBucketPositions.Add(position))
+                    {
+                        throw new InvalidOperationException($"Locked bucket config duplicates cell [{lockedBucket.Column}, {lockedBucket.Row}].");
+                    }
 
-                if (hiddenBucket.Column < 0 || hiddenBucket.Column >= this.BucketGrid.GetLength(0)
-                    || hiddenBucket.Row < 0 || hiddenBucket.Row >= this.BucketGrid.GetLength(1))
-                {
-                    throw new InvalidOperationException($"Hidden bucket config [{hiddenBucket.Column}, {hiddenBucket.Row}] is out of BucketGrid range.");
-                }
+                    if (lockedBucket.Column < 0 || lockedBucket.Column >= this.BucketGrid.GetLength(0)
+                        || lockedBucket.Row < 0 || lockedBucket.Row >= this.BucketGrid.GetLength(1))
+                    {
+                        throw new InvalidOperationException($"Locked bucket config [{lockedBucket.Column}, {lockedBucket.Row}] is out of BucketGrid range.");
+                    }
 
-                if (this.BucketGrid[hiddenBucket.Column, hiddenBucket.Row] == BucketCellType.Empty)
-                {
-                    throw new InvalidOperationException($"Hidden bucket config [{hiddenBucket.Column}, {hiddenBucket.Row}] points to an empty BucketGrid cell.");
+                    if (this.BucketGrid[lockedBucket.Column, lockedBucket.Row] == BucketCellType.Empty)
+                    {
+                        throw new InvalidOperationException($"Locked bucket config [{lockedBucket.Column}, {lockedBucket.Row}] points to an empty BucketGrid cell.");
+                    }
+
+                    if (lockedBucket.RequiredBallsToUnlock <= 0)
+                    {
+                        throw new InvalidOperationException($"Locked bucket config [{lockedBucket.Column}, {lockedBucket.Row}] must require at least 1 ball to unlock.");
+                    }
+
+                    if (hiddenBucketPositions.Contains(position))
+                    {
+                        throw new InvalidOperationException($"Bucket cell [{lockedBucket.Column}, {lockedBucket.Row}] cannot be both hidden and locked.");
+                    }
                 }
             }
 

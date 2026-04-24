@@ -39,6 +39,9 @@ namespace HyperCasualGame.Scripts.Bucket
         private bool isCompleted;
         private bool collectAreaReleased;
         private bool isHidden;
+        private bool isLocked;
+        private bool hasLockedRequirement;
+        private int remainingBallsToUnlock;
         private SignalBus signalBus;
         private Vector3 shakeBaseScale = Vector3.one;
         private Tween shakeTween;
@@ -50,6 +53,8 @@ namespace HyperCasualGame.Scripts.Bucket
         public BucketConfig Data => this.data;
         public bool IsInCollectArea { get; private set; }
         public bool IsHidden => this.isHidden;
+        public bool IsLocked => this.isLocked;
+        public int RemainingBallsToUnlock => Mathf.Max(0, this.remainingBallsToUnlock);
         public int TargetBallCount => Mathf.Max(1, this.data.TargetBallCount);
         public int CollectedBallCount => this.collectedBalls.Count;
         public int IncomingBallCount => this.incomingBalls;
@@ -89,7 +94,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
         private void OnMouseDown()
         {
-            if (this.IsInCollectArea || this.isHidden)
+            if (!this.CanReceiveTap())
             {
                 return;
             }
@@ -117,7 +122,11 @@ namespace HyperCasualGame.Scripts.Bucket
             this.pendingRingCount = 0;
             this.collectAreaReleased = false;
             this.isHidden = config.IsHidden;
+            this.hasLockedRequirement = config.IsLocked && config.RequiredBallsToUnlock > 0;
+            this.isLocked = false;
+            this.remainingBallsToUnlock = 0;
 
+            this.RefreshLockedProgress(0);
             this.UpdateColor(this.isHidden ? ColorType.Black : config.Color);
             this.UpdateProgressUI();
             this.UpdateState();
@@ -136,12 +145,35 @@ namespace HyperCasualGame.Scripts.Bucket
             this.UpdateState();
         }
 
+        public bool CanReceiveTap()
+        {
+            return !this.IsInCollectArea && !this.isHidden && !this.isLocked;
+        }
+
+        public void RefreshLockedProgress(int collectedUnlockBallCount)
+        {
+            if (!this.hasLockedRequirement)
+            {
+                this.isLocked = false;
+                this.remainingBallsToUnlock = 0;
+                this.UpdateProgressUI();
+                this.UpdateState();
+                return;
+            }
+
+            this.remainingBallsToUnlock = Mathf.Max(0, this.data.RequiredBallsToUnlock - Mathf.Max(0, collectedUnlockBallCount));
+            this.isLocked = this.remainingBallsToUnlock > 0;
+            this.UpdateProgressUI();
+            this.UpdateState();
+        }
+
         public void UpdateState()
         {
             if (this.labelPercent != null)
             {
                 var shouldShowFallbackQuestionMark = this.isHidden && this.data.ShowQuestionMark && this.hiddenIndicator == null;
-                this.labelPercent.gameObject.SetActive(this.IsInCollectArea || shouldShowFallbackQuestionMark);
+                var shouldShowLockedCounter = this.isLocked && !this.IsInCollectArea && !this.isHidden;
+                this.labelPercent.gameObject.SetActive(this.IsInCollectArea || shouldShowFallbackQuestionMark || shouldShowLockedCounter);
             }
 
             if (this.hiddenIndicator != null)
@@ -308,6 +340,12 @@ namespace HyperCasualGame.Scripts.Bucket
             if (this.isHidden && this.data.ShowQuestionMark && !this.IsInCollectArea)
             {
                 this.labelPercent.text = "?";
+                return;
+            }
+
+            if (this.isLocked && !this.IsInCollectArea)
+            {
+                this.labelPercent.text = this.RemainingBallsToUnlock.ToString();
                 return;
             }
 
