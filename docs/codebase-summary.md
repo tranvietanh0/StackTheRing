@@ -13,7 +13,7 @@ StackTheRing/
 
 ## 2. Unity project summary
 
-- Unity version: `2022.3.35f1`
+- Unity version: `6000.3.10f1`
 - Main package stack:
   - VContainer `1.16.9`
   - UniTask `2.5.10`
@@ -73,10 +73,9 @@ StackTheRing/
   - `UnityStackTheRing/Assets/Scenes/0.LoadingScene.unity`
   - `UnityStackTheRing/Assets/Scenes/1.MainScene.unity`
 - Level assets:
-  - `UnityStackTheRing/Assets/Prefabs/Levels/Level_01.prefab`
-  - `UnityStackTheRing/Assets/Resources/Levels/Level_01.prefab`
-  - `UnityStackTheRing/Assets/Data/Levels/Level_01.asset`
-  - `UnityStackTheRing/Assets/Resources/Levels/Level_01.asset`
+  - Prefab levels hien co: `UnityStackTheRing/Assets/Prefabs/Levels/Level_01.prefab` ... `Level_24.prefab`
+  - Level data hien co: `UnityStackTheRing/Assets/Resources/Levels/Level_01.asset` ... `Level_24.asset`
+  - `MainSceneScope` hien dang bootstrap truc tiep vao level `23`
 - Addressables:
   - `UnityStackTheRing/Assets/AddressableAssetsData/AssetGroups/Levels.asset`
   - `UnityStackTheRing/Assets/AddressableAssetsData/AssetGroups/Scenes.asset`
@@ -90,7 +89,7 @@ StackTheRing/
 2. `0.LoadingScene` khoi tao `LoadingSceneScope`
 3. `LoadingScreenPresenter`:
    - load user data
-   - preload `Level_01`
+   - preload level asset
    - load `1.MainScene`
 
 ### Main scene
@@ -101,28 +100,31 @@ StackTheRing/
    - `CollectAreaBucketService`
    - `GameStateMachine`
 2. `MainSceneScope` gan inject callback cho `LevelController`
-3. `MainSceneScope` auto load level 1
+3. `MainSceneScope` auto load level `23`
 4. `LevelManager` instantiate level prefab
-5. `LevelController` initialize conveyor, collect area, bucket manager, queue feeder
+5. `LevelController` initialize conveyor, collect area, bucket manager, queue feeders / multi-queue coordinator
 6. `LevelController` bind references vao `GamePlayState`
 7. `LevelController` chuyen sang `GamePlayState`
 
 ## 6. Gameplay loop thuc te
 
 1. Main conveyor spawn cac `RowBall` tu `LevelData.Rings`
-2. Bucket grid duoc tao theo `LevelData.BucketColumns`
-3. Player tap bucket hop le de dua bucket vao collect area
-4. Khi row di qua entry point, `ConveyorController` tim bucket dang nhan mau phu hop
-5. Ball cung mau nhay vao bucket cho den khi het slot hoac het ball phu hop
-6. Bucket day thi phat `BucketCompletedSignal`, chay animation, huy bucket, tra lai slot collect area
-7. Neu co queue, `ConveyorFeeder` chen them row vao main conveyor khi co gap
-8. `GamePlayState` quyet dinh win/lose
+2. Bucket layout duoc tao theo `LevelData.BucketGrid` hoac fallback tu legacy `BucketColumns`
+3. Cac bucket hop le dau cot duoc auto-place vao collect area; player co the tiep tuc tap bucket hop le khac
+4. Hidden bucket duoc spawn voi visual concealment va se reveal khi bucket lien ke duoc dua ra khoi grid
+5. Khi row di qua entry point, `ConveyorController` tim bucket dang nhan mau phu hop
+6. Ball cung mau nhay vao bucket cho den khi het slot hoac het ball phu hop
+7. Bucket day thi phat `BucketCompletedSignal`, chay animation, huy bucket, tra lai slot collect area
+8. Neu co queue, `ConveyorFeeder` hoac `MultiQueueCoordinator` chen them row vao main conveyor khi co gap
+9. `GamePlayState` quyet dinh win/lose
 
 ## 7. Cac diem can luu y khi doc code
 
 - `GameManager` khong ton tai trong code hien tai, du docs cu con nhac den
+- `ColorType` hien co 12 mau: `Red`, `Yellow`, `Green`, `Blue`, `Purple`, `Orange`, `Cyan`, `DarkGray`, `Pink`, `Brown`, `Black`, `Lime`
 - Codebase dang o trang thai hybrid:
   - con legacy signals `Collector*`, `Ring*`, `Stack*`
+  - con legacy authoring path `BucketColumns`, `HasQueue`, `QueueRings`
   - comment nhac den Cocos/original template
 - `LevelController` dong vai tro runtime coordinator quan trong nhat trong scene
 - `GameWinState` va `GameLoseState` chua hoan tat UI flow

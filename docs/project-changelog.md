@@ -9,7 +9,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
-- Documentation sync with latest codebase (2026-04-10)
+- Documentation sync with current runtime architecture, level content, and authoring workflow.
+- Level content expanded through `Level_24` in both prefab and `LevelData` assets.
+- New gameplay colors available in runtime and level authoring: `Brown`, `Black`, `Lime`.
+- Hidden bucket authoring and reveal-chain gameplay via `LevelData.HiddenBuckets`, `Bucket.IsHidden`, and `BucketColumnManager.RevealNeighborHiddenBuckets(...)`.
+- Multi-lane queue authoring via `LevelData.QueueLanes` for new levels.
+
+### Changed
+- Docs now reflect the active bucket-grid / collect-area / queue-lane architecture instead of older slot/collector descriptions.
+- `MainSceneScope` bootstrap currently auto-loads level `23` during startup.
 
 ---
 
@@ -17,52 +25,47 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - **Core Systems**
-  - `GameManager` — Central game orchestrator
-  - `GameConstants` — Game configuration constants
-  - `ColorType` enum — Red, Yellow, Green, Blue
+  - `GameConstants` — Shared gameplay constants and color helpers.
+  - `ColorType` enum — Initial runtime color set, later extended in follow-up content updates.
 
 - **Conveyor System**
-  - `ConveyorController` — Spline-based conveyor belt management
-  - `ConveyorPath` — Cached path sample data
-  - `ConveyorConfig` — ScriptableObject configuration
-  - `PathFollower` — Spline following component (Dreamteck integration)
+  - `ConveyorController` — Spline-based conveyor belt management.
+  - `ConveyorPath` — Cached path sample data.
+  - `ConveyorConfig` — ScriptableObject configuration.
+  - `PathFollower` — Spline following component.
+  - `QueueConveyor` + `ConveyorFeeder` — Queue rows that feed back into the main conveyor.
 
 - **Ring/Ball System**
-  - `Ball` — Individual ball component with color & animations
-  - `RowBall` — Container for 5 balls moving together
-  - `RowBallConfig` — Row spawn configuration
+  - `Ball` — Individual ball component with color and jump/landing flow.
+  - `RowBall` — Container for a moving row of balls on conveyor paths.
 
-- **Slot System**
-  - `SlotManager` — Manages 4 stacking slots
-  - `Slot` — Individual slot with stack logic
-  - `ColorCollector` — Tap-to-place color selector
-  - `CollectorPanel` — UI panel for collectors
-
-- **Attraction System**
-  - `AttractionController` — Ball-to-slot attraction with curved paths
-  - `AttractionConfig` — Attraction zone & animation settings
+- **Bucket / Collect Area System**
+  - `Bucket` — Runtime bucket state, hidden/revealed visuals, progress tracking, completion animation.
+  - `BucketColumnManager` — Spawns bucket layout, resolves eligible buckets, reveals neighbors, auto-places buckets into collect areas.
+  - `CollectAreaManager` — Collect-area slot occupancy.
+  - `CollectAreaBucketService` — Query/business logic for matching balls to active buckets.
 
 - **Level System**
-  - `LevelManager` (ILevelManager) — Level loading, progression, save
-  - `LevelData` — ScriptableObject level configuration
+  - `LevelManager` (`ILevelManager`) — Level loading, progression, save.
+  - `LevelData` — ScriptableObject level configuration for rings, bucket layout, hidden buckets, and queue lanes.
+  - `LevelController` — Runtime coordinator for an instantiated level.
 
 - **Game States**
-  - `GamePlayState` (ITickable) — Main gameplay loop with win/lose detection
-  - `GameWinState` — Level completed state
-  - `GameLoseState` — Game over state
+  - `GamePlayState` (`ITickable`) — Main gameplay loop with win/lose detection.
+  - `GameWinState` — Level completed state.
+  - `GameLoseState` — Game over state.
 
-- **Signals (15 new)**
-  - Collector: `CollectorTappedSignal`, `CollectorPlacedSignal`
-  - Ball: `BallCollectedSignal`, `BallAttractedSignal`, `BallStackedSignal`
-  - Stack: `StackClearedSignal`
-  - Row: `RowBallCompletedLoopSignal`
-  - Game: `AllRingsClearedSignal`, `LevelStartSignal`, `LevelWinSignal`, `LevelLoseSignal`
+- **Signals**
+  - Gameplay: `AllRingsClearedSignal`, `LevelStartSignal`, `LevelWinSignal`, `LevelLoseSignal`.
+  - Bucket flow: `BucketTappedSignal`, `BucketJumpedToAreaSignal`, `BucketCompletedSignal`.
+  - Conveyor flow: `RowBallReachEntrySignal`, `RowBallCompletedLoopSignal`, `BallCollectedSignal`.
+  - Legacy compatibility signals remain registered during migration.
 
 - **Editor Tools**
-  - `SplineSetupEditor` — Spline path visualization helper
+  - `SplineSetupEditor` — Spline path visualization helper.
 
 ### Dependencies
-- Added Dreamteck Splines for conveyor path system
+- Dreamteck Splines for conveyor path system.
 
 ---
 

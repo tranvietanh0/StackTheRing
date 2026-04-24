@@ -11,7 +11,7 @@ GameLifetimeScope
 `- LoadingSceneScope
    `- LoadingScreenPresenter
       |- Load user data
-      |- Preload Level_01
+      |- Preload level asset
       `- Load 1.MainScene
 
 1.MainScene
@@ -21,10 +21,10 @@ GameLifetimeScope
    |- Register CollectAreaBucketService
    |- Register GameStateMachine
    |- Set LevelController inject callback
-   `- Auto load level 1
+   `- Auto load level 23
 
 LevelManager
-`- Instantiate Level_01 prefab
+`- Instantiate Level_23 prefab
    `- LevelController
       |- ConveyorController
       |- QueueConveyor (optional)
@@ -51,7 +51,7 @@ LevelManager
 - `LoadingScreenPresenter`
   - show loading progress UI
   - load user data qua `UserDataManager`
-  - preload `Level_01`
+  - preload level asset cho flow startup
   - load `1.MainScene` qua `IGameAssets.LoadSceneAsync(...)`
 
 ### 2.3 Level orchestration
@@ -93,12 +93,14 @@ LevelManager
 ### 3.3 Bucket subsystem
 
 - `BucketColumnManager`
-  - spawn dynamic columns tu `LevelData.BucketColumns`
+  - spawn dynamic columns tu `LevelData.BucketGrid`, fallback tu legacy `BucketColumns`
   - tinh `TargetBallCount` cho tung bucket theo tong so ball cung mau
   - chi bucket dau moi cot duoc xem la eligible
   - dua bucket hop le vao collect area dau tien con trong
+  - reveal hidden buckets o tren / trai / phai sau khi bucket nguon nhay vao collect area
 - `Bucket`
-  - giu state cua bucket: color, target, incoming, collected
+  - giu state cua bucket: color, target, incoming, collected, hidden/revealed
+  - hidden bucket hien thi mau `Black` truoc khi reveal
   - cho ball nhay vao, cap nhat progress, xu ly complete
   - khi complete: animate, phat `BucketCompletedSignal`, release collect area slot, destroy self
 
@@ -146,13 +148,20 @@ LevelManager
 5. `Bucket.AddBall()` + `Bucket.CompleteIncomingBall()`
 6. `BallCollectedSignal` ho tro gameplay state tracking
 
-### Bucket complete flow
+### Bucket complete / reveal flow
 
 1. Bucket du target va khong con incoming
 2. Bucket chay completion animation
 3. `BucketCompletedSignal` duoc fire
 4. `GamePlayState` tang so bucket completed
 5. Neu du tong bucket, level win
+
+### Hidden bucket reveal flow
+
+1. Player hoac auto-place dua bucket hop le ra khoi grid
+2. `BucketColumnManager` reveal bucket o tren, ben trai, ben phai neu chung dang hidden
+3. Bucket vua reveal doi tu visual `Black` sang mau that cua no
+4. Bucket revelead co the tro thanh bucket hop le tiep theo trong cot / cum lien ke
 
 ### Lose-check flow
 
@@ -172,14 +181,23 @@ LevelManager
   - `ConveyorSpeed`
   - `Rings[]`
 - Bucket layout:
-  - `BucketColumns[]`
+  - `BucketGrid`
+  - `HiddenBuckets[]`
   - `BucketColumnSpacing`
   - `BucketRowSpacing`
+  - legacy fallback: `BucketColumns[]`
 - Queue:
-  - `HasQueue`
-  - `QueueRings[]`
-  - `QueueSpeed`
-- Extra placeholders:
+  - `QueueLanes[]` cho authoring moi
+  - legacy fallback: `HasQueue`, `QueueRings[]`, `QueueSpeed`
+- Runtime / balancing helpers:
+  - `TotalRingCount`
+  - `TotalQueueRingCount`
+  - `TotalAllRingCount`
+  - `GetActiveQueueLanes()`
+- Validation:
+  - `ValidateBucketGridForRuntime()`
+  - `ValidateHiddenBucketReachability()` de tranh soft-lock do reveal chain khong the giai
+- Extra placeholders / carry-over fields:
   - `AvailableCollectors`
   - `StackLimit`
   - `HasHiddenRings`
@@ -188,12 +206,9 @@ LevelManager
 ## 7. Kien truc asset loading
 
 - Scenes va level duoc ho tro boi Addressables
-- `LevelManager` van fallback sang `Resources` cho level prefab
-- Hien dang co song song:
-  - `Assets/Prefabs/Levels/Level_01.prefab`
-  - `Assets/Resources/Levels/Level_01.prefab`
-  - `Assets/Data/Levels/Level_01.asset`
-  - `Assets/Resources/Levels/Level_01.asset`
+- `LevelManager` van fallback sang `Resources` cho level prefab / level data khi can
+- Hien dang co content level tu `Level_01` den `Level_24`
+- Addressables group `Levels.asset` can duoc cap nhat dong bo moi khi them level prefab/data moi
 
 ## 8. Architectural notes
 

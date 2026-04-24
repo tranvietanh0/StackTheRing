@@ -58,6 +58,8 @@
 - Bucket theo doi ca `CollectedBallCount` va `IncomingBallCount`
 - Slot trong bucket duoc tinh qua `GetRemainingSlotCount()`
 - Bucket chi completion khi da du target va `incoming == 0`
+- Hidden bucket dung state `IsHidden`; visual concealment hien tai dung `ColorType.Black` truoc khi reveal
+- Reveal logic xay ra o `BucketColumnManager`, khong nam trong input layer
 
 ### Collect area
 
@@ -67,6 +69,9 @@
 ### Level
 
 - `LevelData` la nguon cau hinh level
+- New levels nen uu tien `BucketGrid` thay vi `BucketColumns`
+- New levels nen uu tien `QueueLanes` thay vi `HasQueue` + `QueueRings`
+- Hidden bucket duoc khai bao qua `HiddenBuckets` va phai hop le voi reveal chain runtime
 - `LevelManager` quan ly load/unload/save progress
 - `LevelController` ket noi toan bo he thong runtime cua level instance
 
@@ -103,7 +108,8 @@ Tai lieu va code moi nen uu tien nhom signal bucket/ball/queue/level. Nhung sign
 - `GameWinState` va `GameLoseState` dang dung `async void` trong `ShowWinScreen()` / `ShowLoseScreen()`
 - Co nhieu comment nhac den "Matches Cocos ..." va logic migration
 - Script `Setup.bat` / `Setup.sh` van mang assumption tu `HyperCasualTemplate`
-- Docs cu tung nhac Unity 6000 va `GameManager`, nhung code hien tai khong con phu hop
+- Docs cu tung nhac `GameManager`, slot system, va tap mau 4 color; nhung runtime hien tai la bucket-grid / collect-area / queue-lane voi 12 mau
+- `MainSceneScope` hien dang hardcode bootstrap vao level `23`, can luu y khi doc docs hoac test progression
 
 ## 7. Nguyen tac cap nhat code ve sau
 

@@ -23,32 +23,36 @@
 **Status:** ✅ Complete
 
 **Conveyor System:**
-- [x] Spline-based conveyor (Dreamteck Splines)
-- [x] RowBall containers (5 balls each)
-- [x] PathFollower component
-- [x] Looping conveyor belt
+- [x] Spline-based main conveyor (Dreamteck Splines)
+- [x] RowBall containers moving on cached paths
+- [x] Entry-point detection and ball-to-bucket transfer
+- [x] Queue conveyor feeding rows back into the main loop
+- [x] Multi-lane queue authoring via `QueueLanes`
 
 **Ball/Ring System:**
-- [x] Ball prefab with color support (4 colors)
+- [x] Ball prefab with runtime color support (12 colors in `ColorType`)
 - [x] RowBall container management
 - [x] Ball collection/removal from rows
-- [x] DOTween jump animations
+- [x] DOTween jump animations and landing feedback
 
-**Slot & Stacking:**
-- [x] 4 stacking slots
-- [x] Color-based collector placement
-- [x] Stack limit per slot (configurable)
-- [x] Stack clearing when full
+**Bucket Grid & Collect Area:**
+- [x] Bucket-grid authoring in `LevelData.BucketGrid`
+- [x] Collect-area slot occupancy and bucket placement
+- [x] Bucket completion based on collected + incoming balls
+- [x] Hidden bucket authoring and reveal chain
+- [x] Auto-place eligible buckets into collect areas at level start
 
-**Attraction Mechanics:**
-- [x] Progress-based attraction zones
-- [x] Curved path attraction (DOTween)
-- [x] Color matching logic
+**Matching Mechanics:**
+- [x] Color matching logic through `CollectAreaBucketService`
+- [x] Per-color bucket target distribution from total ring counts
+- [x] Win/lose checks based on remaining legal moves
 
 **Level System:**
-- [x] LevelData ScriptableObject
-- [x] LevelManager with load/save
+- [x] `LevelData` ScriptableObject
+- [x] `LevelManager` with load/save
+- [x] `LevelController` runtime orchestration
 - [x] Level progression tracking
+- [x] Content authoring through `Level_24`
 
 **Game States:**
 - [x] `GamePlayState` — Active gameplay with ITickable
@@ -62,10 +66,11 @@
 **Status:** In Progress
 
 **Level System:**
-- [x] Level data structure (LevelData ScriptableObject)
+- [x] Level data structure (`LevelData` ScriptableObject)
 - [x] Level loader (Resources + Addressables fallback)
-- [x] Difficulty scaling (ConveyorSpeed, StackLimit, RingCount)
-- [x] Level completion tracking (HighestUnlockedLevel)
+- [x] Difficulty scaling via conveyor speed, stack limit, queue usage, hidden buckets, and layout complexity
+- [x] Level completion tracking (`HighestUnlockedLevel`)
+- [x] Playable content authored through level 24
 
 **Scoring:**
 - [ ] Score calculation (time bonus, combo bonus)
@@ -162,12 +167,13 @@
 | Item | Priority | Effort | Notes |
 |------|----------|--------|-------|
 | Object pooling for balls | High | Medium | Currently using Instantiate/Destroy |
-| Unit tests for game systems | Medium | Medium | ConveyorController, SlotManager |
+| Unit tests for game systems | Medium | Medium | ConveyorController, BucketColumnManager, CollectAreaBucketService |
 | Screen transition animations | Low | Low | Fade/slide presets |
 | Addressables memory cleanup | Medium | Medium | Unload unused assets |
 | Combo system | Medium | Medium | Rapid collection bonus |
 | Tutorial system | High | High | First-time player guidance |
 | Pause state | Low | Low | GamePauseState not implemented |
+| Replace bootstrap hardcode | Medium | Low | `MainSceneScope` currently auto-loads level 23 |
 
 ---
 
@@ -201,7 +207,8 @@
 | Milestone | Target | Definition of Done |
 |-----------|--------|-------------------|
 | **Alpha** | ✅ Done | Core gameplay loop playable |
-| **Beta** | TBD | All levels, basic UI, no major bugs |
+| **Content Milestone** | ✅ Done | Level content expanded through 24 with hidden buckets and extended color set |
+| **Beta** | TBD | Stable progression, basic UI, no major gameplay blockers |
 | **RC** | TBD | Monetization, analytics, store assets |
 | **Launch** | TBD | Store submission approved |
 
