@@ -1,0 +1,232 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc87aff43b3044a409c13c778837ccd7, type: 3}
+  m_Name: Level_29
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: BucketGrid
+      Entry: 7
+      Data: 0|HyperCasualGame.Scripts.Level.BucketCellType[,], HyperCasualGame.Scripts
+    - Name: 
+      Entry: 12
+      Data: 20
+    - Name: ranks
+      Entry: 1
+      Data: 4|5
+    - Name: 
+      Entry: 3
+      Data: 1
+    - Name: 
+      Entry: 3
+      Data: 3
+    - Name: 
+      Entry: 3
+      Data: 18446744073709551615
+    - Name: 
+      Entry: 3
+      Data: 18446744073709551615
+    - Name: 
+      Entry: 3
+      Data: 18446744073709551615
+    - Name: 
+      Entry: 3
+      Data: 0
+    - Name: 
+      Entry: 3
+      Data: 2
+    - Name: 
+      Entry: 3
+      Data: 11
+    - Name: 
+      Entry: 3
+      Data: 9
+    - Name: 
+      Entry: 3
+      Data: 4
+    - Name: 
+      Entry: 3
+      Data: 5
+    - Name: 
+      Entry: 3
+      Data: 4
+    - Name: 
+      Entry: 3
+      Data: 5
+    - Name: 
+      Entry: 3
+      Data: 7
+    - Name: 
+      Entry: 3
+      Data: 7
+    - Name: 
+      Entry: 3
+      Data: 5
+    - Name: 
+      Entry: 3
+      Data: 3
+    - Name: 
+      Entry: 3
+      Data: 8
+    - Name: 
+      Entry: 3
+      Data: 11
+    - Name: 
+      Entry: 3
+      Data: 4
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  LevelNumber: 29
+  ConveyorSpeed: 1
+  StackLimit: 8
+  Rings:
+  - Color: 0
+    Count: 18
+  - Color: 3
+    Count: 18
+  - Color: 8
+    Count: 18
+  - Color: 6
+    Count: 18
+  - Color: 9
+    Count: 18
+  - Color: 1
+    Count: 18
+  - Color: 4
+    Count: 18
+  - Color: 9
+    Count: 18
+  - Color: 4
+    Count: 18
+  - Color: 2
+    Count: 18
+  - Color: 5
+    Count: 18
+  - Color: 4
+    Count: 18
+  - Color: 5
+    Count: 18
+  - Color: 1
+    Count: 18
+  - Color: 7
+    Count: 18
+  - Color: 6
+    Count: 18
+  - Color: 11
+    Count: 18
+  - Color: 4
+    Count: 33
+  - Color: 7
+    Count: 18
+  AvailableCollectors: 
+  HiddenBuckets: []
+  LockedBuckets:
+  - Column: 0
+    Row: 0
+    RequiredBallsToUnlock: 100
+  - Column: 1
+    Row: 0
+    RequiredBallsToUnlock: 100
+  - Column: 0
+    Row: 1
+    RequiredBallsToUnlock: 50
+  - Column: 1
+    Row: 1
+    RequiredBallsToUnlock: 50
+  - Column: 1
+    Row: 2
+    RequiredBallsToUnlock: 50
+  - Column: 1
+    Row: 3
+    RequiredBallsToUnlock: 50
+  - Column: 1
+    Row: 4
+    RequiredBallsToUnlock: 50
+  - Column: 2
+    Row: 2
+    RequiredBallsToUnlock: 50
+  - Column: 2
+    Row: 3
+    RequiredBallsToUnlock: 100
+  - Column: 2
+    Row: 4
+    RequiredBallsToUnlock: 150
+  - Column: 3
+    Row: 2
+    RequiredBallsToUnlock: 50
+  - Column: 3
+    Row: 3
+    RequiredBallsToUnlock: 100
+  - Column: 3
+    Row: 4
+    RequiredBallsToUnlock: 150
+  BucketColumns:
+  - BucketColors: 00000000060000000100000003000000
+  - BucketColors: 030000000200000004000000
+  - BucketColors: 05000000000000000200000001000000
+  BucketColumnSpacing: 1.2
+  BucketRowSpacing: 1.2
+  HasQueue: 1
+  QueueRings: []
+  QueueSpeed: 1
+  QueueLanes:
+  - LaneId: LeftQueue
+    DisplayName: LeftQueue
+    Enabled: 1
+    QueueRings:
+    - Color: 5
+      Count: 15
+    - Color: 4
+      Count: 15
+    - Color: 3
+      Count: 15
+    - Color: 7
+      Count: 15
+    - Color: 2
+      Count: 15
+    - Color: 5
+      Count: 15
+    - Color: 11
+      Count: 15
+    QueueSpeed: 1
+  - LaneId: RightQueue
+    DisplayName: RightQueue
+    Enabled: 1
+    QueueRings:
+    - Color: 11
+      Count: 15
+    - Color: 7
+      Count: 15
+    - Color: 5
+      Count: 30
+    - Color: 11
+      Count: 15
+    - Color: 5
+      Count: 15
+    - Color: 0
+      Count: 15
+    - Color: 8
+      Count: 15
+    QueueSpeed: 1
+  HasHiddenRings: 0
+  BlockedSlotCount: 0

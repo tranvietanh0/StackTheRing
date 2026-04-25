@@ -26,6 +26,8 @@ namespace HyperCasualGame.Scripts.Bucket
         [SerializeField] private GameObject hiddenIndicator;
         [SerializeField] private Transform visualRoot;
         [SerializeField] private Transform stackRoot;
+        [SerializeField] private Vector3 normalTextLocalPosition;
+        [SerializeField] private Vector3 lockedTextLocalPosition;
 
         #endregion
 
@@ -84,6 +86,15 @@ namespace HyperCasualGame.Scripts.Bucket
             if (this.meshRenderers == null || this.meshRenderers.Length == 0)
             {
                 this.meshRenderers = this.GetComponentsInChildren<MeshRenderer>();
+            }
+
+            if (this.labelPercent != null
+                && this.normalTextLocalPosition == Vector3.zero
+                && this.lockedTextLocalPosition == Vector3.zero
+                && this.labelPercent.transform.localPosition != Vector3.zero)
+            {
+                this.normalTextLocalPosition = this.labelPercent.transform.localPosition;
+                this.lockedTextLocalPosition = this.labelPercent.transform.localPosition;
             }
         }
 
@@ -173,6 +184,7 @@ namespace HyperCasualGame.Scripts.Bucket
             {
                 var shouldShowFallbackQuestionMark = this.isHidden && this.data.ShowQuestionMark && this.hiddenIndicator == null;
                 var shouldShowLockedCounter = this.isLocked && !this.IsInCollectArea && !this.isHidden;
+                this.UpdateTextPosition();
                 this.labelPercent.gameObject.SetActive(this.IsInCollectArea || shouldShowFallbackQuestionMark || shouldShowLockedCounter);
             }
 
@@ -350,7 +362,19 @@ namespace HyperCasualGame.Scripts.Bucket
             }
 
             var percent = Mathf.Min(100, Mathf.FloorToInt((float)this.collectedBalls.Count / this.TargetBallCount * 100));
-            this.labelPercent.text = $"%{percent}";
+            this.labelPercent.text = $"{percent}%";
+        }
+
+        private void UpdateTextPosition()
+        {
+            if (this.labelPercent == null)
+            {
+                return;
+            }
+
+            this.labelPercent.transform.localPosition = this.isLocked && !this.IsInCollectArea
+                ? this.lockedTextLocalPosition
+                : this.normalTextLocalPosition;
         }
 
         private void CheckComplete()

@@ -57,6 +57,8 @@ MonoBehaviour:
   hiddenIndicator: {fileID: 0}
   visualRoot: {fileID: 3980176325229452792}
   stackRoot: {fileID: 0}
+  normalTextLocalPosition: {x: 0, y: 1.57, z: -0.55}
+  lockedTextLocalPosition: {x: 0, y: 1.57, z: -0.2}
 --- !u!65 &1767107842040727802
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -456,7 +458,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9194995056712978407}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
