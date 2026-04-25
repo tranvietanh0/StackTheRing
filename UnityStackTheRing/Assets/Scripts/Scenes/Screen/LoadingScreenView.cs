@@ -1,11 +1,14 @@
 namespace HyperCasualGame.Scripts.Scenes.Screen
 {
-    using Cysharp.Threading.Tasks;
+    using System.Collections.Generic;
     using BlueprintFlow.BlueprintControlFlow;
+    using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.AssetLibrary;
     using GameFoundationCore.Scripts.Signals;
     using GameFoundationCore.Scripts.UIModule.ScreenFlow.BaseScreen.Presenter;
     using GameFoundationCore.Scripts.UIModule.ScreenFlow.BaseScreen.View;
+    using HyperCasualGame.Scripts.Level.Blueprint;
+    using HyperCasualGame.Scripts.Services;
     using UITemplate.Scripts.UserData;
     using UniT.Logging;
     using UnityEngine;
@@ -18,6 +21,11 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
     public class LoadingScreenView : BaseView
     {
         [SerializeField] private Image loadingFill;
+
+        public float GetProgress()
+        {
+            return this.loadingFill != null ? this.loadingFill.fillAmount : 0f;
+        }
 
         public void SetProgress(float progress)
         {
@@ -32,6 +40,8 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
     [ScreenInfo(nameof(LoadingScreenView))]
     public class LoadingScreenPresenter : BaseScreenPresenter<LoadingScreenView>
     {
+        private const float ProgressAnimationSpeed = 2.5f;
+
         protected virtual string NextSceneName => "1.MainScene";
 
         #region Inject
@@ -39,65 +49,178 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
         private readonly UserDataManager userDataManager;
         private readonly IGameAssets gameAssets;
         private readonly BlueprintReaderManager blueprintReaderManager;
+        private readonly LocalDataController localDataController;
+        private readonly LevelBlueprintReader levelBlueprintReader;
 
         public LoadingScreenPresenter(
             SignalBus signalBus,
             ILoggerManager loggerManager,
             UserDataManager userDataManager,
             IGameAssets gameAssets,
-            BlueprintReaderManager blueprintReaderManager
+            BlueprintReaderManager blueprintReaderManager,
+            LocalDataController localDataController,
+            LevelBlueprintReader levelBlueprintReader
         ) : base(signalBus, loggerManager)
         {
             this.userDataManager = userDataManager;
             this.gameAssets = gameAssets;
             this.blueprintReaderManager = blueprintReaderManager;
+            this.localDataController = localDataController;
+            this.levelBlueprintReader = levelBlueprintReader;
         }
 
         #endregion
 
         public override async UniTask BindData()
         {
-            // Show view immediately so loading bar is visible during loading
             this.View.Show();
             this.View.SetProgress(0f);
 
-            // Phase 1: Load user data (0% - 20%)
             await this.LoadUserDataWithProgress();
-
-            // Phase 2: Load blueprint catalog (20% - 60%)
             await this.LoadBlueprintWithProgress();
-
-            // Phase 3: Load main scene (60% - 100%)
+            await this.PreloadStartupLevelsWithProgress();
             await this.LoadSceneWithProgress();
         }
 
         private async UniTask LoadUserDataWithProgress()
         {
-            this.View.SetProgress(0.05f);
+            await this.AnimateProgressTo(0.05f);
             await this.userDataManager.LoadUserData();
-            this.View.SetProgress(0.2f);
+            await this.AnimateProgressTo(0.2f);
         }
 
         private async UniTask LoadBlueprintWithProgress()
         {
-            this.View.SetProgress(0.25f);
+            await this.AnimateProgressTo(0.25f);
             await this.blueprintReaderManager.LoadBlueprint();
-            this.View.SetProgress(0.6f);
+            await this.AnimateProgressTo(0.45f);
+        }
+
+        private async UniTask PreloadStartupLevelsWithProgress()
+        {
+            await this.AnimateProgressTo(0.45f);
+
+            var preloadKeys = await this.ResolveStartupLevelKeys();
+            if (preloadKeys.Count == 0)
+            {
+                await this.AnimateProgressTo(0.7f);
+                return;
+            }
+
+            var handles = new List<AsyncOperationHandle<GameObject>>(preloadKeys.Count);
+            foreach (var preloadKey in preloadKeys)
+            {
+                var handle = this.gameAssets.LoadAssetAsync<GameObject>(preloadKey, true, this.NextSceneName);
+                if (!handle.IsValid())
+                {
+                    this.Logger.Warning($"Startup level preload returned an invalid handle for key {preloadKey}.");
+                    continue;
+                }
+
+                handles.Add(handle);
+            }
+
+            if (handles.Count == 0)
+            {
+                await this.AnimateProgressTo(0.7f);
+                return;
+            }
+
+            var displayedProgress = 0.45f;
+            while (true)
+            {
+                var totalProgress = 0f;
+                var completedCount = 0;
+                foreach (var handle in handles)
+                {
+                    totalProgress += handle.PercentComplete;
+                    if (handle.IsDone)
+                    {
+                        completedCount++;
+                    }
+                }
+
+                var averageProgress = totalProgress / handles.Count;
+                var targetProgress = 0.45f + averageProgress * 0.25f;
+                displayedProgress = Mathf.MoveTowards(displayedProgress, targetProgress, Time.unscaledDeltaTime * ProgressAnimationSpeed);
+                this.View.SetProgress(displayedProgress);
+
+                if (completedCount == handles.Count && displayedProgress >= targetProgress)
+                {
+                    break;
+                }
+
+                await UniTask.Yield();
+            }
+
+            foreach (var handle in handles)
+            {
+                if (handle.Status == AsyncOperationStatus.Failed)
+                {
+                    this.Logger.Warning($"Startup level preload failed: {handle.OperationException?.Message}");
+                }
+            }
+
+            await this.AnimateProgressTo(0.7f);
+        }
+
+        private async UniTask<List<string>> ResolveStartupLevelKeys()
+        {
+            var preloadKeys = new List<string>(2);
+            if (this.levelBlueprintReader.Count == 0)
+            {
+                return preloadKeys;
+            }
+
+            var savedCurrentLevel = await this.localDataController.GetCurrentLevel();
+            var currentLevel = this.levelBlueprintReader.NormalizeLevel(savedCurrentLevel);
+            this.TryAddLevelKey(preloadKeys, currentLevel);
+            this.TryAddLevelKey(preloadKeys, this.levelBlueprintReader.GetNextLevel(currentLevel));
+            return preloadKeys;
+        }
+
+        private void TryAddLevelKey(List<string> preloadKeys, int levelNumber)
+        {
+            var record = this.levelBlueprintReader.GetRecord(levelNumber);
+            if (record == null || string.IsNullOrWhiteSpace(record.LevelName))
+            {
+                this.Logger.Warning($"Cannot resolve preload key for level {levelNumber}.");
+                return;
+            }
+
+            if (preloadKeys.Contains(record.LevelName))
+            {
+                return;
+            }
+
+            preloadKeys.Add(record.LevelName);
         }
 
         private async UniTask LoadSceneWithProgress()
         {
             var handle = this.gameAssets.LoadSceneAsync(this.NextSceneName);
+            var displayedProgress = 0.7f;
 
             while (!handle.IsDone)
             {
-                // Map progress from 0.6 to 1.0
-                var progress = 0.6f + handle.PercentComplete * 0.4f;
-                this.View.SetProgress(progress);
+                var targetProgress = 0.7f + handle.PercentComplete * 0.3f;
+                displayedProgress = Mathf.MoveTowards(displayedProgress, targetProgress, Time.unscaledDeltaTime * ProgressAnimationSpeed);
+                this.View.SetProgress(displayedProgress);
                 await UniTask.Yield();
             }
 
-            this.View.SetProgress(1f);
+            await this.AnimateProgressTo(1f);
+        }
+
+        private async UniTask AnimateProgressTo(float targetProgress)
+        {
+            var currentProgress = this.View == null ? 0f : this.View.GetProgress();
+            while (currentProgress < targetProgress)
+            {
+                currentProgress = Mathf.MoveTowards(currentProgress, targetProgress, Time.unscaledDeltaTime * ProgressAnimationSpeed);
+                this.View.SetProgress(currentProgress);
+                await UniTask.Yield();
+            }
         }
 
         protected virtual AsyncOperationHandle<SceneInstance> LoadSceneAsync()
