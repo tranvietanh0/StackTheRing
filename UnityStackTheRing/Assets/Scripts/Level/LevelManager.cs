@@ -4,7 +4,9 @@ namespace HyperCasualGame.Scripts.Level
     using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.AssetLibrary;
     using GameFoundationCore.Scripts.Signals;
+    using HyperCasualGame.Scripts.Level.Blueprint;
     using HyperCasualGame.Scripts.Signals;
+    using HyperCasualGame.Scripts.Services;
     using UniT.Logging;
     using UnityEngine;
     using Object = UnityEngine.Object;
@@ -18,6 +20,8 @@ namespace HyperCasualGame.Scripts.Level
         LevelController CurrentLevelController { get; }
 
         UniTask<LevelController> LoadLevel(int levelNumber);
+        UniTask<LevelController> LoadCurrentLevel();
+        UniTask<LevelController> LoadNextLevel();
         void UnloadCurrentLevel();
         void CompleteLevel();
         void FailLevel();
@@ -26,29 +30,30 @@ namespace HyperCasualGame.Scripts.Level
 
     public class LevelManager : ILevelManager
     {
-        private const string ProgressKey = "LevelProgress";
-        private const string LevelPrefabPrefix = "Level_";
-
         #region Inject
 
         private readonly IGameAssets gameAssets;
         private readonly SignalBus signalBus;
         private readonly ILogger logger;
         private readonly Transform levelRoot;
+        private readonly LevelBlueprintReader levelBlueprintReader;
+        private readonly LocalDataController localDataController;
         private Action<LevelController> injectCallback;
 
         public LevelManager(
             IGameAssets gameAssets,
             SignalBus signalBus,
             ILoggerManager loggerManager,
-            Transform levelRoot)
+            Transform levelRoot,
+            LevelBlueprintReader levelBlueprintReader,
+            LocalDataController localDataController)
         {
             this.gameAssets = gameAssets;
             this.signalBus = signalBus;
             this.logger = loggerManager.GetLogger(this);
             this.levelRoot = levelRoot;
-
-            this.LoadProgress();
+            this.levelBlueprintReader = levelBlueprintReader;
+            this.localDataController = localDataController;
         }
 
         #endregion
@@ -71,20 +76,35 @@ namespace HyperCasualGame.Scripts.Level
 
         public async UniTask<LevelController> LoadLevel(int levelNumber)
         {
+            if (this.levelBlueprintReader.Count == 0)
+            {
+                this.logger.Error("Level blueprint catalog is empty. Cannot load level.");
+                return null;
+            }
+
+            var normalizedLevel = this.levelBlueprintReader.NormalizeLevel(levelNumber);
+            var levelRecord = this.levelBlueprintReader.GetRecord(normalizedLevel);
+            if (levelRecord == null || string.IsNullOrWhiteSpace(levelRecord.LevelName))
+            {
+                this.logger.Error($"Level blueprint record is missing or invalid for level {normalizedLevel}.");
+                return null;
+            }
+
             // Cleanup previous level
             this.UnloadCurrentLevel();
 
-            this.CurrentLevel = levelNumber;
-            var prefabKey = $"{LevelPrefabPrefix}{levelNumber:D2}";
+            this.CurrentLevel = normalizedLevel;
+            await this.localDataController.SetCurrentLevel(this.CurrentLevel);
+            this.HighestUnlockedLevel = Mathf.Max(1, await this.localDataController.GetHighestUnlockedLevel());
+            var levelName = levelRecord.LevelName;
 
-            this.logger.Info($"Loading level prefab: {prefabKey}");
+            this.logger.Info($"Loading level prefab: {levelName}");
 
             GameObject prefab = null;
 
-            // Try Addressables first
             try
             {
-                var handle = this.gameAssets.LoadAssetAsync<GameObject>(prefabKey);
+                var handle = this.gameAssets.LoadAssetAsync<GameObject>(levelName);
                 await handle.Task;
                 prefab = handle.Result;
             }
@@ -93,10 +113,9 @@ namespace HyperCasualGame.Scripts.Level
                 this.logger.Warning($"Addressables load failed: {ex.Message}");
             }
 
-            // Fallback to Resources
             if (prefab == null)
             {
-                prefab = Resources.Load<GameObject>($"Levels/{prefabKey}");
+                prefab = Resources.Load<GameObject>($"Levels/{levelName}");
                 if (prefab != null)
                 {
                     this.logger.Info("Loaded level from Resources fallback");
@@ -105,16 +124,14 @@ namespace HyperCasualGame.Scripts.Level
 
             if (prefab == null)
             {
-                this.logger.Error($"Failed to load level prefab: {prefabKey}");
+                this.logger.Error($"Failed to load level prefab: {levelName}");
                 return null;
             }
 
-            // Instantiate
             var parent = this.levelRoot != null ? this.levelRoot : null;
             var levelGO = Object.Instantiate(prefab, parent);
-            levelGO.name = $"Level_{levelNumber:D2}";
+            levelGO.name = levelName;
 
-            // Get controller
             this.CurrentLevelController = levelGO.GetComponent<LevelController>();
             if (this.CurrentLevelController == null)
             {
@@ -123,19 +140,13 @@ namespace HyperCasualGame.Scripts.Level
                 return null;
             }
 
-            // Inject dependencies
             this.injectCallback?.Invoke(this.CurrentLevelController);
-
-            // Initialize the controller (IInitializable)
             this.CurrentLevelController.Initialize();
-
-            // Cache LevelData from controller
             this.CurrentLevelData = this.CurrentLevelController.LevelData;
 
-            // Fire signal
-            this.signalBus.Fire(new LevelStartSignal { LevelNumber = levelNumber });
+            this.signalBus.Fire(new LevelStartSignal { LevelNumber = this.CurrentLevel });
 
-            this.logger.Info($"Level {levelNumber} loaded successfully");
+            this.logger.Info($"Level {this.CurrentLevel} loaded successfully");
             return this.CurrentLevelController;
         }
 
@@ -151,11 +162,27 @@ namespace HyperCasualGame.Scripts.Level
             }
         }
 
+        public async UniTask<LevelController> LoadCurrentLevel()
+        {
+            var currentLevel = await this.localDataController.GetCurrentLevel();
+            return await this.LoadLevel(currentLevel);
+        }
+
+        public async UniTask<LevelController> LoadNextLevel()
+        {
+            var nextLevel = this.levelBlueprintReader.GetNextLevel(this.CurrentLevel);
+            return await this.LoadLevel(nextLevel);
+        }
+
         public void CompleteLevel()
         {
-            if (this.CurrentLevel >= this.HighestUnlockedLevel)
+            var nextLevel = this.levelBlueprintReader.GetNextLevel(this.CurrentLevel);
+            var candidateHighestLevel = nextLevel == this.levelBlueprintReader.GetMinLevel()
+                ? this.levelBlueprintReader.GetMaxLevel()
+                : nextLevel;
+            if (candidateHighestLevel > this.HighestUnlockedLevel)
             {
-                this.HighestUnlockedLevel = this.CurrentLevel + 1;
+                this.HighestUnlockedLevel = candidateHighestLevel;
                 this.SaveProgress();
             }
 
@@ -176,20 +203,15 @@ namespace HyperCasualGame.Scripts.Level
 
         public void SaveProgress()
         {
-            PlayerPrefs.SetInt(ProgressKey, this.HighestUnlockedLevel);
-            PlayerPrefs.Save();
+            this.localDataController.SetCurrentLevel(this.CurrentLevel, false).Forget();
+            this.localDataController.SetHighestUnlockedLevel(this.HighestUnlockedLevel, false).Forget();
+            this.localDataController.Save().Forget();
             this.logger.Info($"Progress saved. Highest unlocked: {this.HighestUnlockedLevel}");
         }
 
         #endregion
 
         #region Private Methods
-
-        private void LoadProgress()
-        {
-            this.HighestUnlockedLevel = PlayerPrefs.GetInt(ProgressKey, 1);
-            this.logger.Info($"Progress loaded. Highest unlocked: {this.HighestUnlockedLevel}");
-        }
 
         private int CalculateScore()
         {

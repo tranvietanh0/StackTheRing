@@ -1,6 +1,7 @@
 namespace HyperCasualGame.Scripts.Scenes.Screen
 {
     using Cysharp.Threading.Tasks;
+    using BlueprintFlow.BlueprintControlFlow;
     using GameFoundationCore.Scripts.AssetLibrary;
     using GameFoundationCore.Scripts.Signals;
     using GameFoundationCore.Scripts.UIModule.ScreenFlow.BaseScreen.Presenter;
@@ -32,22 +33,24 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
     public class LoadingScreenPresenter : BaseScreenPresenter<LoadingScreenView>
     {
         protected virtual string NextSceneName => "1.MainScene";
-        protected virtual string LevelPrefabKey => "Level_01";
 
         #region Inject
 
         private readonly UserDataManager userDataManager;
         private readonly IGameAssets gameAssets;
+        private readonly BlueprintReaderManager blueprintReaderManager;
 
         public LoadingScreenPresenter(
             SignalBus signalBus,
             ILoggerManager loggerManager,
             UserDataManager userDataManager,
-            IGameAssets gameAssets
+            IGameAssets gameAssets,
+            BlueprintReaderManager blueprintReaderManager
         ) : base(signalBus, loggerManager)
         {
             this.userDataManager = userDataManager;
             this.gameAssets = gameAssets;
+            this.blueprintReaderManager = blueprintReaderManager;
         }
 
         #endregion
@@ -61,10 +64,10 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
             // Phase 1: Load user data (0% - 20%)
             await this.LoadUserDataWithProgress();
 
-            // Phase 2: Preload level prefab (20% - 80%)
-            await this.PreloadLevelWithProgress();
+            // Phase 2: Load blueprint catalog (20% - 60%)
+            await this.LoadBlueprintWithProgress();
 
-            // Phase 3: Load main scene (80% - 100%)
+            // Phase 3: Load main scene (60% - 100%)
             await this.LoadSceneWithProgress();
         }
 
@@ -75,28 +78,11 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
             this.View.SetProgress(0.2f);
         }
 
-        private async UniTask PreloadLevelWithProgress()
+        private async UniTask LoadBlueprintWithProgress()
         {
-            var handle = this.gameAssets.LoadAssetAsync<GameObject>(this.LevelPrefabKey);
-
-            while (!handle.IsDone)
-            {
-                // Map progress from 0.2 to 0.8
-                var progress = 0.2f + handle.PercentComplete * 0.6f;
-                this.View.SetProgress(progress);
-                await UniTask.Yield();
-            }
-
-            if (handle.Status == AsyncOperationStatus.Succeeded)
-            {
-                this.Logger.Info($"Level prefab '{this.LevelPrefabKey}' preloaded successfully");
-            }
-            else
-            {
-                this.Logger.Warning($"Failed to preload level prefab '{this.LevelPrefabKey}', will use Resources fallback");
-            }
-
-            this.View.SetProgress(0.8f);
+            this.View.SetProgress(0.25f);
+            await this.blueprintReaderManager.LoadBlueprint();
+            this.View.SetProgress(0.6f);
         }
 
         private async UniTask LoadSceneWithProgress()
@@ -105,8 +91,8 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
 
             while (!handle.IsDone)
             {
-                // Map progress from 0.8 to 1.0
-                var progress = 0.8f + handle.PercentComplete * 0.2f;
+                // Map progress from 0.6 to 1.0
+                var progress = 0.6f + handle.PercentComplete * 0.4f;
                 this.View.SetProgress(progress);
                 await UniTask.Yield();
             }

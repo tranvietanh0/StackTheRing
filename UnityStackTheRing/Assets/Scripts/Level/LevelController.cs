@@ -216,8 +216,7 @@ namespace HyperCasualGame.Scripts.Level
         /// </summary>
         public void RetryLevel()
         {
-            // LevelManager will unload this level and load a new instance
-            this.levelManager.LoadLevel(this.levelManager.CurrentLevel).Forget();
+            this.levelManager.LoadCurrentLevel().Forget();
         }
 
         /// <summary>
@@ -225,8 +224,7 @@ namespace HyperCasualGame.Scripts.Level
         /// </summary>
         public void NextLevel()
         {
-            // LevelManager will unload this level and load a new instance
-            this.levelManager.LoadLevel(this.levelManager.CurrentLevel + 1).Forget();
+            this.levelManager.LoadNextLevel().Forget();
         }
 
         #endregion

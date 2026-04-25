@@ -90,20 +90,19 @@ namespace HyperCasualGame.Scripts.Scenes.Main
                     );
                 });
 
-                // Load first level
-                this.LoadFirstLevel(levelManager).Forget();
+                // Load startup level from local data
+                this.LoadCurrentLevel(levelManager).Forget();
             });
         }
 
-        private async UniTask LoadFirstLevel(ILevelManager levelManager)
+        private async UniTask LoadCurrentLevel(ILevelManager levelManager)
         {
-            // Small delay to ensure all services are ready
             await UniTask.Yield();
 
-            var controller = await levelManager.LoadLevel(1);
+            var controller = await levelManager.LoadCurrentLevel();
             if (controller == null)
             {
-                Debug.LogError("[MainSceneScope] Failed to load first level!");
+                Debug.LogError("[MainSceneScope] Failed to load startup level!");
             }
         }
     }

@@ -19,8 +19,8 @@
         "DOTweenPro.Scripts",
         "Dreamteck.Splines",
         "Unity.TextMeshPro",
-        "Sirenix.OdinInspector.Attributes",
-        "Sirenix.Serialization"
+        "GameFoundationCore.BlueprintFlow",
+        "GameFoundationCore.Utilities"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

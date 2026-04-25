@@ -381,6 +381,7 @@ MonoBehaviour:
   viewRoot: {fileID: 7903728701870507626}
   screenTransition: {fileID: 4371647055270272604}
   <BtnHome>k__BackingField: {fileID: 1643851601236766348}
+  <LevelInput>k__BackingField: {fileID: 0}
 --- !u!114 &4371647055270272604 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5819556732852616327, guid: db4671caad8d7684f8068fee30a5e8a8, type: 3}

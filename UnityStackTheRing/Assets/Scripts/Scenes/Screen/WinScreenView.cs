@@ -41,7 +41,7 @@
 
         private void OnClickNext()
         {
-            this.levelManager.LoadLevel(this.levelManager.CurrentLevel + 1).Forget();
+            this.levelManager.LoadNextLevel().Forget();
         }
     }
 }
