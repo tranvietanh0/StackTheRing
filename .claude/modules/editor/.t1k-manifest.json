@@ -1,0 +1,44 @@
+{
+  "module": "editor",
+  "version": "1.3.0",
+  "kit": "theonekit-unity",
+  "generatedBy": "release-action",
+  "generatedAt": "2026-04-20T15:19:45.636Z",
+  "files": {
+    "skills": [
+      "dots-inventory-grid/SKILL.md",
+      "dots-inventory-grid/references/demo-shapes-guide.md",
+      "dots-inventory-grid/references/gotchas-ui-drag.md",
+      "dots-inventory-grid/references/gotchas.md",
+      "dots-inventory-grid/references/grid-placement-guide.md",
+      "dots-inventory-grid/references/passive-effects-guide.md",
+      "dots-inventory-grid/references/set-bonuses-guide.md",
+      "t1k-balance/SKILL.md",
+      "t1k-balance/references/balance-audit-checklist.md",
+      "t1k-milestone/SKILL.md",
+      "t1k-milestone/references/gate-checklists.md",
+      "t1k-playtest/SKILL.md",
+      "t1k-playtest/references/snapshot-comparison.md",
+      "t1k-playtest/references/validation-checks.md",
+      "t1k-profile/SKILL.md",
+      "t1k-profile/references/optimization-targets.md",
+      "t1k-profile/references/profiling-workflow.md",
+      "t1k-scene/SKILL.md",
+      "t1k-scene/references/demo-detection.md",
+      "t1k-scene/references/troubleshooting.md",
+      "t1k-sync/CK-BASELINE.md",
+      "t1k-sync/SKILL.md",
+      "t1k-sync/references/sync-checklist.md",
+      "t1k-wiki/SKILL.md",
+      "t1k-wiki/references/wiki-structure.md",
+      "unity-profiling/SKILL.md",
+      "unity-profiling/references/profiling-api.md"
+    ],
+    "agents": [],
+    "fragments": [
+      "t1k-activation-editor.json"
+    ],
+    "other": []
+  },
+  "checksum": "sha256:295358dfb53743204d6de80263e8ba55f9555ec3a838d306827732a4432f85bd"
+}

@@ -1,0 +1,37 @@
+{
+  "registryVersion": 1,
+  "priority": 90,
+  "roles": {
+    "implementer": "unity-dots-implementer",
+    "tester": "unity-dots-tester",
+    "reviewer": "unity-dots-reviewer",
+    "debugger": "unity-dots-debugger",
+    "optimizer": "unity-dots-optimizer",
+    "environment": "unity-dots-environment",
+    "validator": "unity-dots-validator",
+    "shader": "unity-dots-shader",
+    "ui-developer": "unity-ui-developer",
+    "game-developer": "unity-developer"
+  },
+  "fileRouting": {
+    "Packages/*/Runtime/": "implementer",
+    "Packages/*/Tests/": "tester",
+    "Assets/Demos/*/Editor/": "environment",
+    "*.shader|*.hlsl|*.shadergraph": "shader",
+    "*Canvas*|*UI*|*Panel*|*HUD*": "ui-developer"
+  },
+  "errorRecovery": {
+    "compilation": "implementer",
+    "test-failure": "tester",
+    "runtime-nan": "debugger",
+    "performance": "optimizer",
+    "scene-broken": "environment",
+    "burst-error": "implementer"
+  },
+  "_origin": {
+    "kit": "theonekit-unity",
+    "repository": "The1Studio/theonekit-unity",
+    "module": null,
+    "protected": false
+  }
+}

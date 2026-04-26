@@ -1,0 +1,41 @@
+{
+  "registryVersion": 1,
+  "kitName": "theonekit-unity",
+  "module": "animation",
+  "priority": 90,
+  "sessionBaseline": [],
+  "mappings": [
+    {
+      "keywords": [
+        "animation",
+        "Animator",
+        "Mecanim",
+        "state machine",
+        "Playable",
+        "Timeline"
+      ],
+      "skills": [
+        "unity-animation"
+      ]
+    },
+    {
+      "keywords": [
+        "tween",
+        "LitMotion",
+        "motion",
+        "ease",
+        "interpolate",
+        "animate value"
+      ],
+      "skills": [
+        "litmotion"
+      ]
+    }
+  ],
+  "_origin": {
+    "kit": "theonekit-unity",
+    "repository": "The1Studio/theonekit-unity",
+    "module": "animation",
+    "protected": false
+  }
+}

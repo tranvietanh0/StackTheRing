@@ -1,0 +1,27 @@
+{
+  "module": "ui",
+  "version": "1.3.0",
+  "kit": "theonekit-unity",
+  "generatedBy": "release-action",
+  "generatedAt": "2026-04-20T15:19:46.177Z",
+  "files": {
+    "skills": [
+      "unity-mobile-ui/SKILL.md",
+      "unity-mobile-ui/references/responsive-layout.md",
+      "unity-mobile-ui/references/touch-input.md",
+      "unity-mobile-ui/references/ui-optimization.md",
+      "unity-ugui/SKILL.md",
+      "unity-ugui/references/components-quick-ref.md",
+      "unity-ugui/references/dots-bridge-and-performance.md",
+      "unity-ugui/references/layouts-and-drag-drop.md",
+      "unity-ui-toolkit/SKILL.md",
+      "unity-ui-toolkit/references/uxml-uss-and-patterns.md"
+    ],
+    "agents": [],
+    "fragments": [
+      "t1k-activation-ui.json"
+    ],
+    "other": []
+  },
+  "checksum": "sha256:f7eb9bb3c5aadabb1fadd48d874893eef34902743b98091da3647128427c4392"
+}

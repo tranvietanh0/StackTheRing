@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/The1Studio/theonekit-core/blob/main/.claude/schemas/t1k-config.schema.json",
+  "title": "T1K Config Fragment",
+  "description": "Feature flags, repo URL, and context requirements for a kit layer (t1k-config-*.json)",
+  "type": "object",
+  "required": [
+    "registryVersion",
+    "kitName",
+    "priority"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registryVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version — always 1"
+    },
+    "kitName": {
+      "type": "string",
+      "description": "Kit identifier (e.g. theonekit-core, theonekit-unity)"
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Merge priority — higher wins. Core=10, designer/middleware=50, engine kits=90"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this config layer"
+    },
+    "repos": {
+      "type": "object",
+      "description": "Repo references for triage/sync-back/issue routing",
+      "properties": {
+        "primary": {
+          "type": "string",
+          "description": "Primary GitHub repo (owner/repo)"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "repoUrl": {
+      "type": "string",
+      "description": "GitHub repo URL (legacy field — prefer repos.primary)"
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature flags for this kit layer",
+      "properties": {
+        "mcp": {
+          "type": "boolean",
+          "description": "Whether this kit requires MCP connection"
+        },
+        "playMode": {
+          "type": "boolean",
+          "description": "Whether this kit uses play mode (e.g. Unity editor)"
+        },
+        "telemetry": {
+          "type": "boolean",
+          "description": "Whether telemetry collection is enabled"
+        },
+        "executionTrace": {
+          "type": "boolean",
+          "description": "Whether execution tracing is enabled"
+        },
+        "autoUpdate": {
+          "type": "boolean",
+          "description": "Whether auto-update checks are enabled"
+        },
+        "autoUpdateMajor": {
+          "type": "boolean",
+          "description": "Whether major version bumps are auto-applied. Default true. Set false to keep majors notify-only (user must run `t1k update` manually)."
+        }
+      },
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Context requirements — paths/features that must exist for kit commands to run",
+      "properties": {
+        "requiredPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "CWD-relative paths that must exist. Empty array = context-independent (core)."
+        },
+        "requiredFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Feature names that must be available (e.g. 'mcp')"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable context requirement description"
+        }
+      },
+      "additionalProperties": false
+    },
+    "mcp": {
+      "type": "object",
+      "description": "MCP server requirements by tier (additive across kit layers)",
+      "properties": {
+        "required": {
+          "$ref": "#/$defs/mcpEntryArray"
+        },
+        "recommended": {
+          "$ref": "#/$defs/mcpEntryArray"
+        },
+        "optional": {
+          "$ref": "#/$defs/mcpEntryArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "telemetry": {
+      "type": "object",
+      "description": "Telemetry configuration (cloud and local)",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "mcpEntry": {
+      "type": "object",
+      "required": [
+        "name",
+        "purpose",
+        "installCmd"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "MCP server name as registered in Claude Code"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Human-readable purpose description"
+        },
+        "installCmd": {
+          "type": "string",
+          "description": "CLI command to install the MCP server (claude mcp add ...)"
+        },
+        "verifyTool": {
+          "type": "string",
+          "description": "Deferred tool prefix to verify MCP is functional (e.g. mcp__github__)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "mcpEntryArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mcpEntry"
+      }
+    }
+  },
+  "_origin": {
+    "kit": "theonekit-core",
+    "repository": "The1Studio/theonekit-core",
+    "module": null,
+    "protected": true
+  }
+}

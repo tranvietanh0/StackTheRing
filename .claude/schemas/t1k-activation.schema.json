@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/The1Studio/theonekit-core/blob/main/.claude/schemas/t1k-activation.schema.json",
+  "title": "T1K Activation Fragment",
+  "description": "Maps request keywords to skills (t1k-activation-*.json). ADDITIVE — all matches collected across all fragments.",
+  "type": "object",
+  "required": [
+    "registryVersion",
+    "kitName",
+    "priority",
+    "mappings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registryVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version — always 1"
+    },
+    "kitName": {
+      "type": "string",
+      "description": "Kit identifier (e.g. theonekit-core, theonekit-unity)"
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Fragment priority — used for ordering but activation is ADDITIVE (higher does not suppress lower)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this activation fragment"
+    },
+    "sessionBaseline": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skills activated every session regardless of keyword match. Use only for required/core skills.",
+      "default": []
+    },
+    "mappings": {
+      "type": "array",
+      "description": "Keyword-to-skill mappings. All matching entries are collected (additive).",
+      "items": {
+        "type": "object",
+        "required": [
+          "keywords",
+          "skills"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "keywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Keywords that trigger activation of the listed skills"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "description": "Skill names to activate when any keyword matches"
+          }
+        }
+      }
+    }
+  },
+  "_origin": {
+    "kit": "theonekit-core",
+    "repository": "The1Studio/theonekit-core",
+    "module": null,
+    "protected": true
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "registryVersion": 1,
+  "priority": 90,
+  "kit": "unity",
+  "kitName": "theonekit-unity",
+  "repos": {
+    "primary": "The1Studio/theonekit-unity",
+    "mcp": "The1Studio/unity-mcp"
+  },
+  "context": {
+    "requiredPaths": [
+      "Assets",
+      "ProjectSettings"
+    ],
+    "description": "Requires Unity project structure"
+  },
+  "features": {
+    "mcp": true,
+    "playMode": true,
+    "batchMode": true
+  },
+  "mcp": {
+    "required": [
+      {
+        "name": "UnityMCP",
+        "purpose": "Unity Editor bridge for asset management, scene control, and script editing",
+        "installCmd": "claude mcp add UnityMCP -s user -- uvx mcp-for-unity",
+        "verifyTool": "mcp__UnityMCP__"
+      }
+    ]
+  },
+  "extraCommands": [
+    "t1k-scene",
+    "t1k-playtest",
+    "t1k-balance",
+    "t1k-profile",
+    "t1k-milestone",
+    "t1k-wiki",
+    "t1k-sync"
+  ],
+  "_origin": {
+    "kit": "theonekit-unity",
+    "repository": "The1Studio/theonekit-unity",
+    "module": null,
+    "protected": false
+  }
+}

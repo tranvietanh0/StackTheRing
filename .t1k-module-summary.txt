@@ -1,0 +1,2 @@
+unity|1.62.0|none|
+core|v1.62.1|none|unity-base,animation,audio,editor,ui

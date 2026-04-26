@@ -1,0 +1,19 @@
+{
+  "$schema": "https://the1studio.github.io/t1k/adapter-install.schema.json",
+  "contractVersion": "1.0.0",
+  "engine": "designer",
+  "isAdapter": false,
+  "requires": [
+    "mermaid-cli"
+  ],
+  "optionalTools": [],
+  "prerequisites": [],
+  "installSteps": [],
+  "perProject": [],
+  "_origin": {
+    "kit": "theonekit-designer",
+    "repository": "The1Studio/theonekit-designer",
+    "module": "design-base",
+    "protected": false
+  }
+}

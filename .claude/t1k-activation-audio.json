@@ -1,0 +1,29 @@
+{
+  "registryVersion": 1,
+  "kitName": "theonekit-unity",
+  "module": "audio",
+  "priority": 90,
+  "sessionBaseline": [],
+  "mappings": [
+    {
+      "keywords": [
+        "audio",
+        "sound",
+        "music",
+        "AudioSource",
+        "AudioMixer",
+        "SFX",
+        "pooling audio"
+      ],
+      "skills": [
+        "unity-audio"
+      ]
+    }
+  ],
+  "_origin": {
+    "kit": "theonekit-unity",
+    "repository": "The1Studio/theonekit-unity",
+    "module": "audio",
+    "protected": false
+  }
+}

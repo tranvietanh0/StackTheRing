@@ -1,0 +1,54 @@
+{
+  "registryVersion": 1,
+  "kitName": "theonekit-unity",
+  "module": "ui",
+  "priority": 90,
+  "sessionBaseline": [],
+  "mappings": [
+    {
+      "keywords": [
+        "UI",
+        "canvas",
+        "HUD",
+        "panel",
+        "UGUI",
+        "Button",
+        "Image",
+        "layout group"
+      ],
+      "skills": [
+        "unity-ugui"
+      ]
+    },
+    {
+      "keywords": [
+        "UI Toolkit",
+        "UIDocument",
+        "UXML",
+        "USS",
+        "VisualElement"
+      ],
+      "skills": [
+        "unity-ui-toolkit"
+      ]
+    },
+    {
+      "keywords": [
+        "mobile UI",
+        "responsive layout",
+        "safe area",
+        "touch UI",
+        "screen size"
+      ],
+      "skills": [
+        "unity-mobile-ui"
+      ]
+    }
+  ],
+  "_origin": {
+    "kit": "theonekit-unity",
+    "repository": "The1Studio/theonekit-unity",
+    "module": "ui",
+    "protected": false
+  }
+}

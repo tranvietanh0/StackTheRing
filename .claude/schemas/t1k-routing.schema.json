@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/The1Studio/theonekit-core/blob/main/.claude/schemas/t1k-routing.schema.json",
+  "title": "T1K Routing Fragment",
+  "description": "Maps abstract roles to concrete agent names (t1k-routing-*.json). Highest priority wins per role.",
+  "type": "object",
+  "required": [
+    "registryVersion",
+    "priority",
+    "roles"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registryVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version — always 1"
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Merge priority — higher wins per role. Core=10, engine kits=90, module overlays=91+"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this routing layer"
+    },
+    "module": {
+      "type": "string",
+      "description": "Module name — only present in module routing overlays (priority >= 91)"
+    },
+    "kitName": {
+      "type": "string",
+      "description": "Kit identifier — only present in module routing overlays"
+    },
+    "roles": {
+      "type": "object",
+      "description": "Role-to-agent mapping. Keys are abstract role names, values are concrete agent names.",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "description": "Agent name for this role"
+      }
+    },
+    "errorRecovery": {
+      "type": "object",
+      "description": "Maps error types to the role responsible for recovery",
+      "properties": {
+        "compilation": {
+          "type": "string"
+        },
+        "test-failure": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "performance": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "string",
+        "description": "Role name that handles this error type"
+      }
+    }
+  },
+  "_origin": {
+    "kit": "theonekit-core",
+    "repository": "The1Studio/theonekit-core",
+    "module": null,
+    "protected": true
+  }
+}

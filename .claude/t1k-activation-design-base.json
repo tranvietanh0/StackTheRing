@@ -1,0 +1,75 @@
+{
+  "registryVersion": 1,
+  "kitName": "theonekit-designer",
+  "module": "design-base",
+  "priority": 92,
+  "sessionBaseline": [
+    "game-design-document",
+    "game-feel-juice",
+    "game-balance-tools",
+    "game-mobile-design"
+  ],
+  "mappings": [
+    {
+      "keywords": [
+        "feel",
+        "juice",
+        "feedback",
+        "shake"
+      ],
+      "skills": [
+        "game-feel-juice"
+      ]
+    },
+    {
+      "keywords": [
+        "balance",
+        "tuning",
+        "stats"
+      ],
+      "skills": [
+        "game-balance-tools"
+      ]
+    },
+    {
+      "keywords": [
+        "mobile",
+        "session",
+        "retention"
+      ],
+      "skills": [
+        "game-mobile-design"
+      ]
+    },
+    {
+      "keywords": [
+        "GDD",
+        "game design document",
+        "design doc"
+      ],
+      "skills": [
+        "game-design-document"
+      ]
+    },
+    {
+      "keywords": [
+        "design diagram",
+        "quest tree",
+        "economy flow",
+        "narrative branch",
+        "level layout",
+        "game design diagram",
+        "mermaid template"
+      ],
+      "skills": [
+        "design-diagram-authoring"
+      ]
+    }
+  ],
+  "_origin": {
+    "kit": "theonekit-designer",
+    "repository": "The1Studio/theonekit-designer",
+    "module": "design-base",
+    "protected": false
+  }
+}

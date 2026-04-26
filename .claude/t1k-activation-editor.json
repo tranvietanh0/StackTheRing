@@ -1,0 +1,102 @@
+{
+  "registryVersion": 1,
+  "kitName": "theonekit-unity",
+  "module": "editor",
+  "priority": 90,
+  "sessionBaseline": [],
+  "mappings": [
+    {
+      "keywords": [
+        "scene tool",
+        "demo scene",
+        "scene detection"
+      ],
+      "skills": [
+        "t1k-scene"
+      ]
+    },
+    {
+      "keywords": [
+        "playtest",
+        "snapshot",
+        "validation check",
+        "play session"
+      ],
+      "skills": [
+        "t1k-playtest"
+      ]
+    },
+    {
+      "keywords": [
+        "balance",
+        "balance audit",
+        "game balance",
+        "tuning"
+      ],
+      "skills": [
+        "t1k-balance"
+      ]
+    },
+    {
+      "keywords": [
+        "profil",
+        "FPS target",
+        "optimization target",
+        "profiling workflow"
+      ],
+      "skills": [
+        "t1k-profile",
+        "unity-profiling"
+      ]
+    },
+    {
+      "keywords": [
+        "milestone",
+        "gate",
+        "release checklist",
+        "ship criteria"
+      ],
+      "skills": [
+        "t1k-milestone"
+      ]
+    },
+    {
+      "keywords": [
+        "wiki",
+        "documentation",
+        "knowledge base",
+        "confluence"
+      ],
+      "skills": [
+        "t1k-wiki"
+      ]
+    },
+    {
+      "keywords": [
+        "sync-back",
+        "skill sync",
+        "CK sync"
+      ],
+      "skills": [
+        "t1k-sync"
+      ]
+    },
+    {
+      "keywords": [
+        "inventory grid",
+        "grid inventory",
+        "item grid",
+        "backpack grid"
+      ],
+      "skills": [
+        "dots-inventory-grid"
+      ]
+    }
+  ],
+  "_origin": {
+    "kit": "theonekit-unity",
+    "repository": "The1Studio/theonekit-unity",
+    "module": "editor",
+    "protected": false
+  }
+}

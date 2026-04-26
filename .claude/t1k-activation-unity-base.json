@@ -1,0 +1,158 @@
+{
+  "registryVersion": 1,
+  "kitName": "theonekit-unity",
+  "module": "unity-base",
+  "priority": 90,
+  "sessionBaseline": [
+    "unity-code-conventions",
+    "unity-mcp-skill"
+  ],
+  "mappings": [
+    {
+      "keywords": [
+        "convention",
+        "naming",
+        "style",
+        "pattern",
+        "namespace"
+      ],
+      "skills": [
+        "unity-code-conventions"
+      ]
+    },
+    {
+      "keywords": [
+        "MonoBehaviour",
+        "component",
+        "Start",
+        "Update",
+        "Awake",
+        "lifecycle"
+      ],
+      "skills": [
+        "unity-monobehaviour"
+      ]
+    },
+    {
+      "keywords": [
+        "scene",
+        "load",
+        "unload",
+        "additive",
+        "SceneManager"
+      ],
+      "skills": [
+        "unity-scene-management"
+      ]
+    },
+    {
+      "keywords": [
+        "game pattern",
+        "singleton",
+        "event bus",
+        "service locator",
+        "data persistence"
+      ],
+      "skills": [
+        "unity-game-patterns"
+      ]
+    },
+    {
+      "keywords": [
+        "pivot",
+        "hierarchy",
+        "transform",
+        "parent",
+        "local space"
+      ],
+      "skills": [
+        "unity-pivot-hierarchy"
+      ]
+    },
+    {
+      "keywords": [
+        "input",
+        "InputAction",
+        "InputSystem",
+        "binding",
+        "control scheme"
+      ],
+      "skills": [
+        "unity-input-system"
+      ]
+    },
+    {
+      "keywords": [
+        "addressable",
+        "asset bundle",
+        "remote asset",
+        "catalog"
+      ],
+      "skills": [
+        "unity-addressables"
+      ]
+    },
+    {
+      "keywords": [
+        "save",
+        "persist",
+        "PlayerPrefs",
+        "serializ"
+      ],
+      "skills": [
+        "unity-save-system"
+      ]
+    },
+    {
+      "keywords": [
+        "locali",
+        "language",
+        "locale",
+        "translation",
+        "string table"
+      ],
+      "skills": [
+        "unity-localization"
+      ]
+    },
+    {
+      "keywords": [
+        "text config",
+        "font",
+        "TextMeshPro",
+        "text asset"
+      ],
+      "skills": [
+        "unity-text-config"
+      ]
+    },
+    {
+      "keywords": [
+        "unity mcp",
+        "MCP",
+        "editor tool",
+        "unity bridge"
+      ],
+      "skills": [
+        "unity-mcp-skill",
+        "unity-mcp-tool-creator"
+      ]
+    },
+    {
+      "keywords": [
+        "asset hunter",
+        "unused asset",
+        "cleanup"
+      ],
+      "skills": [
+        "asset-hunter-pro"
+      ]
+    }
+  ],
+  "_origin": {
+    "kit": "theonekit-unity",
+    "repository": "The1Studio/theonekit-unity",
+    "module": "unity-base",
+    "protected": false
+  }
+}

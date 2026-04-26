@@ -1,6 +1,6 @@
 # System Architecture - Stack The Ring
 
-## 1. So do tong quan
+## 1. So do tong quan <!-- updated 260426 -->
 
 ```text
 GameLifetimeScope
@@ -11,7 +11,8 @@ GameLifetimeScope
 `- LoadingSceneScope
    `- LoadingScreenPresenter
       |- Load user data
-      |- Preload level asset
+      |- Load LevelBlueprint catalog
+      |- Preload current + next level asset
       `- Load 1.MainScene
 
 1.MainScene
@@ -21,17 +22,18 @@ GameLifetimeScope
    |- Register CollectAreaBucketService
    |- Register GameStateMachine
    |- Set LevelController inject callback
-   `- Auto load level 23
+   `- Load current level from LocalDataController
 
 LevelManager
-`- Instantiate Level_23 prefab
-   `- LevelController
-      |- ConveyorController
-      |- QueueConveyor (optional)
-      |- ConveyorFeeder (optional)
-      |- BucketColumnManager
-      |- CollectAreaManager
-      `- Bind references into GamePlayState
+`- Resolve level via LevelBlueprintReader
+   `- Instantiate blueprint-selected prefab
+      `- LevelController
+         |- ConveyorController
+         |- QueueConveyor / QueueLaneBindings (optional)
+         |- ConveyorFeeder / MultiQueueCoordinator (optional)
+         |- BucketColumnManager
+         |- CollectAreaManager
+         `- Bind references into GamePlayState
 ```
 
 ## 2. Thanh phan va vai tro
@@ -46,24 +48,29 @@ LevelManager
 - `MainSceneScope`
   - noi tap trung dang ky signal/service/state machine cho runtime gameplay
 
-### 2.2 Loading pipeline
+### 2.2 Loading pipeline <!-- updated 260426 -->
 
 - `LoadingScreenPresenter`
   - show loading progress UI
   - load user data qua `UserDataManager`
-  - preload level asset cho flow startup
+  - load blueprint catalog qua `BlueprintReaderManager`
+  - resolve startup levels qua `LevelBlueprintReader` + `LocalDataController`
+  - preload current level va next level asset cho flow startup
   - load `1.MainScene` qua `IGameAssets.LoadSceneAsync(...)`
 
-### 2.3 Level orchestration
+### 2.3 Level orchestration <!-- updated 260426 -->
 
 - `LevelManager`
-  - load level prefab theo key `Level_XX`
+  - resolve level theo `LevelBlueprintReader` thay vi hardcode key theo so level
+  - normalize request level: level vuot max quay ve level dau tien, level bi thieu nhay toi level available tiep theo
   - uu tien Addressables, fallback sang `Resources`
   - instantiate level prefab vao `levelRoot`
   - luu `CurrentLevel`, `HighestUnlockedLevel`, progress
+  - fire `LevelStartSignal`, `LevelWinSignal`, `LevelLoseSignal`
 - `LevelController`
   - la runtime coordinator chinh cua level instance
   - initialize conveyor, collect areas, bucket manager, queue feeder
+  - tao `MultiQueueCoordinator` khi level dung `QueueLanes`
   - connect `CollectAreaBucketService`
   - subscribe `BucketTappedSignal`
   - chuyen state sang `GamePlayState`
@@ -79,18 +86,22 @@ LevelManager
   - kiem tra entry point trong `Update()`
   - khi row den entry, tim target bucket theo mau va cho ball nhay vao bucket
 
-### 3.2 Queue subsystem
+### 3.2 Queue subsystem <!-- updated 260426 -->
 
 - `QueueConveyor`
   - giu them row cho level co queue
-  - spawn tu `LevelData.QueueRings`
+  - spawn tu lane data active trong `LevelData.QueueLanes` hoac fallback `QueueRings`
   - chay tren non-loop path
 - `ConveyorFeeder`
   - tim gap lon nhat tren main conveyor
   - chuyen front row tu queue vao ring khi du gap
   - dong bo co/khong con queue rows cho main conveyor
+- `MultiQueueCoordinator`
+  - quan ly nhieu `QueueConveyor` + `ConveyorFeeder` thong qua `QueueLaneBinding[]`
+  - validate lane id/binding truoc khi setup level
+  - tong hop `HasPendingRows` de dong bo trang thai queue cho main conveyor
 
-### 3.3 Bucket subsystem
+### 3.3 Bucket subsystem <!-- updated 260426 -->
 
 - `BucketColumnManager`
   - spawn dynamic columns tu `LevelData.BucketGrid`, fallback tu legacy `BucketColumns`
@@ -98,9 +109,11 @@ LevelManager
   - chi bucket dau moi cot duoc xem la eligible
   - dua bucket hop le vao collect area dau tien con trong
   - reveal hidden buckets o tren / trai / phai sau khi bucket nguon nhay vao collect area
+  - track `collectedUnlockBallCount` de refresh locked buckets theo `LevelData.LockedBuckets`
 - `Bucket`
-  - giu state cua bucket: color, target, incoming, collected, hidden/revealed
+  - giu state cua bucket: color, target, incoming, collected, hidden/revealed/locked
   - hidden bucket hien thi mau `Black` truoc khi reveal
+  - locked bucket hien thi tien do mo khoa theo `RequiredBallsToUnlock`
   - cho ball nhay vao, cap nhat progress, xu ly complete
   - khi complete: animate, phat `BucketCompletedSignal`, release collect area slot, destroy self
 
@@ -171,7 +184,7 @@ LevelManager
 4. Neu khong co ball nao con the vao bucket hop le theo mau/slot
 5. `LevelLoseSignal` + transition `GameLoseState`
 
-## 6. Data architecture
+## 6. Data architecture <!-- updated 260426 -->
 
 ### `LevelData`
 
@@ -183,6 +196,7 @@ LevelManager
 - Bucket layout:
   - `BucketGrid`
   - `HiddenBuckets[]`
+  - `LockedBuckets[]`
   - `BucketColumnSpacing`
   - `BucketRowSpacing`
   - legacy fallback: `BucketColumns[]`
@@ -192,23 +206,31 @@ LevelManager
 - Runtime / balancing helpers:
   - `TotalRingCount`
   - `TotalQueueRingCount`
-  - `TotalAllRingCount`
+  - `HasAnyQueue`
   - `GetActiveQueueLanes()`
 - Validation:
   - `ValidateBucketGridForRuntime()`
   - `ValidateHiddenBucketReachability()` de tranh soft-lock do reveal chain khong the giai
+  - validate hidden/locked bucket config trung lap, out-of-range, va conflict hidden+locked
 - Extra placeholders / carry-over fields:
   - `AvailableCollectors`
   - `StackLimit`
   - `HasHiddenRings`
   - `BlockedSlotCount`
 
-## 7. Kien truc asset loading
+### `LevelBlueprint` catalog
+
+- `LevelBlueprintReader` doc mapping `Level -> LevelName`
+- la SSOT cho startup preload, level normalize, va next-level progression
+- cho phep content progression khong phu thuoc thu tu file tren disk; xem them `docs/codebase-summary.md`
+
+## 7. Kien truc asset loading <!-- updated 260426 -->
 
 - Scenes va level duoc ho tro boi Addressables
 - `LevelManager` van fallback sang `Resources` cho level prefab / level data khi can
-- Hien dang co content level tu `Level_01` den `Level_24`
-- Addressables group `Levels.asset` can duoc cap nhat dong bo moi khi them level prefab/data moi
+- Hien dang co content level tu `Level_01` den `Level_30`
+- `LoadingScreenPresenter` preload level hien tai va level ke tiep de giam hitch luc vao gameplay
+- Addressables group `Levels.asset` va blueprint catalog can duoc cap nhat dong bo moi khi them level prefab/data moi
 
 ## 8. Architectural notes
 

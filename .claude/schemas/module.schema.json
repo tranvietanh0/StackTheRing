@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/The1Studio/theonekit-core/blob/main/.claude/schemas/module.schema.json",
+  "title": "T1K Module Definition",
+  "description": "Per-module SSOT (module.json). The release pipeline reads these to generate t1k-modules-*.json and per-module ZIPs.",
+  "type": "object",
+  "required": [
+    "name",
+    "kit",
+    "version",
+    "description",
+    "skills"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Module identifier — kebab-case, unique within the kit (e.g. dots-core, ui, rendering)"
+    },
+    "kit": {
+      "type": "string",
+      "description": "Parent kit identifier (e.g. theonekit-unity, theonekit-cocos)"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver version — independently bumped per module by the release pipeline"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of what this module provides"
+    },
+    "category": {
+      "type": "string",
+      "description": "Module category for discovery via /t1k:find-skill. Defaults to 'Utilities' if absent.",
+      "enum": [
+        "Core Workflows",
+        "Planning & Analysis",
+        "Backend",
+        "Frontend & Design",
+        "Game Engine",
+        "Testing & QA",
+        "DevOps & CI/CD",
+        "Security",
+        "Documentation",
+        "Git & VCS",
+        "Kit Management",
+        "Utilities"
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Skill names provided by this module"
+    },
+    "agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Agent names provided by this module",
+      "default": []
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Module-to-module dependencies. Keys are module names, values are 'required' or 'optional'.",
+      "additionalProperties": {
+        "type": "string",
+        "enum": [
+          "required",
+          "optional"
+        ]
+      },
+      "default": {}
+    },
+    "activation": {
+      "type": "object",
+      "description": "Skill activation config for this module. SSOT for per-module activation keywords.",
+      "additionalProperties": false,
+      "properties": {
+        "sessionBaseline": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Skills activated every session when this module is installed",
+          "default": []
+        },
+        "mappings": {
+          "type": "array",
+          "description": "Keyword-to-skill mappings for this module's skills",
+          "items": {
+            "type": "object",
+            "required": [
+              "keywords",
+              "skills"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "skills": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "default": []
+        }
+      }
+    }
+  },
+  "_origin": {
+    "kit": "theonekit-core",
+    "repository": "The1Studio/theonekit-core",
+    "module": null,
+    "protected": true
+  }
+}

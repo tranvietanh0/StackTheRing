@@ -1,0 +1,2097 @@
+{
+  "kits": {
+    "unity": {
+      "version": "1.62.0",
+      "installedAt": "2026-04-26T09:29:21.096Z",
+      "files": []
+    },
+    "core": {
+      "version": "v1.62.1",
+      "installedAt": "2026-04-26T09:29:21.114Z",
+      "files": [
+        {
+          "path": "agents/brainstormer.md",
+          "checksum": "d16ae0348f0698e1584361bcc0a5d25a7ce30e51df7fa30e8343fef69d6f9669",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.900Z"
+        },
+        {
+          "path": "agents/code-reviewer.md",
+          "checksum": "ada0e9135e38319adb9a6083d529ac322c599e49325c4a0479c4b7e6b2d9ada2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/code-simplifier.md",
+          "checksum": "85238748ff6e5eb8119dcdf1a21b3af009221d6eb0b411a639feb55f4d5c18f9",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.900Z"
+        },
+        {
+          "path": "agents/debugger.md",
+          "checksum": "68d5b19773d9519636b5976b5946ce6a3f8e6bfe6fb62b9f47a39bbf91a76b5f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/docs-manager.md",
+          "checksum": "910e7d430d8ab31a7cc9370e616ac63c1496dffae0fe2995d32832fad45bbe8a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/fullstack-developer.md",
+          "checksum": "1c28c301635b6efe0ea483191c3b171bdd99f6c48a529ac24773b4e81eb54d71",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/git-manager.md",
+          "checksum": "fc22574564a1622f8a54154b4c03d216d851a36a05bd9a567e02477343ba04e6",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/kit-developer.md",
+          "checksum": "40211b202466411e58f4cb5a875cbbf087aa9421a696a0c47280cd1c62ed8dfc",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/planner.md",
+          "checksum": "cd43675d4ab0a76929cb368d3f340ba09d788e283f39bfe133be1de0d7e262de",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/project-manager.md",
+          "checksum": "d2f58d7c0c9b651f82dcfcca0a0bd96f86a21f1979c5463c90fa16053f3adafb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/researcher.md",
+          "checksum": "988e2b320c8486f2bc2105d0887e5487a5e3265dbc7c459ca0eddfd107e3d647",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/skills-manager.md",
+          "checksum": "902d0ae806adaffe7d3a4a24ba4f264c6b547581f026af71c05ffb808786f2ac",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "agents/tester.md",
+          "checksum": "485ce143cc8792d976bc117faea45093cf36a375972d4b75d6cb55957f12e306",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "hooks/__tests__/auto-update-major.test.cjs",
+          "checksum": "1f974e3ff30ade238e21f1a878aca775d328b6536a4933704979508aaf0f4b75",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "hooks/__tests__/kit-error-classifier.test.cjs",
+          "checksum": "0ac59b8dc436728d7b376f5c9b077b255e8618b28fd1c2a4576b51d10dc5e0ed",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.901Z"
+        },
+        {
+          "path": "hooks/__tests__/kit-error-collector-e2e.test.cjs",
+          "checksum": "52d35524d4d87054a84d8ef718c86b1a5c3f7ee054e28f03a68fee03d95b51ef",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.902Z"
+        },
+        {
+          "path": "hooks/__tests__/kit-error-dedup.test.cjs",
+          "checksum": "b177b5d0235ca0136fe1f166824843a3b910e12bff8e3b097ab93a977acb088a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.902Z"
+        },
+        {
+          "path": "hooks/__tests__/kit-error-sanitizer.test.cjs",
+          "checksum": "96e10f409b534356f2f9b99a7b9891f0d13139c14daec8801c133e9b0d07c138",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.902Z"
+        },
+        {
+          "path": "hooks/__tests__/scout-block.test.cjs",
+          "checksum": "459a9958d861cfdace92c7beb7d3ef6bd51072252063839e5710546acc25037e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.902Z"
+        },
+        {
+          "path": "hooks/__tests__/session-state.test.cjs",
+          "checksum": "2367c3daa596a25cfc2843dad1a7a69afaf09b6bfc1250215bf6c15588860205",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.902Z"
+        },
+        {
+          "path": "hooks/__tests__/telemetry-utils.test.cjs",
+          "checksum": "1c9eae063e8f8441a1f9158d0dc69838be3b50c7e702aece9150f8d0b0e17b69",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.913Z"
+        },
+        {
+          "path": "hooks/__tests__/test-runner.cjs",
+          "checksum": "5936b8c4226e9e8e854081b7ceec33ad71d40b964f1aff33933688d1b663d4fd",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.913Z"
+        },
+        {
+          "path": "hooks/check-cli-updates.cjs",
+          "checksum": "f9808e8f5829c780128b56f9c9f521a263c8e62f3cf414976f31b75a94c40984",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.913Z"
+        },
+        {
+          "path": "hooks/check-kit-updates.cjs",
+          "checksum": "3f531db76f4736060c3406db22530eea0a5212d17ac46c4576977f0221be1c40",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.913Z"
+        },
+        {
+          "path": "hooks/check-mcp-health.cjs",
+          "checksum": "d06dcfd403c42e3d025c95c5026d508d146b662e43bdae11de69124f405215b1",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/check-module-keywords.cjs",
+          "checksum": "049ef615b9fc17ec2c417f735a584f92a0d4a3d474fb9482610abcc0717e582d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.913Z"
+        },
+        {
+          "path": "hooks/context-builder.cjs",
+          "checksum": "aec1c666f2ae98665291df8404dc4f175fd58ce6a921ef481d9e39038fd66553",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/descriptive-name.cjs",
+          "checksum": "fc0f467ac228d9d0cd7baf845f39fba0413cd35009e0b8ce38f2363b9cb86a28",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/generate-baseline-context.cjs",
+          "checksum": "173d0101ea989dedf4812daefbf3b720fc5978c1bcbdadbc13ae22b9e51a0b04",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/hook-logger.cjs",
+          "checksum": "ebc510dba0d6f6c46a0f58bba4a92e8531b93fb93c05b4bc6bf22d0c41f067a7",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/hook-runner.cjs",
+          "checksum": "a97d1aede36857d41ccece3fd8303f73b498afd6ca00c776ebd612a2cba024ff",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/lib/colors.cjs",
+          "checksum": "8f5e5d481b13e721266553800bfb1fc85bcc9ad7e06ca432c6a53cc973731554",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/lib/git-info-cache.cjs",
+          "checksum": "6b88b1904e381006eea1ed4f57277b693fa4259202624102af870980de86becd",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/lib/kit-error-classifier.cjs",
+          "checksum": "6eb53131122722c6a773ec9c7d5420f92a6487fd5546a1581c964ab65218fac0",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/lib/kit-error-dedup.cjs",
+          "checksum": "ea477e23ea4e7980b88eeb9792dd6f95a5a96644a6754d2ef184e481816ac1fe",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.914Z"
+        },
+        {
+          "path": "hooks/lib/kit-error-sanitizer.cjs",
+          "checksum": "2d7f72d6292d8ca427c78f4e8ef5fdc405f35f6c3326e641d51e7dce042b1e18",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.915Z"
+        },
+        {
+          "path": "hooks/lib/t1kignore-parser.cjs",
+          "checksum": "c07af3b20b91c5275dce246309cf69018e59df1d66be8d51a4e713deb35255e7",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.915Z"
+        },
+        {
+          "path": "hooks/lib/transcript-parser.cjs",
+          "checksum": "0f379d25437879439a62c50384729221ec3412d38be616d1558e1178ef7676ae",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.919Z"
+        },
+        {
+          "path": "hooks/module-manifest-helpers.cjs",
+          "checksum": "7e6705a84a92825a998c7785aec5cf023186820a30bb7009037b42278c1bad38",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.920Z"
+        },
+        {
+          "path": "hooks/module-manifest-ops.cjs",
+          "checksum": "3467603b67ff5810a7308e2ce2ae47c19f40dd42db88845c1ccf425673bbccbc",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.920Z"
+        },
+        {
+          "path": "hooks/notify-desktop.cjs",
+          "checksum": "83a4e79170c1a47f18e024146e0177d517f1ee871e75cfc96832473963e0191d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.926Z"
+        },
+        {
+          "path": "hooks/notify-discord.cjs",
+          "checksum": "c5e6aa3bee31644b7e6249ae0b7833adbb5c38116d04d8f281219fad75a60c9d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.926Z"
+        },
+        {
+          "path": "hooks/privacy-guard.cjs",
+          "checksum": "54f2f8b79d534d3cdeca166efc2610f8218e96517e7775e4bec772e479e1a596",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.926Z"
+        },
+        {
+          "path": "hooks/project-detector.cjs",
+          "checksum": "04dc5a59c4aa11718ec55be24234b8bc49b33f9a7922750c797ad46a26922ea0",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.926Z"
+        },
+        {
+          "path": "hooks/prompt-telemetry-flush.cjs",
+          "checksum": "2503cddd614aab3e534ef16668f754bca7b63de503c01b91ba5c9580afe054c7",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/prompt-telemetry.cjs",
+          "checksum": "04f349315207adf141d04f7f2510bd58c0027aef73be395ad485b6757a7fffc9",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.926Z"
+        },
+        {
+          "path": "hooks/scout-block.cjs",
+          "checksum": "b9d1f51179a2c7fa59eed18a341b335e97c5f870f937a7af8ec75835c6fb0829",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/secret-guard.cjs",
+          "checksum": "f324ecc5d079a36a340fd3d1c7ec49c50a6cbd1575041c33babe05d11699f7ae",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/session-state-manager.cjs",
+          "checksum": "050c2e7715030da7aa3d6e42286c4967ac540aa875faa04d6b508926103163cb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/session-state.cjs",
+          "checksum": "c8063ec21fd97cf8bd672d7eb6ec68d000be3b08243670767a18f70597df0039",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/skill-commit-gate.cjs",
+          "checksum": "f2b4fd2b42919c91f04d9b7ae22963b058c53b0130c2028ee66e4b171d487522",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/skill-sync-reminder.cjs",
+          "checksum": "450f4435c9ef8a445d8b9c992b019352e085ea89732df530475c4237c0dbc47b",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/statusline.cjs",
+          "checksum": "227ddc22e8394e85b491757f0e7e56958481e4257b4d265ee9a7a6e7a8e20a8f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/task-completed-handler.cjs",
+          "checksum": "238dcf14fb3d6b5475e02a843404f9c4435c83ace11056fc303088d1c7e5dace",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/telemetry-error-collector.cjs",
+          "checksum": "23dc75c683bbbff9538eb0ff691bbd4e29adccc09cee3bacda98b1ebb91c73a4",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/telemetry-kit-error-collector.cjs",
+          "checksum": "6fd849521bc6c202b30f9b3aa68909e32cd61f420be7fb71096e6710849f7347",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.927Z"
+        },
+        {
+          "path": "hooks/telemetry-skill-tracker.cjs",
+          "checksum": "75a76d37d18bce373aaed4a522c99b7fa8b6a22572f2b5e1dae9cb9d08d7ea9d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.928Z"
+        },
+        {
+          "path": "hooks/telemetry-stop-reminder.cjs",
+          "checksum": "06c984ac0fde66e7ce0f0c34e3cfd3dd84d8ff942b8513cd1db18e11ffe04d49",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.928Z"
+        },
+        {
+          "path": "hooks/telemetry-tool-tracker.cjs",
+          "checksum": "4c0eaea6f163f7280fd43405dfedde81b628447a6395fd13ee6a385b681566cf",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.929Z"
+        },
+        {
+          "path": "hooks/telemetry-utils.cjs",
+          "checksum": "920736801184b59f2d409952907e35280f2fff90976d20367922b3b6e828047b",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.929Z"
+        },
+        {
+          "path": "metadata.json",
+          "checksum": "88e5fa6d0a72cd28de18be4642d5026bf3395bbd1454a8eaa45ab39bc5075f6c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.938Z"
+        },
+        {
+          "path": "rules/code-conventions.md",
+          "checksum": "f6d8967447fc2ad1a78fb915d80bcd5969e96169e1c9b9ef2c07f1ca4c8c34f6",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.938Z"
+        },
+        {
+          "path": "rules/coding-guidelines.md",
+          "checksum": "096aef483625f00f4f4853ca115dc2333c42214234490ee4449e10f0e94db2a2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.938Z"
+        },
+        {
+          "path": "rules/development-principles.md",
+          "checksum": "17358a47fcdadba1323b22b799cce941c1b54a0ec2c1c8ddbd39b050bd4a0fbc",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.938Z"
+        },
+        {
+          "path": "rules/orchestration-rules.md",
+          "checksum": "e6133fd116b9d322be7afbf937ec40970e765430bb86fcb67ca4f7b18df0a237",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.938Z"
+        },
+        {
+          "path": "rules/security.md",
+          "checksum": "5359b9aac4d0ad63a4fda98af4a78e63c179805025c0c39d9c2f2d9cee2052ba",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "rules/submodule-warning.md",
+          "checksum": "9431d43953fe7645910ba6612046c075a4173a7c4bb99e913b6432a2f62986ec",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "schemas/module.schema.json",
+          "checksum": "504e4e9cf5a276a7feac41983e252e7dd9a158516f3eec47a797f091e2a02b58",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "schemas/t1k-activation.schema.json",
+          "checksum": "7c9e3a7d759e6ecded0979cd29366045d2650a72ca8374963326146ae1cfafdb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "schemas/t1k-config.schema.json",
+          "checksum": "57413126ed64b2777a692d62acdcbbf84b41dd64ff41142a18587604901fe961",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "schemas/t1k-routing.schema.json",
+          "checksum": "03972656239c3cb01d2adbd9fef5bf25379cfe45b2cb0edb513911c769fb043c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "scripts/resolve-env.py",
+          "checksum": "c72214cdf3bbfede8688a0935ada9ff3e3df9f676cab336dca95e6dadd746fa8",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "scripts/validate-docs.cjs",
+          "checksum": "f2b2e55bd1925757bad052d3306aeb3ddbd920cb34c18f9a17121b40088dd85f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "settings.json",
+          "checksum": "77315efd315a01b0a7bee47a8d5d705d0b4befe41200bd81a731ea31fcd7615d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "skills/t1k-agent-creator/SKILL.md",
+          "checksum": "b01c48777e316eae5083f6cd7da2b5b8162c30b03c0ec7701fc20ef7a544282b",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.939Z"
+        },
+        {
+          "path": "skills/t1k-ask/SKILL.md",
+          "checksum": "c06f01aa5c0b886cd14647834f19e46563ccd3e3468c15fcf85dbb8bcf2012a9",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.940Z"
+        },
+        {
+          "path": "skills/t1k-babysit-pr/SKILL.md",
+          "checksum": "32edf9a64171e504bc7525114089f3d8fc1a8b808bc774d781513aa4b226b515",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.940Z"
+        },
+        {
+          "path": "skills/t1k-brainstorm/SKILL.md",
+          "checksum": "0519f3f11aaf787d1ae653d66ceabea4a56b63caac05883dedb88a7de66e5d31",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.941Z"
+        },
+        {
+          "path": "skills/t1k-context/references/context-compression.md",
+          "checksum": "4e4bb353d10b5de97e537b910977acf25c7094f397ee6649c13763329e6e1427",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.943Z"
+        },
+        {
+          "path": "skills/t1k-context/references/context-degradation.md",
+          "checksum": "d69cfbd44e689d2f71ee417f47ad2f578e4e1bdf741ae0c7fdd9ac504bdb250c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.949Z"
+        },
+        {
+          "path": "skills/t1k-context/references/context-fundamentals.md",
+          "checksum": "c73f500f2557c01ceb4f017aab7db6691ac1545768f8879551cfe1597b91215c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/context-optimization.md",
+          "checksum": "ab5c4732ce2544ffe913bed43f393fdcd2b9d37902b04d2da9b82659235bb155",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/evaluation.md",
+          "checksum": "dfbbc1ce7058bdbd3b878a140dbfbdcc6576f46691d3505f1a3ab9d965fb3959",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/memory-systems.md",
+          "checksum": "5db01bef4d065f2c4705faec6c66c65cd686fde99e2f580e798c981cb9d2bbeb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/multi-agent-patterns.md",
+          "checksum": "4babceadf6d97938dc8953aad29511de1c932c3b2b196ee6b28a17933a680517",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/project-development.md",
+          "checksum": "d1ab9c2d0d66fb4d9ee850781b3ef120d69dd74c52153f95d38cba2a168bcb48",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/runtime-awareness.md",
+          "checksum": "692381e522e8219f1435fa73c1c34dfed9ae5ab6ba53e8d87b0cccfca6011d8a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/t1k-patterns.md",
+          "checksum": "6250199ff9e479322d22750f4838b2293d8ff5ac6965b204a9175bc7af8c1876",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.950Z"
+        },
+        {
+          "path": "skills/t1k-context/references/tool-design.md",
+          "checksum": "05f08a73479f4f31114a05afb2f3649a892fa3e06b9da9ea54cb43ed090e56b1",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.951Z"
+        },
+        {
+          "path": "skills/t1k-context/SKILL.md",
+          "checksum": "674c1c09dd1f4cdab21274131f44c3bcc849f28b6483adfe4c2527aee83ff239",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.942Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/activation-protocol.md",
+          "checksum": "ebdf147efdf94fdd02f7b75109bf4bbb49f21ef603503751cbbd9bf10e2211d9",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.951Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/command-chaining.md",
+          "checksum": "61914cf98723d4bce78b8e733d6b0e30ea71fc9a11fd8abe70ed6a92a8160445",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.951Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/env-hierarchy.md",
+          "checksum": "8c2c6a6c83759eca53751a89eae0e7cc6f58cfabf80303c93179e2b2498eab74",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.951Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/intent-detection.md",
+          "checksum": "91b696a12e455f4f43babf66a3cded48c24d55d2dd4025a11334672e5ea41429",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.951Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/review-cycle.md",
+          "checksum": "35dd41d280714e6fa996408c027d5b97beec1ae1b157501aba5cae831a5dc116",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.951Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/routing-protocol.md",
+          "checksum": "804336806846e2e83ea8e4c02c833c46bfc6e8726576b9b7920d37780ae221fc",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.952Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/subagent-injection-protocol.md",
+          "checksum": "205ef010c5151ca71797677108292380cf5690fff736222d116ee55e256fb9c8",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.954Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/subagent-patterns.md",
+          "checksum": "91c5d2c28c592b86f5c013a59979be79e8739dd24b9474594995d6ca74d1040f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.955Z"
+        },
+        {
+          "path": "skills/t1k-cook/references/workflow-steps.md",
+          "checksum": "6c90f2582af9871325fb80bc430c7766f44132c84e6de8be301b17fb9602ac8d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.957Z"
+        },
+        {
+          "path": "skills/t1k-cook/SKILL.md",
+          "checksum": "f3bdebe866d21dbe13e994c5985d1bddcaf4ce5108621dc704e683f21b560cee",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.951Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/defense-in-depth.md",
+          "checksum": "be90b80ba587e8e5e88cb0143489a52d99705913997b2de907a0f1ecee510386",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.964Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/frontend-verification.md",
+          "checksum": "3f72cd87b65993c562bc7d8b52887cfea41d7dbbf11212085acee7c57767492f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.964Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/investigation-methodology.md",
+          "checksum": "de4cba7bc16ebc18889f556adf99d893be5499dc06adcb08472ae5c2fa5e8708",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.964Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/log-and-ci-analysis.md",
+          "checksum": "9ec0ee167bb3f22eb92e0bfe6a995143f85a5ee24b31fc2302fde809dd3cd2f8",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/performance-diagnostics.md",
+          "checksum": "077cdd022389c46950a83c6ac3ef8611e3b47d1f9344b085c87993f4d1fea9e2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/reporting-standards.md",
+          "checksum": "ac67630db84a0cd0364131ff46358993742faff6532323ee57d39efac4882e23",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/root-cause-tracing.md",
+          "checksum": "67c4f51ea8e131a62a84f709bfe5cce1a1e1a414d07173de40eeaffa3888764e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/systematic-debugging.md",
+          "checksum": "e0d3208d49bf5a138fc28f278241cf0a97184d7ae9602f56cc06890953894760",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/task-management-debugging.md",
+          "checksum": "887af09e25b344b4bb2ceacf2966abe85f5cd700ed60c1e6d5d7835ef22ade16",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/references/verification.md",
+          "checksum": "4304c0b3ad8a5b200fc2fea911e5217dec198a0c7dc41555377cae66963692e0",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/scripts/find-polluter.sh",
+          "checksum": "1e3d47c735632ab2c2ed25dd26682a13e21c5eb1e52cd425139b07f073a2913f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.966Z"
+        },
+        {
+          "path": "skills/t1k-debug/scripts/find-polluter.test.md",
+          "checksum": "7f147e03ae7aa74421bb0a45f043e4829b0065a8b610567fc99322ea5b595e3c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.965Z"
+        },
+        {
+          "path": "skills/t1k-debug/SKILL.md",
+          "checksum": "d8035a9a8945afa785da268cca27b670cfbaf8b3bcb66b9959622edb5a6b4f37",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.963Z"
+        },
+        {
+          "path": "skills/t1k-docs/references/init-workflow.md",
+          "checksum": "223af9a365f29d2894a302e214f1dbcb2fe9be67dbcda729596129182e4a0534",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.967Z"
+        },
+        {
+          "path": "skills/t1k-docs/references/summarize-workflow.md",
+          "checksum": "0c3e000ec51986ff483502e1487961d4bb9cfc9fee798682621e2d39ef77af19",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.967Z"
+        },
+        {
+          "path": "skills/t1k-docs/references/update-workflow.md",
+          "checksum": "603e17ffefe15f8112127b448a20d58ae49e482fcd8b7041f765f24bbd2b6002",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.971Z"
+        },
+        {
+          "path": "skills/t1k-docs/SKILL.md",
+          "checksum": "0458a0f3314bd3b2ff1f7216744194ab40f3ba99f00bb98e4a416f3a768b9cd6",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.966Z"
+        },
+        {
+          "path": "skills/t1k-doctor/references/checks.md",
+          "checksum": "fe870d181dc7d71a62a79b05ded9dea05fd4b33de9dab40ef1235cf14facc15d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.972Z"
+        },
+        {
+          "path": "skills/t1k-doctor/references/ci-mode.md",
+          "checksum": "df69f8c25ca105dc319dd45f92b8a972f42f985a16351618fb22de25d6c1c0f0",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.973Z"
+        },
+        {
+          "path": "skills/t1k-doctor/references/fix-mode.md",
+          "checksum": "0cbc26f932c5f8c4098cce0b46a1c0dec3da50758551e5311a95d3d71a7a6e64",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.977Z"
+        },
+        {
+          "path": "skills/t1k-doctor/references/frontmatter-recommendations.md",
+          "checksum": "2a684e0bb02e85d7bb839c058b4027b6f12c514b09f898678fdf00056e6d3209",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.978Z"
+        },
+        {
+          "path": "skills/t1k-doctor/references/mcp-requirements.md",
+          "checksum": "4b79b70a58bd4bce38ec21d394a3279af440c518f04aa808f164edad6775c929",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.978Z"
+        },
+        {
+          "path": "skills/t1k-doctor/SKILL.md",
+          "checksum": "071cb41c2b768ad4244c24f69edd54d035938b841f3a33dab0307b6846dba50f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.972Z"
+        },
+        {
+          "path": "skills/t1k-find-skill/SKILL.md",
+          "checksum": "d6618cd1a45838db1874a96ccd23c70c5cfd5ebd9dc90f56cc13e848f245c7c9",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.978Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/complexity-assessment.md",
+          "checksum": "33bc0ef759bd9ac4fff6733ac62fc9b592e77d6543c39b80cb832c8dc6cb7ce0",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.978Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/diagnosis-protocol.md",
+          "checksum": "7f7a0740f2c8ed56092e558147b60f94302d9c9ab069be0d21c97b905646cd84",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.979Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/error-recovery.md",
+          "checksum": "dd4775836bb825cbccc6ab3bd917e791e9c49049f83c1e83e943f71f495867a0",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.979Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/fix-workflow-overview.md",
+          "checksum": "6275cfb42f0dcd9c6869feae7fcb9e522eb8b5b7687c3285825b4048bd231d86",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.979Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/mode-selection.md",
+          "checksum": "4e5412e08eaa5aa5475ef147202172b96077fee3947a99ccb1ddf0748d1077ea",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.979Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/parallel-exploration.md",
+          "checksum": "811da7f45eeca46e8c9ba355f10a88915539a33642d7a0662dbf59ae6ee8f606",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.979Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/prevention-gate.md",
+          "checksum": "cbbe77bb5e960e7b8095741ad2fd0a0c7cdd60f45c141ec17e7d6ca143f3a9cb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.979Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/review-cycle.md",
+          "checksum": "9a8dd2bc2f45c9ac1743a55c4dfc61c570c459cae262b8f1d41013797ecc22ac",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.980Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/skill-activation-matrix.md",
+          "checksum": "ac70e49d0327a1e783ebb943993d35195914969b7e79985d0d6f46f4dd8f6921",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.980Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/task-orchestration.md",
+          "checksum": "f9d857a89001fa15d10d62f53c7d7ac9dfcf91f68a9330ad3c9106d8bb3d4595",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.980Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-ci.md",
+          "checksum": "9f1aaaec92a2512303f297bfa9c720baf928b58ae6eb4685ddeb6aeb3247b7f3",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.981Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-deep.md",
+          "checksum": "d5b30b58ea4f724ea381e62e85056e7253f0aa07353b837b6626f81f6ae45023",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.984Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-logs.md",
+          "checksum": "dd848969fea599aeab4bf9be8dbcfd896cc6c63c36874d91bbdc2070801b1d4a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.985Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-quick.md",
+          "checksum": "97dd20a1db6fc85fe647a09953f8f0c799d5f6aeefcb95ab8a740461426c82c4",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.985Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-standard.md",
+          "checksum": "d6106332e5294d3375ee18c7dcc08b3147a5628a5778806ea37892ae1079ced9",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.987Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-test.md",
+          "checksum": "63a0180fdfb969a8e14f3eb93092ec27e9ae6ab1f349edb2d441750fcdcbc778",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.990Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-types.md",
+          "checksum": "49158fa70feea9a62e75d52f01bb266dd4fa052bfcb6c09fbcefe267ee971571",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.990Z"
+        },
+        {
+          "path": "skills/t1k-fix/references/workflow-ui.md",
+          "checksum": "536094dd78b0cff3ea069737e0a2507d4b0e23a469684838ad229f0911e78d12",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.991Z"
+        },
+        {
+          "path": "skills/t1k-fix/SKILL.md",
+          "checksum": "535b696e51d0938ec9bbdfabd384cf027f5177b753d37e602dae836c71049b83",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.979Z"
+        },
+        {
+          "path": "skills/t1k-git/SKILL.md",
+          "checksum": "8d643ce74b874f5e58834effbade8d64c93833f9cd5029e87b8f03cf4f51b7b1",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.991Z"
+        },
+        {
+          "path": "skills/t1k-graphify/SKILL.md",
+          "checksum": "9c17229b9ac788b9fd4aacfe5372e5fcf582c4e2148b206a515056c86ebd2950",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.991Z"
+        },
+        {
+          "path": "skills/t1k-handoff/SKILL.md",
+          "checksum": "7542807977a274199cd2eb06a30ad56d263945948f688fe5c219633621d82564",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.991Z"
+        },
+        {
+          "path": "skills/t1k-help/references/execution-context.md",
+          "checksum": "ca1b94849a005d740ce7959bc50c62175e2a8b9576bc5932a720b81bbce2b802",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.992Z"
+        },
+        {
+          "path": "skills/t1k-help/references/session-lifecycle.md",
+          "checksum": "a458987ed60da2826f7f1b28c250cf55fa8a3e35a1c3174ed7c181467385f037",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.992Z"
+        },
+        {
+          "path": "skills/t1k-help/references/skill-domain-routing.md",
+          "checksum": "975ef50c8aa9e7ee14df085b281ec6238d25df210d82e836303d1d35201c4909",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.992Z"
+        },
+        {
+          "path": "skills/t1k-help/references/skill-workflow-routing.md",
+          "checksum": "93d93acb87e3869f29bacf2f5e0d9fe32bf3007803ebb761c77ab9fb2b4da24a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.992Z"
+        },
+        {
+          "path": "skills/t1k-help/SKILL.md",
+          "checksum": "e0ac40cad5337f6fe47b0dcceb58feebf33aeccbef21bc4a22abc599ea2278c5",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.992Z"
+        },
+        {
+          "path": "skills/t1k-issue/SKILL.md",
+          "checksum": "2af709cc45edb45cf72892763e679438cf7d487f0c4beba82763c70dbf3e1225",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.992Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/audit.md",
+          "checksum": "6a2a019b050e802824382ad22753b4fdd6e72a3ee9a7b2bddcf7369a3eb47f6b",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.993Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/cli-auto-update.md",
+          "checksum": "b5278910e031e592042548c01bb657b4b53d23196af54060bcfe92f2c71ba29a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.994Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/migrate.md",
+          "checksum": "eb7892a646ab138e5c83e519e7d7073b1d762347fd3ede8b32a6202dbfbf7405",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.996Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/origin-metadata-literal-collision.md",
+          "checksum": "ebab737e0ffd16f0b8e8fff2c54b545f3817dcee893e426dd201485711c37713",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.998Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/release.md",
+          "checksum": "c92d945d3470198814fc1ec47d2a559b2ad2fb18201d9f1f1379d59108ea4247",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.998Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/scaffold.md",
+          "checksum": "87aa8364851e8b8d3205a9332a72122214700d481287c7bc1255510a715f00d2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.998Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/sync.md",
+          "checksum": "acd7a112773dd46cab7644b6d3878ede512a78f17bd340109de8a42dcc76ff4e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.000Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/test.md",
+          "checksum": "91bd503478cfbb38d8baf521a2eadb5130bc8f3dfe143198390b059b52e0e36d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.003Z"
+        },
+        {
+          "path": "skills/t1k-kit/references/validate.md",
+          "checksum": "f02e005a54245effb392a0dc6fab78299c8d49544e8a139079ff6d5555b0f718",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.003Z"
+        },
+        {
+          "path": "skills/t1k-kit/SKILL.md",
+          "checksum": "60ff79ea50818b0251f3651ddae2ea645cf945aeb450a2d9bb9c510e54f37f82",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:20.993Z"
+        },
+        {
+          "path": "skills/t1k-modules/references/module-detection-protocol.md",
+          "checksum": "a6a0ff955f8f85dbe3843404de0f7ff6c5e9870963998249cbb5e7d42f2a5789",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.004Z"
+        },
+        {
+          "path": "skills/t1k-modules/references/subcommand-details.md",
+          "checksum": "d63517d9e944f12c3fb07af4fb087f538e2333a12235db6d570fba7cb40a2551",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.004Z"
+        },
+        {
+          "path": "skills/t1k-modules/SKILL.md",
+          "checksum": "579fd91aa2c3a7f242468928b9cf4c5ccf55a60bb918b473e1eaa10553cb81ab",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.004Z"
+        },
+        {
+          "path": "skills/t1k-plan/references/workflow-modes.md",
+          "checksum": "6efcd9258372f3c80e88404e5d79276ad304fd728a2a9296ddacb17dacf2900e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.005Z"
+        },
+        {
+          "path": "skills/t1k-plan/SKILL.md",
+          "checksum": "e00cad01d1a6c70a9a5e3f2f902cc760e767b20746428af02709e4c5cee12477",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.004Z"
+        },
+        {
+          "path": "skills/t1k-predict/SKILL.md",
+          "checksum": "d94e599640132654ef1c3525481767feaf2af3c4d82abd25eaefe445ba0cf2aa",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.005Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/generation-modes.md",
+          "checksum": "e14049d2983a4eb90e94e203fae106d1a0fba5d24c849698553a4ed7c20c601a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.006Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/html-css-patterns.md",
+          "checksum": "9725a588f2020dfa16fbd33607525194201552fbf3c6356a3c5bcec32e80581e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.005Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/html-design-guidelines.md",
+          "checksum": "0c698c2cf4cbcde261040a126b782a0fe4603dfd39e73d3dd9550380930cad36",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.006Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/html-libraries.md",
+          "checksum": "91ead11ba2b187d6d88e6bd9d81667b51bd94661547e13e93c5ebc41267ba6f1",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.006Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/html-responsive-nav.md",
+          "checksum": "f77d626d4f8ca97bf6d2554017aa2e328e7079e94fdbc76060667a85f3231d85",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.007Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/html-slide-patterns.md",
+          "checksum": "8f71162a02ae67ce33640d2c60bf6bf763a059561527334807f167748897096c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.008Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/preview-gotchas.md",
+          "checksum": "84b4127e28b1b69c21d5a406d26a349516a1684a9d69df7a5269adb50950f5e4",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.010Z"
+        },
+        {
+          "path": "skills/t1k-preview/references/view-mode.md",
+          "checksum": "a1ad3caa32fccafa885b2eb6b3b2d9ad5a912ab586a8a59097c4f221ce45ddde",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.011Z"
+        },
+        {
+          "path": "skills/t1k-preview/SKILL.md",
+          "checksum": "69a893620cc36deded394602d41684a0b7aab7f310bcd87706affe48a77d07cb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.005Z"
+        },
+        {
+          "path": "skills/t1k-problem-solve/references/collision-zone-thinking.md",
+          "checksum": "7f38ff7d2fef10dca8dba2529eb6e9da95af7e9fb21f2020d77fea703862967e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.013Z"
+        },
+        {
+          "path": "skills/t1k-problem-solve/references/inversion-exercise.md",
+          "checksum": "dc5ceb7e970905ece9ea876288e4aed9c15b2291345f27842f0f185756535a89",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.014Z"
+        },
+        {
+          "path": "skills/t1k-problem-solve/references/meta-pattern-recognition.md",
+          "checksum": "046797beeb9dfcac531d5e9c1c4588d89c0df5792283bfae58fa10a5bfaf74ee",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.016Z"
+        },
+        {
+          "path": "skills/t1k-problem-solve/references/scale-game.md",
+          "checksum": "4db10ba124ad587ae173e39976537a1fb6d66f68a3f708e980319ce98d14fd1f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.017Z"
+        },
+        {
+          "path": "skills/t1k-problem-solve/references/simplification-cascades.md",
+          "checksum": "bb837c141713b0cfce302ec42793a4ff49e3552991dacec799746116313156b1",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.017Z"
+        },
+        {
+          "path": "skills/t1k-problem-solve/references/when-stuck.md",
+          "checksum": "2614ca6ba3f9296efa85c999df006b5841a7a096766ed8989eee0d5df7128e10",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.017Z"
+        },
+        {
+          "path": "skills/t1k-problem-solve/SKILL.md",
+          "checksum": "2ec03d3639cd15b78395d59a18f8c2d70aa6608f21a1ca747e17bbf27c9ed8b2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.011Z"
+        },
+        {
+          "path": "skills/t1k-repomix/references/configuration.md",
+          "checksum": "4dbc11abf7bfeb1d89951b50a81d385d3a713ee4e540aa495886689de2c30829",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.018Z"
+        },
+        {
+          "path": "skills/t1k-repomix/references/usage-patterns.md",
+          "checksum": "203891039c26bec1959de6bc64df6a7b0fb7b800a06845531d9f641837375b3d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.017Z"
+        },
+        {
+          "path": "skills/t1k-repomix/scripts/repomix_batch.py",
+          "checksum": "438b9b7f92ff5e1f82655ddad6dfcc92e5e3b127f976fb1e309e61c22d16848a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.018Z"
+        },
+        {
+          "path": "skills/t1k-repomix/scripts/repos.example.json",
+          "checksum": "5086bf887ccc032abd23715c7ed278bf9844b035068b25469ed4c00435e079fd",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.018Z"
+        },
+        {
+          "path": "skills/t1k-repomix/scripts/requirements.txt",
+          "checksum": "abb821f8ee3248ea5c82c2d4b3c103ff411f1f44b484398186844487cf4bd9a6",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.018Z"
+        },
+        {
+          "path": "skills/t1k-repomix/SKILL.md",
+          "checksum": "ccae4a11fd6f8bb0d8f7f47a8f2109cb2b2fc71bd0c5df4532cb55572a6b6403",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.017Z"
+        },
+        {
+          "path": "skills/t1k-retro/references/metrics-guide.md",
+          "checksum": "b2fc39d7a56268c34941210bba46830361f9af4ff229ba7fb579ccdb855a63f2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.018Z"
+        },
+        {
+          "path": "skills/t1k-retro/references/report-template.md",
+          "checksum": "a776a6ddda152d4b42081762c514725a364cf443fd0aeeafa8c78982adaf51aa",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.020Z"
+        },
+        {
+          "path": "skills/t1k-retro/SKILL.md",
+          "checksum": "c8731fbc2ae09fb0a5d6a4c8658804acd568797dfed707eaad16c055a6ae6650",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.018Z"
+        },
+        {
+          "path": "skills/t1k-review/references/adversarial-review.md",
+          "checksum": "337a56ef0fe76a45ab4aad26b574c52a2f611da9937668c95da50e772250d1ea",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.022Z"
+        },
+        {
+          "path": "skills/t1k-review/references/checklist-workflow.md",
+          "checksum": "4131ca05d17212be97f907bf0a1350aec7ecd650be0cd9feea7a8e80ff783d6e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.024Z"
+        },
+        {
+          "path": "skills/t1k-review/references/checklists/api.md",
+          "checksum": "bdf84303c0b5f4cdd9752456a4ed0bb40af4a539ea1fbad99bb61f03356c4b77",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.024Z"
+        },
+        {
+          "path": "skills/t1k-review/references/checklists/base.md",
+          "checksum": "4cf6fc055b81a6010ad3642f5f3f4a4236ad0fc17e4ffa56e407685e882a8e4e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.024Z"
+        },
+        {
+          "path": "skills/t1k-review/references/checklists/web-app.md",
+          "checksum": "3a4ae0c5627e31875a819f055862d35918ddaf73e0384b18c181ee6e629b4f5e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.026Z"
+        },
+        {
+          "path": "skills/t1k-review/references/code-review-reception.md",
+          "checksum": "7a922f9d77f5be9d93e64435b9598c775e07097d6c18beb7750da7ab97469c05",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.027Z"
+        },
+        {
+          "path": "skills/t1k-review/references/codebase-scan-workflow.md",
+          "checksum": "cda6b30a0dbc9784854e42fb34d839e4980bf7ec09b7860e3067cecb376ee5e3",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.029Z"
+        },
+        {
+          "path": "skills/t1k-review/references/edge-case-scouting.md",
+          "checksum": "a432b04502e63a77d198da8ad27e2382789ae8cbe279deaab642d1ceb0eb1a2a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.029Z"
+        },
+        {
+          "path": "skills/t1k-review/references/input-mode-resolution.md",
+          "checksum": "4a012b397a6f8aab8860103fd23d93b7dafc5f97d6b5cbd4e9a8135220ecda66",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.029Z"
+        },
+        {
+          "path": "skills/t1k-review/references/parallel-review-workflow.md",
+          "checksum": "3823914f1ba2d595280a709e79b81d2854b56cc348e239dfce018f3b48fb70bf",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.029Z"
+        },
+        {
+          "path": "skills/t1k-review/references/requesting-code-review.md",
+          "checksum": "d75c71e55f7699d1cb1a43af65660c27b3353efbe6e0b9e61cdac1d35b95fcde",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.029Z"
+        },
+        {
+          "path": "skills/t1k-review/references/review-workflows.md",
+          "checksum": "f8ab5bdd7ad7cd6e01a7340ce2eb74583df60aaced41e8d2b714ea870a6aa1ca",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.029Z"
+        },
+        {
+          "path": "skills/t1k-review/references/spec-compliance-review.md",
+          "checksum": "2774199342ce2550c8a1178ba07b4e47ad66444d1c0b09442090eed1799b8fba",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.030Z"
+        },
+        {
+          "path": "skills/t1k-review/references/task-management-reviews.md",
+          "checksum": "e6685e41c6f6bed741bd75caca75477806572b6c5924d3c5a7ae99a9603a87ff",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.030Z"
+        },
+        {
+          "path": "skills/t1k-review/references/verification-before-completion.md",
+          "checksum": "e44be53a8dc6256396fb81cd8edc1e969ceda31c87454939e1bf953a30aa36ea",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.031Z"
+        },
+        {
+          "path": "skills/t1k-review/SKILL.md",
+          "checksum": "1b2e269613028b164323a3ed75593bf3d158609a0a763e222b49b534cd3d4f57",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.021Z"
+        },
+        {
+          "path": "skills/t1k-scenario/references/dimension-details.md",
+          "checksum": "b0ffb3208e5ef33ece3a692d0341768215dfbbba20da4af86fbe22d1aff1a778",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.031Z"
+        },
+        {
+          "path": "skills/t1k-scenario/SKILL.md",
+          "checksum": "cf678cd046d68b476b2183fbe29b420a2d8383faf6ffcb42f93cadf64c1b8fc3",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.031Z"
+        },
+        {
+          "path": "skills/t1k-scout/SKILL.md",
+          "checksum": "ba64d8795a106ba701ad8f398049e4d88faf2179d3eabc599e54cbbbcbe29212",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.033Z"
+        },
+        {
+          "path": "skills/t1k-security/references/stride-checks.md",
+          "checksum": "f950179735b0ce6648171cfd680722508612e95a426a79a83bfda17b5e45d1a7",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.034Z"
+        },
+        {
+          "path": "skills/t1k-security/SKILL.md",
+          "checksum": "882b11e1719a98ce38a3d958ddfb8ab4c8ede435b0ba3d4c8066065d5220702c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.034Z"
+        },
+        {
+          "path": "skills/t1k-ship/references/auto-detect.md",
+          "checksum": "fb7274af438d10bb1dd62fa0c4b99ee9bc04d5d4ed20ed4dfad11cdc754b2e17",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.036Z"
+        },
+        {
+          "path": "skills/t1k-ship/references/pr-template.md",
+          "checksum": "e38f9e4ddfc5e7749cb2e86d0d0b2ee2a597c9e78953299f4c3d51c449077fda",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.036Z"
+        },
+        {
+          "path": "skills/t1k-ship/references/ship-workflow.md",
+          "checksum": "d43f0923aa882b8bf336276015b78cae5f602851f829039998606c9a35f0d7ff",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.037Z"
+        },
+        {
+          "path": "skills/t1k-ship/SKILL.md",
+          "checksum": "f5832f4b61ab5b7f72033358d1bab66b062beac22abd655e25775e15597aad92",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.036Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/agents/analyzer.md",
+          "checksum": "22ba642ace17a382dc2c7c31a71c16f79e44dbd56fb58af644e6a786f68f588d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.041Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/agents/comparator.md",
+          "checksum": "2691c6ce2ffdf049c3f82273dbba9c9c452335016981b1dc9777ef0709a28785",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.041Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/agents/grader.md",
+          "checksum": "9ce766b633e38c1e1cbbce3dfaf5c4871907a9441f2d028ed9040bc30d0019be",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.042Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/assets/eval_review.html",
+          "checksum": "ce477dcc74dc1c0d1d3352646a79167b5a63634e936b1019160025065974e452",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.042Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/eval-viewer/generate_review.py",
+          "checksum": "5c6a5993289f68f8f26ce0637f57f9f319e2013035096db92bea3304fe6c4458",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.043Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/eval-viewer/viewer.html",
+          "checksum": "a53213426ee1100441d701a3a0d49cda7a842f992d2c36463f4d3cc0258575fa",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.042Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/benchmark-optimization-guide.md",
+          "checksum": "7208d6bdf2cd63c36a13b6b0c02082a6b076a85835e805aa7e3256e1e44e0623",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.042Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/distribution-guide.md",
+          "checksum": "e2b5eb89bb88fcd9061709bb4a2441f7a89f1aecb5fadaa070690708215b0ba9",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.042Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/eval-infrastructure-guide.md",
+          "checksum": "9bf9864e95ddded234a018957900e850b778106fe8c87e6777fd5c942ed9e582",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.043Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/eval-schemas.md",
+          "checksum": "32cb1a5208e00729bc8a41e0bb0b8f823edb9280767ebaac304aeee2bd9ffcc7",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.044Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/mcp-skills-integration.md",
+          "checksum": "a90083f4549007b7834b2f61393bfbbe4e60b308e93d04dcdb3b2d355efa015a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.044Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/metadata-quality-criteria.md",
+          "checksum": "fdbcb197b9d81b8360752e0e5f8b14dac91d0c7b1c35c6fab11e784ae59a878d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.045Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/plugin-marketplace-hosting.md",
+          "checksum": "142dd9928dd995ca36630ac2d159f79a24ba9685adb2ffd1198f579c5e5809d8",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.046Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/plugin-marketplace-overview.md",
+          "checksum": "d646ee78eb9b6ba56bca2810a0e6e1691316eeb552edafeccbb30b653abd95ba",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.047Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/plugin-marketplace-schema.md",
+          "checksum": "b250a78562d3320c0db649b9d1cda7000b14e2d1dbc7fcbaf354ee05ff36c054",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.048Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/plugin-marketplace-sources.md",
+          "checksum": "58843bb9756eb0c1c4043321f3d20ac2653be70045f077f2af33a8240acabc0a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.048Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/plugin-marketplace-troubleshooting.md",
+          "checksum": "a839b089b7c0c4e8b180b74f0279dd1bbfc6a690fd25501e714d0335f3dd3760",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.050Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/runbook-template.md",
+          "checksum": "678cd767921416f88603a87c5b4c69ea7e5fd21ad9ad205521626f63989ee024",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.050Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/script-quality-criteria.md",
+          "checksum": "af238a1aaeeac93d434234e1b679e6e97f89e8504bf9cfea2600f5e9b01c6d7a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.050Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/scripts-reference.md",
+          "checksum": "c09a59b0c58836652e880c86befafa43d2bd447e48d6197639f11a40dd671669",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.054Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/skill-anatomy-and-requirements.md",
+          "checksum": "9a697c6eebbd8d4215909b5dd0a7402a4deb156be01f41320a422eca8f3675be",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.056Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/skill-creation-workflow.md",
+          "checksum": "ec8a7031548c480003de775c3bbb5e8e6720cb43dfcf08faa6c18906d79d2820",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.056Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/skill-design-patterns.md",
+          "checksum": "7fec51df42204f3a10876470dc32527e2f6845e3db55d870d324e8342678502d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.056Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/skillmark-benchmark-criteria.md",
+          "checksum": "dac3358194a50e025321126f78396a76925013afcc4e12c989dd16a0d08f570e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.060Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/structure-organization-criteria.md",
+          "checksum": "dce0c4a96615005de5e37f4c16827ecedbc0a4d8b1b4f6ed0fabc8d87512d078",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.060Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/testing-and-iteration.md",
+          "checksum": "a2ecee9597be8c61b2832c775def34166518d656fecb6ca598583ec388a8e5d4",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.060Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/token-efficiency-criteria.md",
+          "checksum": "d72799b167e1a179fe2d7f6afa1aadba3b888a2a075aca8066ecc49dad1850a5",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.060Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/troubleshooting-guide.md",
+          "checksum": "f21d66c42b16980552bd44bc39b9a3b4ed1aaaad49d5aa62044ac6c305e4bd1f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.061Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/validation-checklist.md",
+          "checksum": "922ec2a1d2411d8fb26bbb18d1dc1c30ed9bf922c5cfeec1e3987107df5226bb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.061Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/writing-effective-instructions.md",
+          "checksum": "769d5921614f9e47f47124a1c6f19e6e4f06b957012f997cc4ab1a8b5647eb62",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.061Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/references/yaml-frontmatter-reference.md",
+          "checksum": "6a91087bee9b8b5c015491bccdfb5a0db2315aea7a277a57262f8c6a1aa7fb98",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.061Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/aggregate_benchmark.py",
+          "checksum": "d05400f7f4edfc9ca943cc8db1a515c2031a5de9b1997e63378d8bbbe72cd216",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.062Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/encoding_utils.py",
+          "checksum": "31700ae08011e6c11d4a0c062bd15745e24d9993c9e9b0bbca5ec3070b10e96b",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.062Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/generate_report.py",
+          "checksum": "6f436f04ef6e39df86405734b2b1f8be47bf5354e5b9504df837b06da9b3d077",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.062Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/improve_description.py",
+          "checksum": "2a2aa0291bfbd03aca431b02e1f9b0d168dcf3df8e51faa1ba98cbb4379ab674",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.064Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/init_skill.py",
+          "checksum": "f032f25836524f8823458d441692621dd8af60aac566f55dff2e4747f70696bd",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.064Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/package_skill.py",
+          "checksum": "0b2e8bb04215171e2a2818e63dfbe655e9de7e76c2128e396afe2ec2432d0df4",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.065Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/quick_validate.py",
+          "checksum": "15092d925fbf77ddddd9c531ace4eb50c62d99f35a1296ff59e107313610df2e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.065Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/run_eval.py",
+          "checksum": "d4b121f0c7cf21dae276547934765694961d00b220e5b142b349efe59310921b",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.065Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/run_loop.py",
+          "checksum": "87a0752f1c3a316100cca6c09a0d903b2163ae971f437a875fad0c314822932d",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.069Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/scripts/utils.py",
+          "checksum": "087f9855c4d84611a2df37cfbb74490163607d12d3d5bbae54d187c4134998ab",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.071Z"
+        },
+        {
+          "path": "skills/t1k-skill-creator/SKILL.md",
+          "checksum": "5833f8b1a26c48a8b5133a4674a39cad2ea1cfd203453e3289a3ac33625aa387",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.040Z"
+        },
+        {
+          "path": "skills/t1k-sync-back/SKILL.md",
+          "checksum": "b649642ff81b5a90b2f8b1812ed78998926ce9ef9ca5975d54d08f835693b58c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.071Z"
+        },
+        {
+          "path": "skills/t1k-team/references/cook-template.md",
+          "checksum": "174721d1deaa822f9792ca555ce77bd69818af6a347e2d3ccca48ffb9971dec3",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.072Z"
+        },
+        {
+          "path": "skills/t1k-team/references/debug-template.md",
+          "checksum": "90172bde578e83f464f2e9d8245a1a690ca6ecac9fa54a9d2a0ee816cb662830",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.072Z"
+        },
+        {
+          "path": "skills/t1k-team/references/manifest-ownership-resolution.md",
+          "checksum": "5f66dd43ddcfd2fa0d877a476012ba0e031fca4a85676ba90cc4ff16c12bdbb6",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.072Z"
+        },
+        {
+          "path": "skills/t1k-team/references/research-template.md",
+          "checksum": "9bc9bbd57c047c373edb498943c29131ac8c5366b33dfdb9b33ed0944ab4cca2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.072Z"
+        },
+        {
+          "path": "skills/t1k-team/references/review-template.md",
+          "checksum": "b0721d9be347c63a36e1270759a73fb25a121659510bf9620760c3e5776da97e",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.073Z"
+        },
+        {
+          "path": "skills/t1k-team/references/t1k-context-block.md",
+          "checksum": "f45a8f317e97edaeac72448915661ac41ad7e3d7ba3decb29c5aa42d8d4a87e8",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.073Z"
+        },
+        {
+          "path": "skills/t1k-team/references/team-operations.md",
+          "checksum": "827b48eee6d8e31b1aec385c764e8f0195da6b2e18e2148da26e0147018ab199",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.073Z"
+        },
+        {
+          "path": "skills/t1k-team/references/triage-template.md",
+          "checksum": "435714c7ac559852229b1ec79ab9bb93de174359574c75b2f82a585802601071",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.074Z"
+        },
+        {
+          "path": "skills/t1k-team/SKILL.md",
+          "checksum": "df58db56a83e96d0a87cd5bbd1c7f345f6925403d4c51ec22ec7a5ae1ec112ec",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.072Z"
+        },
+        {
+          "path": "skills/t1k-test/SKILL.md",
+          "checksum": "11fef9d0fc2ecab22407e2d5f493a571a00c76ac94bd55464aec9f18f689b170",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.076Z"
+        },
+        {
+          "path": "skills/t1k-think/references/advanced-techniques.md",
+          "checksum": "ffacd4f2d08fdc4d8bf051d6a160e9a1b6cc185d3195cf0bf57b5164072c128f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.078Z"
+        },
+        {
+          "path": "skills/t1k-think/references/core-patterns.md",
+          "checksum": "e393dacae486ba498f41a1be3c61fa8ea26f284fe840cb8ec801658730e55148",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.079Z"
+        },
+        {
+          "path": "skills/t1k-think/references/examples-architecture.md",
+          "checksum": "20b94e7a6fdbd514014d63539bb768ab3f91f5234ed0e1d2d87a00bdd46a5acd",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.079Z"
+        },
+        {
+          "path": "skills/t1k-think/references/examples-debug.md",
+          "checksum": "7442597325ee2568e8c6ad1a3d08a6cf0c4ab955398167a62ca65b45ffd54f53",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.079Z"
+        },
+        {
+          "path": "skills/t1k-think/SKILL.md",
+          "checksum": "333ea3220059eac0ab3f0a69e524ef36d7699615f3cccd7594ba90107bda56d4",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.076Z"
+        },
+        {
+          "path": "skills/t1k-triage/SKILL.md",
+          "checksum": "59b25f6bb20db9f226627efa9221ab2f6a394713a31cddd18d423b8edb2b6fdb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.080Z"
+        },
+        {
+          "path": "skills/t1k-watzup/references/telemetry.md",
+          "checksum": "90024b85f1aafd9e8571caa719f7a84528580f0a4c82ab3591c8f0109168f403",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.082Z"
+        },
+        {
+          "path": "skills/t1k-watzup/SKILL.md",
+          "checksum": "b312bf45dc864a97900eded6829aaab4d49313a29d013ff78d254fc4df34e179",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.081Z"
+        },
+        {
+          "path": "skills/t1k-worktree/references/reporting-protocol.md",
+          "checksum": "cae67c502bb615022b1986648e75743154785d4f277ed76b3925a8b4066a8d7a",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.082Z"
+        },
+        {
+          "path": "skills/t1k-worktree/references/workflow-create.md",
+          "checksum": "c4c72f33c3224d68428b67aad0d07f51565ee5e2fc9c829507a75e2f3b31c7a2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.082Z"
+        },
+        {
+          "path": "skills/t1k-worktree/references/workflow-merge.md",
+          "checksum": "55d7a4ca097d48dc1a48c84c963fe4697d7f455d83e9641e627348646ca8df44",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.082Z"
+        },
+        {
+          "path": "skills/t1k-worktree/scripts/worktree-ops.cjs",
+          "checksum": "f5eac49b719721b8df98b4cfe10b6890f26cc9de5709b0332f33391b50ae1b17",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.083Z"
+        },
+        {
+          "path": "skills/t1k-worktree/scripts/worktree.cjs",
+          "checksum": "bb4ecf1a432f2aa4a2b86487ebf11a1efe119d6ea05955dbb68e185695737bfb",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.083Z"
+        },
+        {
+          "path": "skills/t1k-worktree/scripts/worktree.test.cjs",
+          "checksum": "b2e787443df1a069a7f37e013e3a0fd68aeff39a14815d92f180ae7b7e3e4583",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.083Z"
+        },
+        {
+          "path": "skills/t1k-worktree/SKILL.md",
+          "checksum": "04593c03e50c66de5c3b1b21e7ff3b0d4a1bfae51dadcfea47639eeafd6db48c",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.082Z"
+        },
+        {
+          "path": "skills/t1k-xia/references/challenge-framework.md",
+          "checksum": "09596e3587c01167a08e8e371654653921f3c522dc65fa6f4fcc80e89780323f",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.083Z"
+        },
+        {
+          "path": "skills/t1k-xia/SKILL.md",
+          "checksum": "d7c05e1b2df4d9ff0374b47c460f34f02ced0ad0a7c53228159fa3d9cd51dac2",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.083Z"
+        },
+        {
+          "path": "t1k-activation-core.json",
+          "checksum": "561cbdd3af4e0edf299db84c078cc891ca62594329f5f7f7c849de8b14dc854b",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.083Z"
+        },
+        {
+          "path": "t1k-config-core.json",
+          "checksum": "e67cb472ca766dec8fc7dc555ccd587d02a98a51feb282f144159a8f5f07afb0",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.083Z"
+        },
+        {
+          "path": "t1k-routing-core.json",
+          "checksum": "2c6c1c7416b803fa087bc1f01490b85eb89f5ecfe5d2f98526892b24ad0eb096",
+          "ownership": "user",
+          "installedVersion": "v1.62.1",
+          "installedAt": "2026-04-26T09:29:21.084Z"
+        }
+      ]
+    }
+  },
+  "scope": "local",
+  "name": "theonekit-core",
+  "version": "1.62.0",
+  "installedAt": "2026-04-26T09:29:21.114Z",
+  "userConfigFiles": [
+    ".gitignore",
+    ".repomixignore",
+    ".mcp.json",
+    ".gkignore",
+    ".t1k.json",
+    "CLAUDE.md"
+  ],
+  "schemaVersion": 3,
+  "installedModules": {
+    "unity-base": {
+      "version": "v1.62.1",
+      "kit": "theonekit-core",
+      "repository": "The1Studio/theonekit-core",
+      "installedAt": "2026-04-26T09:29:21.140Z"
+    },
+    "animation": {
+      "version": "v1.62.1",
+      "kit": "theonekit-core",
+      "repository": "The1Studio/theonekit-core",
+      "installedAt": "2026-04-26T09:29:21.140Z"
+    },
+    "audio": {
+      "version": "v1.62.1",
+      "kit": "theonekit-core",
+      "repository": "The1Studio/theonekit-core",
+      "installedAt": "2026-04-26T09:29:21.140Z"
+    },
+    "editor": {
+      "version": "v1.62.1",
+      "kit": "theonekit-core",
+      "repository": "The1Studio/theonekit-core",
+      "installedAt": "2026-04-26T09:29:21.140Z"
+    },
+    "ui": {
+      "version": "v1.62.1",
+      "kit": "theonekit-core",
+      "repository": "The1Studio/theonekit-core",
+      "installedAt": "2026-04-26T09:29:21.140Z"
+    }
+  }
+}

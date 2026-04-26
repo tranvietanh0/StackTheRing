@@ -1,0 +1,109 @@
+{
+  "_generated": "2026-04-17T11:50:20.002Z",
+  "_kitName": "theonekit-designer",
+  "_moduleCount": 7,
+  "keywords": {
+    "design-base": [
+      "GDD",
+      "balance",
+      "design",
+      "design doc",
+      "document",
+      "feedback",
+      "feel",
+      "game",
+      "game design document",
+      "juice",
+      "mobile",
+      "retention",
+      "session",
+      "shake",
+      "stats",
+      "tools",
+      "tuning"
+    ],
+    "design-economy": [
+      "IAP",
+      "backpack",
+      "currency",
+      "design",
+      "economy",
+      "gacha",
+      "game",
+      "grid",
+      "inventory",
+      "items",
+      "monetization",
+      "offering",
+      "pricing",
+      "shop"
+    ],
+    "design-level": [
+      "arena",
+      "design",
+      "encounter",
+      "game",
+      "level",
+      "spawn"
+    ],
+    "design-puzzle": [
+      "design",
+      "game",
+      "match-3",
+      "polyomino",
+      "puzzle"
+    ],
+    "design-rpg": [
+      "DPS",
+      "action economy",
+      "based",
+      "combat",
+      "damage",
+      "design",
+      "dialogue",
+      "faction",
+      "game",
+      "lore",
+      "narrative",
+      "quest",
+      "rpg",
+      "turn",
+      "turn-based",
+      "world",
+      "worldbuilding"
+    ],
+    "design-systems": [
+      "combo",
+      "combos",
+      "design",
+      "game",
+      "generation",
+      "permadeath",
+      "procedural",
+      "roguelike",
+      "run",
+      "synergy"
+    ],
+    "design-ux": [
+      "HUD",
+      "UI",
+      "animation",
+      "color",
+      "design",
+      "game",
+      "menu",
+      "palette",
+      "transition",
+      "tween",
+      "typography",
+      "visual",
+      "wireframe"
+    ]
+  },
+  "_origin": {
+    "kit": "theonekit-designer",
+    "repository": "The1Studio/theonekit-designer",
+    "module": null,
+    "protected": false
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "kits": {
+    "TheOneKit Core": {
+      "installedSettings": {
+        "hooks": [
+          "node $HOME/.claude/hooks/hook-runner.cjs privacy-guard",
+          "node $HOME/.claude/hooks/hook-runner.cjs scout-block",
+          "node $HOME/.claude/hooks/hook-runner.cjs descriptive-name",
+          "node $HOME/.claude/hooks/hook-runner.cjs secret-guard",
+          "node $HOME/.claude/hooks/hook-runner.cjs skill-commit-gate",
+          "node $HOME/.claude/hooks/hook-runner.cjs telemetry-tool-tracker",
+          "node $HOME/.claude/hooks/hook-runner.cjs telemetry-kit-error-collector",
+          "node $HOME/.claude/hooks/hook-runner.cjs skill-sync-reminder",
+          "node $HOME/.claude/hooks/hook-runner.cjs telemetry-error-collector",
+          "node $HOME/.claude/hooks/hook-runner.cjs telemetry-skill-tracker",
+          "node $HOME/.claude/hooks/hook-runner.cjs task-completed-handler",
+          "node $HOME/.claude/hooks/hook-runner.cjs check-kit-updates",
+          "node $HOME/.claude/hooks/hook-runner.cjs check-cli-updates",
+          "node $HOME/.claude/hooks/hook-runner.cjs session-state",
+          "node $HOME/.claude/hooks/hook-runner.cjs project-detector",
+          "node $HOME/.claude/hooks/hook-runner.cjs generate-baseline-context",
+          "node $HOME/.claude/hooks/hook-runner.cjs check-mcp-health",
+          "node $HOME/.claude/hooks/hook-runner.cjs check-module-keywords",
+          "node $HOME/.claude/hooks/hook-runner.cjs prompt-telemetry",
+          "node $HOME/.claude/hooks/hook-runner.cjs telemetry-stop-reminder",
+          "node $HOME/.claude/hooks/hook-runner.cjs prompt-telemetry-flush",
+          "node $HOME/.claude/hooks/hook-runner.cjs notify-discord",
+          "node $HOME/.claude/hooks/hook-runner.cjs notify-desktop",
+          "node $HOME/.claude/hooks/task-completed-handler.cjs",
+          "node $HOME/.claude/hooks/teammate-idle-handler.cjs"
+        ],
+        "mcpServers": [],
+        "statusLineInstalled": true
+      }
+    }
+  }
+}

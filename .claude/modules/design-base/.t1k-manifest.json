@@ -1,0 +1,45 @@
+{
+  "module": "design-base",
+  "version": "1.2.0",
+  "kit": "theonekit-designer",
+  "generatedBy": "release-action",
+  "generatedAt": "2026-04-17T11:50:30.901Z",
+  "files": {
+    "skills": [
+      "design-diagram-authoring/SKILL.md",
+      "design-diagram-authoring/install.json",
+      "design-diagram-authoring/references/economy-flows.md",
+      "design-diagram-authoring/references/level-spatial.md",
+      "design-diagram-authoring/references/narrative-branches.md",
+      "design-diagram-authoring/references/quest-trees.md",
+      "design-diagram-authoring/scripts/list-templates.cjs",
+      "design-diagram-authoring/templates/economy-flow.mmd",
+      "design-diagram-authoring/templates/level-spatial.mmd",
+      "design-diagram-authoring/templates/narrative-branch.mmd",
+      "design-diagram-authoring/templates/quest-tree.mmd",
+      "game-balance-tools/SKILL.md",
+      "game-balance-tools/references/balance-spreadsheet.md",
+      "game-balance-tools/references/tuning-knobs.md",
+      "game-balance-tools/references/validation-methods.md",
+      "game-design-document/SKILL.md",
+      "game-design-document/references/demo-wiki-template.md",
+      "game-design-document/references/gdd-template.md",
+      "game-design-document/references/living-doc-patterns.md",
+      "game-feel-juice/SKILL.md",
+      "game-feel-juice/references/animation-curves.md",
+      "game-feel-juice/references/hit-feedback.md",
+      "game-feel-juice/references/input-responsiveness.md",
+      "game-feel-juice/references/screen-effects.md",
+      "game-mobile-design/SKILL.md",
+      "game-mobile-design/references/platform-constraints.md",
+      "game-mobile-design/references/retention-mechanics.md",
+      "game-mobile-design/references/session-design.md"
+    ],
+    "agents": [],
+    "fragments": [
+      "t1k-activation-design-base.json"
+    ],
+    "other": []
+  },
+  "checksum": "sha256:fc7f8e9e0b42518c8c91fd7624553648ae7a798af73dd941068a6a63fd94b11d"
+}

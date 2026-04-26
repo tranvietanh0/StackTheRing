@@ -1,0 +1,36 @@
+{
+  "registryVersion": 1,
+  "priority": 10,
+  "description": "Fallback routing — lowest priority. Engine-specific kits override via higher-priority fragments.",
+  "roles": {
+    "implementer": "fullstack-developer",
+    "tester": "tester",
+    "reviewer": "code-reviewer",
+    "debugger": "debugger",
+    "optimizer": "general-purpose",
+    "environment": "general-purpose",
+    "validator": "general-purpose",
+    "shader": "general-purpose",
+    "ui-developer": "general-purpose",
+    "game-developer": "general-purpose",
+    "kit-developer": "kit-developer",
+    "brainstormer": "brainstormer",
+    "planner": "planner",
+    "docs-manager": "docs-manager",
+    "git-manager": "git-manager",
+    "project-manager": "project-manager",
+    "skills-manager": "skills-manager"
+  },
+  "errorRecovery": {
+    "compilation": "implementer",
+    "test-failure": "tester",
+    "runtime": "debugger",
+    "performance": "optimizer"
+  },
+  "_origin": {
+    "kit": "theonekit-core",
+    "repository": "The1Studio/theonekit-core",
+    "module": null,
+    "protected": true
+  }
+}
