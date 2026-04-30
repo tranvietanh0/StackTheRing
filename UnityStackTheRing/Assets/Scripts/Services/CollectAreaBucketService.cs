@@ -1,7 +1,6 @@
 namespace HyperCasualGame.Scripts.Services
 {
     using System.Collections.Generic;
-    using System.Linq;
     using HyperCasualGame.Scripts.Bucket;
     using HyperCasualGame.Scripts.CollectArea;
     using HyperCasualGame.Scripts.Core;
@@ -13,6 +12,8 @@ namespace HyperCasualGame.Scripts.Services
     /// </summary>
     public class CollectAreaBucketService
     {
+        private const bool ENABLE_TARGET_DEBUG_LOGS = false;
+
         private CollectAreaManager collectAreaManager;
         private Bucket activeTargetBucket;
 
@@ -29,8 +30,8 @@ namespace HyperCasualGame.Scripts.Services
                 return this.activeTargetBucket;
             }
 
-            var nextBucket = this.GetAvailableBucketsByColor(color).FirstOrDefault();
-            if (nextBucket != this.activeTargetBucket)
+            var nextBucket = this.GetAvailableBucketByColor(color);
+            if (ENABLE_TARGET_DEBUG_LOGS && nextBucket != this.activeTargetBucket)
             {
                 var previous = this.activeTargetBucket != null ? $"b{this.activeTargetBucket.Data.IndexBucket}:{this.activeTargetBucket.Data.Color}" : "none";
                 var next = nextBucket != null ? $"b{nextBucket.Data.IndexBucket}:{nextBucket.Data.Color}" : "none";
@@ -162,12 +163,42 @@ namespace HyperCasualGame.Scripts.Services
         {
             var total = 0;
 
-            foreach (var bucket in this.GetAvailableBucketsByColor(color))
+            if (this.collectAreaManager == null)
             {
+                return total;
+            }
+
+            foreach (var area in this.collectAreaManager.GetListCollectArea())
+            {
+                var bucket = this.FindBucketInArea(area);
+                if (bucket == null || bucket.IsBucketCompleted() || bucket.Data.Color != color)
+                {
+                    continue;
+                }
+
                 total += bucket.GetRemainingSlotCount();
             }
 
             return total;
+        }
+
+        public bool HasAvailableSlotForColor(ColorType color)
+        {
+            if (this.collectAreaManager == null)
+            {
+                return false;
+            }
+
+            foreach (var area in this.collectAreaManager.GetListCollectArea())
+            {
+                var bucket = this.FindBucketInArea(area);
+                if (bucket != null && !bucket.IsBucketCompleted() && bucket.Data.Color == color && bucket.GetRemainingSlotCount() > 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

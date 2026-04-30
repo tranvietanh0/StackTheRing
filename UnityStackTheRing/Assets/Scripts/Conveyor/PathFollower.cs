@@ -12,6 +12,8 @@ namespace HyperCasualGame.Scripts.Conveyor
     /// </summary>
     public class PathFollower : MonoBehaviour
     {
+        private const bool ENABLE_ENTRY_DEBUG_LOGS = false;
+
         [Header("Movement")]
         public float MoveSpeed = 1f;
         public float RotationSpeed = 10f;
@@ -712,8 +714,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 
                 var dist = this.GetDistanceToEntryAlongPath(i);
 
-                // Log distance for first row only to avoid spam (using static counter)
-                if (Time.frameCount % 60 == 0 && i == 0)
+                if (ENABLE_ENTRY_DEBUG_LOGS && Time.frameCount % 60 == 0 && i == 0)
                 {
                     Debug.Log($"[PathFollower] dist to entry: {dist:F2} (threshold: {GameConstants.DistanceThresholds.EntryTrigger})");
                 }
@@ -732,7 +733,11 @@ namespace HyperCasualGame.Scripts.Conveyor
                 // Check if close enough to trigger
                 if (dist < GameConstants.DistanceThresholds.EntryTrigger)
                 {
-                    Debug.Log($"[PathFollower] TRIGGERED! Row at dist {dist:F2}");
+                    if (ENABLE_ENTRY_DEBUG_LOGS)
+                    {
+                        Debug.Log($"[PathFollower] TRIGGERED! Row at dist {dist:F2}");
+                    }
+
                     this.triggeredEntryIndices.Add(i);
                     onEntryReached?.Invoke(i);
                 }

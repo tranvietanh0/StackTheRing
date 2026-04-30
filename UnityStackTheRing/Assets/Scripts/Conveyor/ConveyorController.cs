@@ -2,7 +2,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using System.Text;
     using Cysharp.Threading.Tasks;
     using Dreamteck.Splines;
     using GameFoundationCore.Scripts.Signals;
@@ -37,7 +37,11 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         #region Private Fields
 
+        private const bool ENABLE_ENTRY_DEBUG_LOGS = false;
+        private const bool ENABLE_CACHE_INVARIANT_LOGS = false;
+
         private readonly List<RowBall> activeRowBalls = new();
+        private readonly List<PathFollower> activeFollowers = new();
         private readonly HashSet<RowBall> processingAtEntry = new();
         private ConveyorPath conveyorPath;
         private float baseSpeed = 1f;
@@ -46,6 +50,7 @@ namespace HyperCasualGame.Scripts.Conveyor
         private SignalBus signalBus;
         private ILogger logger;
         private CollectAreaBucketService collectAreaBucketService;
+        private RowBall currentEntryCheckRowBall;
 
         #endregion
 
@@ -55,7 +60,23 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         public int ActiveRowCount => this.activeRowBalls.Count;
 
-        public int TotalBallCount => this.activeRowBalls.Sum(r => r.GetBallCount());
+        public int TotalBallCount
+        {
+            get
+            {
+                var total = 0;
+                for (var index = 0; index < this.activeRowBalls.Count; index++)
+                {
+                    var rowBall = this.activeRowBalls[index];
+                    if (rowBall != null)
+                    {
+                        total += rowBall.GetBallCount();
+                    }
+                }
+
+                return total;
+            }
+        }
 
         public bool IsRunning => this.isRunning;
 
@@ -112,10 +133,12 @@ namespace HyperCasualGame.Scripts.Conveyor
         {
             this.isRunning = true;
 
-            foreach (var rowBall in this.activeRowBalls)
+            foreach (var follower in this.activeFollowers)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
-                follower?.StartMoving();
+                if (follower != null)
+                {
+                    follower.StartMoving();
+                }
             }
 
             this.logger.Info("Conveyor started");
@@ -125,10 +148,12 @@ namespace HyperCasualGame.Scripts.Conveyor
         {
             this.isRunning = false;
 
-            foreach (var rowBall in this.activeRowBalls)
+            foreach (var follower in this.activeFollowers)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
-                follower?.StopMoving();
+                if (follower != null)
+                {
+                    follower.StopMoving();
+                }
             }
 
             this.logger.Info("Conveyor stopped");
@@ -137,28 +162,32 @@ namespace HyperCasualGame.Scripts.Conveyor
         public void PauseConveyor()
         {
             this.isRunning = false;
-            foreach (var rowBall in this.activeRowBalls)
+            foreach (var follower in this.activeFollowers)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
-                follower?.StopMoving();
+                if (follower != null)
+                {
+                    follower.StopMoving();
+                }
             }
         }
 
         public void ResumeConveyor()
         {
             this.isRunning = true;
-            foreach (var rowBall in this.activeRowBalls)
+            foreach (var follower in this.activeFollowers)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
-                follower?.StartMoving();
+                if (follower != null)
+                {
+                    follower.StartMoving();
+                }
             }
         }
 
         public RowBall GetRowBallAtDistance(float distance, float tolerance = 0.5f)
         {
-            foreach (var rowBall in this.activeRowBalls)
+            for (var index = 0; index < this.activeRowBalls.Count; index++)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
+                var follower = this.GetActiveFollowerAt(index);
                 if (follower == null)
                 {
                     continue;
@@ -167,7 +196,7 @@ namespace HyperCasualGame.Scripts.Conveyor
                 var diff = Mathf.Abs(follower.GetCurrentDistance() - distance);
                 if (diff < tolerance)
                 {
-                    return rowBall;
+                    return this.activeRowBalls[index];
                 }
             }
 
@@ -178,9 +207,9 @@ namespace HyperCasualGame.Scripts.Conveyor
         {
             var result = new List<Ball>();
 
-            foreach (var rowBall in this.activeRowBalls)
+            for (var index = 0; index < this.activeRowBalls.Count; index++)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
+                var follower = this.GetActiveFollowerAt(index);
                 if (follower == null)
                 {
                     continue;
@@ -189,7 +218,15 @@ namespace HyperCasualGame.Scripts.Conveyor
                 var dist = follower.GetCurrentDistance();
                 if (dist >= startDistance && dist <= endDistance)
                 {
-                    result.AddRange(rowBall.GetActiveBalls());
+                    var rowBall = this.activeRowBalls[index];
+                    for (var slotIndex = 0; slotIndex < rowBall.SlotCount; slotIndex++)
+                    {
+                        var ball = rowBall.GetBallAt(slotIndex);
+                        if (ball != null)
+                        {
+                            result.Add(ball);
+                        }
+                    }
                 }
             }
 
@@ -203,7 +240,13 @@ namespace HyperCasualGame.Scripts.Conveyor
                 return;
             }
 
-            this.activeRowBalls.Remove(rowBall);
+            var rowIndex = this.activeRowBalls.IndexOf(rowBall);
+            this.activeRowBalls.RemoveAt(rowIndex);
+            if (rowIndex < this.activeFollowers.Count)
+            {
+                this.activeFollowers.RemoveAt(rowIndex);
+            }
+
             this.InvalidateActiveFollowerCaches();
             Destroy(rowBall.gameObject);
 
@@ -261,6 +304,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             follower.ComputeEntryPathDistances();
 
             this.activeRowBalls.Add(rowBall);
+            this.activeFollowers.Add(follower);
             this.InvalidateActiveFollowerCaches();
 
             if (this.isRunning)
@@ -304,9 +348,8 @@ namespace HyperCasualGame.Scripts.Conveyor
             var pathLength = this.CalculatePathLength();
             var nearestDistanceAroundAnchor = float.MaxValue;
 
-            foreach (var rowBall in this.activeRowBalls)
+            foreach (var follower in this.activeFollowers)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
                 if (follower == null)
                 {
                     continue;
@@ -359,10 +402,9 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             // Collect all distances and sort
-            var distances = new List<float>();
-            foreach (var rowBall in this.activeRowBalls)
+            var distances = new List<float>(this.activeFollowers.Count);
+            foreach (var follower in this.activeFollowers)
             {
-                var follower = rowBall.GetComponent<PathFollower>();
                 if (follower != null)
                 {
                     distances.Add(follower.GetCurrentDistance());
@@ -541,12 +583,29 @@ namespace HyperCasualGame.Scripts.Conveyor
             return sampleIndex < sampleCount - 1 || (sampleIndex == sampleCount - 1 && sampleCount > 1);
         }
 
+        private PathFollower GetActiveFollowerAt(int index)
+        {
+            if (index >= 0 && index < this.activeFollowers.Count)
+            {
+                return this.activeFollowers[index];
+            }
+
+            if (ENABLE_CACHE_INVARIANT_LOGS)
+            {
+                Debug.LogWarning($"[ConveyorController] Active follower cache out of sync. rows={this.activeRowBalls.Count} followers={this.activeFollowers.Count} index={index}");
+            }
+
+            return null;
+        }
+
         private void InvalidateActiveFollowerCaches()
         {
-            foreach (var rowBall in this.activeRowBalls)
+            foreach (var follower in this.activeFollowers)
             {
-                var follower = rowBall != null ? rowBall.GetComponent<PathFollower>() : null;
-                follower?.InvalidateSiblingCache();
+                if (follower != null)
+                {
+                    follower.InvalidateSiblingCache();
+                }
             }
         }
 
@@ -591,6 +650,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             rowBall.Initialize(config, this.ballPrefab, this.signalBus, this.config);
 
             this.activeRowBalls.Add(rowBall);
+            this.activeFollowers.Add(follower);
 
             // Start moving if conveyor is running
             if (this.isRunning)
@@ -635,6 +695,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             this.activeRowBalls.Clear();
+            this.activeFollowers.Clear();
             this.processingAtEntry.Clear();
         }
 
@@ -673,24 +734,30 @@ namespace HyperCasualGame.Scripts.Conveyor
         /// </summary>
         private void CheckEntryPoints()
         {
-            foreach (var rowBall in this.activeRowBalls)
+            for (var index = 0; index < this.activeRowBalls.Count; index++)
             {
+                var rowBall = this.activeRowBalls[index];
                 if (rowBall == null)
                 {
                     continue;
                 }
 
-                var follower = rowBall.GetComponent<PathFollower>();
+                var follower = this.GetActiveFollowerAt(index);
                 if (follower == null)
                 {
                     continue;
                 }
 
-                follower.UpdateEntryPointDetection(entryIndex =>
-                {
-                    this.OnRowBallReachedEntry(rowBall, entryIndex).Forget();
-                });
+                this.currentEntryCheckRowBall = rowBall;
+                follower.UpdateEntryPointDetection(this.OnEntryReached);
             }
+
+            this.currentEntryCheckRowBall = null;
+        }
+
+        private void OnEntryReached(int entryIndex)
+        {
+            this.OnRowBallReachedEntry(this.currentEntryCheckRowBall, entryIndex).Forget();
         }
 
         /// <summary>
@@ -713,7 +780,10 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.processingAtEntry.Add(rowBall);
             try
             {
-                Debug.Log($"[ConveyorController] EntryStart row={rowBall.RowId} entry={entryIndex} balls={this.FormatBallList(rowBall.GetActiveBalls())} targets={this.FormatTargetBuckets()}");
+                if (ENABLE_ENTRY_DEBUG_LOGS)
+                {
+                    Debug.Log($"[ConveyorController] EntryStart row={rowBall.RowId} entry={entryIndex} balls={this.FormatRowBallList(rowBall)} targets={this.FormatTargetBuckets()}");
+                }
 
                 // Fire signal
                 this.signalBus?.Fire(new RowBallReachEntrySignal
@@ -732,7 +802,11 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
             finally
             {
-                Debug.Log($"[ConveyorController] EntryEnd row={rowBall.RowId} entry={entryIndex} remaining={this.FormatBallList(rowBall.GetActiveBalls())} targets={this.FormatTargetBuckets()}");
+                if (ENABLE_ENTRY_DEBUG_LOGS)
+                {
+                    Debug.Log($"[ConveyorController] EntryEnd row={rowBall.RowId} entry={entryIndex} remaining={this.FormatRowBallList(rowBall)} targets={this.FormatTargetBuckets()}");
+                }
+
                 this.processingAtEntry.Remove(rowBall);
             }
         }
@@ -756,47 +830,47 @@ namespace HyperCasualGame.Scripts.Conveyor
                 var rowColor = this.GetRowTargetColor(rowBall);
                 if (!rowColor.HasValue)
                 {
-                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-row-color");
+                    this.LogEntryStop(rowBall, entryIndex, waveIndex, "no-row-color");
                     return;
                 }
 
                 var targetBucket = this.collectAreaBucketService.GetStableTargetBucketForColor(rowColor.Value);
-                Debug.Log($"[ConveyorController] EntryWave row={rowBall.RowId} entry={entryIndex} wave={waveIndex} rowColor={rowColor.Value} activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()} targets={this.FormatTargetBuckets()}");
+                if (ENABLE_ENTRY_DEBUG_LOGS)
+                {
+                    Debug.Log($"[ConveyorController] EntryWave row={rowBall.RowId} entry={entryIndex} wave={waveIndex} rowColor={rowColor.Value} activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()} targets={this.FormatTargetBuckets()}");
+                }
+
                 if (targetBucket == null)
                 {
-                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-target-bucket rowColor={rowColor.Value}");
+                    this.LogEntryStop(rowBall, entryIndex, waveIndex, $"no-target-bucket rowColor={rowColor.Value}");
                     return;
                 }
 
-                var ballsToCollect = rowBall.GetActiveBalls()
-                    .Where(b => !b.IsCollected && b.BallColor == rowColor.Value)
-                    .ToList();
-
-                Debug.Log($"[ConveyorController] EntryCandidates row={rowBall.RowId} entry={entryIndex} wave={waveIndex} candidates={this.FormatBallList(ballsToCollect)}");
-                if (ballsToCollect.Count == 0)
+                var limitedBallsToCollect = this.GetLimitedMatchingBalls(rowBall, rowColor.Value, targetBucket);
+                if (ENABLE_ENTRY_DEBUG_LOGS)
                 {
-                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-matching-balls");
-                    return;
+                    Debug.Log($"[ConveyorController] EntryLimited row={rowBall.RowId} entry={entryIndex} wave={waveIndex} limited={this.FormatBallList(limitedBallsToCollect)}");
                 }
 
-                var limitedBallsToCollect = this.LimitBallsToAvailableSlots(targetBucket, ballsToCollect);
-                Debug.Log($"[ConveyorController] EntryLimited row={rowBall.RowId} entry={entryIndex} wave={waveIndex} limited={this.FormatBallList(limitedBallsToCollect)}");
                 if (limitedBallsToCollect.Count == 0)
                 {
-                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-available-slots activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()}");
+                    this.LogEntryStop(rowBall, entryIndex, waveIndex, "no-matching-balls-or-slots");
                     return;
                 }
 
                 var assignments = this.BuildAssignments(targetBucket, limitedBallsToCollect);
                 if (assignments.Count == 0)
                 {
-                    Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=no-assignments activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()}");
+                    this.LogEntryStop(rowBall, entryIndex, waveIndex, "no-assignments");
                     return;
                 }
 
-                Debug.Log($"[ConveyorController] EntryAssignments row={rowBall.RowId} entry={entryIndex} wave={waveIndex} assignments={this.FormatAssignments(assignments)}");
+                if (ENABLE_ENTRY_DEBUG_LOGS)
+                {
+                    Debug.Log($"[ConveyorController] EntryAssignments row={rowBall.RowId} entry={entryIndex} wave={waveIndex} assignments={this.FormatAssignments(assignments)}");
+                }
 
-                var jumpTasks = new List<UniTask>();
+                var jumpTasks = new List<UniTask>(assignments.Count);
                 for (var i = 0; i < assignments.Count; i++)
                 {
                     var (ball, bucket) = assignments[i];
@@ -808,32 +882,44 @@ namespace HyperCasualGame.Scripts.Conveyor
                 waveIndex++;
             }
 
-            Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason=max-wave-reached");
+            this.LogEntryStop(rowBall, entryIndex, waveIndex, "max-wave-reached");
         }
 
-        /// <summary>
-        /// Limit balls to collect based on available slots per color.
-        /// Returns a subset of balls that can actually be collected.
-        /// </summary>
-        private List<Ball> LimitBallsToAvailableSlots(Bucket targetBucket, List<Ball> ballsToCollect)
+        private List<Ball> GetLimitedMatchingBalls(RowBall rowBall, ColorType color, Bucket targetBucket)
         {
+            var result = new List<Ball>();
             if (targetBucket == null)
             {
-                return new List<Ball>();
+                return result;
             }
 
             var availableSlots = targetBucket.GetRemainingSlotCount();
             if (availableSlots <= 0)
             {
-                return new List<Ball>();
+                return result;
             }
 
-            return ballsToCollect.Take(availableSlots).ToList();
+            for (var index = 0; index < rowBall.SlotCount; index++)
+            {
+                var ball = rowBall.GetBallAt(index);
+                if (ball == null || ball.IsCollected || ball.BallColor != color)
+                {
+                    continue;
+                }
+
+                result.Add(ball);
+                if (result.Count >= availableSlots)
+                {
+                    break;
+                }
+            }
+
+            return result;
         }
 
         private List<(Ball ball, Bucket bucket)> BuildAssignments(Bucket targetBucket, List<Ball> ballsToCollect)
         {
-            var assignments = new List<(Ball ball, Bucket bucket)>();
+            var assignments = new List<(Ball ball, Bucket bucket)>(ballsToCollect.Count);
             if (targetBucket == null)
             {
                 return assignments;
@@ -850,24 +936,118 @@ namespace HyperCasualGame.Scripts.Conveyor
 
         private ColorType? GetRowTargetColor(RowBall rowBall)
         {
-            var firstBall = rowBall.GetActiveBalls().FirstOrDefault(ball => !ball.IsCollected);
-            return firstBall?.BallColor;
+            for (var index = 0; index < rowBall.SlotCount; index++)
+            {
+                var ball = rowBall.GetBallAt(index);
+                if (ball != null && !ball.IsCollected)
+                {
+                    return ball.BallColor;
+                }
+            }
+
+            return null;
+        }
+
+        private void LogEntryStop(RowBall rowBall, int entryIndex, int waveIndex, string reason)
+        {
+            if (ENABLE_ENTRY_DEBUG_LOGS)
+            {
+                Debug.Log($"[ConveyorController] EntryStop row={rowBall.RowId} entry={entryIndex} wave={waveIndex} reason={reason}");
+            }
         }
 
         private string FormatBallList(IEnumerable<Ball> balls)
         {
-            return string.Join(",", balls.Select(ball => $"{ball.BallColor}:{ball.BallIndex}"));
+            var builder = new StringBuilder();
+            foreach (var ball in balls)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append(',');
+                }
+
+                builder.Append(ball.BallColor).Append(':').Append(ball.BallIndex);
+            }
+
+            return builder.ToString();
+        }
+
+        private string FormatRowBallList(RowBall rowBall)
+        {
+            var builder = new StringBuilder();
+            for (var index = 0; index < rowBall.SlotCount; index++)
+            {
+                var ball = rowBall.GetBallAt(index);
+                if (ball == null)
+                {
+                    continue;
+                }
+
+                if (builder.Length > 0)
+                {
+                    builder.Append(',');
+                }
+
+                builder.Append(ball.BallColor).Append(':').Append(ball.BallIndex);
+            }
+
+            return builder.ToString();
         }
 
         private string FormatAssignments(IEnumerable<(Ball ball, Bucket bucket)> assignments)
         {
-            return string.Join(",", assignments.Select(pair => $"{pair.ball.BallColor}:{pair.ball.BallIndex}->b{pair.bucket.Data.IndexBucket}[c={pair.bucket.CollectedBallCount},in={pair.bucket.IncomingBallCount},target={pair.bucket.TargetBallCount}]"));
+            var builder = new StringBuilder();
+            foreach (var pair in assignments)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append(',');
+                }
+
+                builder.Append(pair.ball.BallColor)
+                    .Append(':')
+                    .Append(pair.ball.BallIndex)
+                    .Append("->b")
+                    .Append(pair.bucket.Data.IndexBucket)
+                    .Append("[c=")
+                    .Append(pair.bucket.CollectedBallCount)
+                    .Append(",in=")
+                    .Append(pair.bucket.IncomingBallCount)
+                    .Append(",target=")
+                    .Append(pair.bucket.TargetBallCount)
+                    .Append(']');
+            }
+
+            return builder.ToString();
         }
 
         private string FormatTargetBuckets()
         {
-            return string.Join(",", this.collectAreaBucketService.GetAvailableBucketsInCollectAreas()
-                .Select(bucket => $"b{bucket.Data.IndexBucket}:{bucket.Data.Color}[c={bucket.CollectedBallCount},in={bucket.IncomingBallCount},target={bucket.TargetBallCount},rem={bucket.GetRemainingSlotCount()}]"));
+            var builder = new StringBuilder();
+            var buckets = this.collectAreaBucketService.GetAvailableBucketsInCollectAreas();
+            foreach (var bucket in buckets)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append(',');
+                }
+
+                builder.Append('b')
+                    .Append(bucket.Data.IndexBucket)
+                    .Append(':')
+                    .Append(bucket.Data.Color)
+                    .Append("[c=")
+                    .Append(bucket.CollectedBallCount)
+                    .Append(",in=")
+                    .Append(bucket.IncomingBallCount)
+                    .Append(",target=")
+                    .Append(bucket.TargetBallCount)
+                    .Append(",rem=")
+                    .Append(bucket.GetRemainingSlotCount())
+                    .Append(']');
+            }
+
+            return builder.ToString();
         }
 
         #endregion

@@ -1,7 +1,6 @@
 namespace HyperCasualGame.Scripts.Ring
 {
     using System.Collections.Generic;
-    using System.Linq;
     using GameFoundationCore.Scripts.Signals;
     using HyperCasualGame.Scripts.Conveyor;
     using HyperCasualGame.Scripts.Core;
@@ -27,6 +26,7 @@ namespace HyperCasualGame.Scripts.Ring
 
         public int RowId => this.rowId;
         public RowBallConfig Config => this.config;
+        public int SlotCount => this.maxBalls;
 
         public void Initialize(RowBallConfig config, Ball prefab, SignalBus signalBus, ConveyorConfig conveyorConfig = null)
         {
@@ -97,7 +97,16 @@ namespace HyperCasualGame.Scripts.Ring
 
         public int GetBallCount()
         {
-            return this.slots.Count(s => s != null);
+            var count = 0;
+            for (var index = 0; index < this.slots.Length; index++)
+            {
+                if (this.slots[index] != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         public bool IsEmpty()
@@ -107,7 +116,17 @@ namespace HyperCasualGame.Scripts.Ring
 
         public List<Ball> GetActiveBalls()
         {
-            return this.slots.Where(s => s != null).ToList();
+            var balls = new List<Ball>();
+            for (var index = 0; index < this.slots.Length; index++)
+            {
+                var ball = this.slots[index];
+                if (ball != null)
+                {
+                    balls.Add(ball);
+                }
+            }
+
+            return balls;
         }
 
         public Ball GetBallAt(int index)
@@ -122,7 +141,16 @@ namespace HyperCasualGame.Scripts.Ring
 
         public int GetEmptySlotCount()
         {
-            return this.slots.Count(s => s == null);
+            var count = 0;
+            for (var index = 0; index < this.slots.Length; index++)
+            {
+                if (this.slots[index] == null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         public List<int> GetEmptySlotIndices()
@@ -190,6 +218,11 @@ namespace HyperCasualGame.Scripts.Ring
 
         private void ClearAllSlots()
         {
+            if (this.slots == null)
+            {
+                return;
+            }
+
             foreach (var ball in this.slots)
             {
                 if (ball != null && ball.gameObject != null)

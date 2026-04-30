@@ -1,7 +1,6 @@
 namespace HyperCasualGame.Scripts.Conveyor
 {
     using System.Collections.Generic;
-    using System.Linq;
     using Cysharp.Threading.Tasks;
     using Dreamteck.Splines;
     using GameFoundationCore.Scripts.Signals;
@@ -22,6 +21,7 @@ namespace HyperCasualGame.Scripts.Conveyor
         [SerializeField] private Ball ballPrefab;
 
         private readonly List<RowBall> queuedRowBalls = new();
+        private readonly List<PathFollower> queuedFollowers = new();
         private readonly List<RowBall> readyToFill = new();
         private ConveyorPath queuePath;
         private float queueSpeed = 1f;
@@ -33,10 +33,27 @@ namespace HyperCasualGame.Scripts.Conveyor
         public IReadOnlyList<RowBall> QueuedRowBalls => this.queuedRowBalls;
         public IEnumerable<RowBall> PendingRowBalls => this.queuedRowBalls;
         public IEnumerable<RowBall> ReadyRows => this.readyToFill;
+        public int ReadyRowCount => this.readyToFill.Count;
         public bool IsEmpty => this.queuedRowBalls.Count == 0;
         public bool IsRunning => this.isRunning;
         public bool HasReadyRow => this.readyToFill.Count > 0;
-        public int TotalBallCount => this.queuedRowBalls.Sum(row => row.GetBallCount());
+        public int TotalBallCount
+        {
+            get
+            {
+                var total = 0;
+                for (var index = 0; index < this.queuedRowBalls.Count; index++)
+                {
+                    var row = this.queuedRowBalls[index];
+                    if (row != null)
+                    {
+                        total += row.GetBallCount();
+                    }
+                }
+
+                return total;
+            }
+        }
 
         public void Initialize(SignalBus signalBus, ILoggerManager loggerManager)
         {
@@ -79,9 +96,12 @@ namespace HyperCasualGame.Scripts.Conveyor
         {
             this.isRunning = false;
 
-            foreach (var row in this.queuedRowBalls)
+            foreach (var follower in this.queuedFollowers)
             {
-                row.GetComponent<PathFollower>()?.StopMoving();
+                if (follower != null)
+                {
+                    follower.StopMoving();
+                }
             }
 
             this.logger.Info("QueueConveyor stopped");
@@ -95,11 +115,18 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             var rowBall = this.queuedRowBalls[0];
+            var follower = this.GetQueuedFollowerAt(0);
             this.readyToFill.RemoveAt(0);
             this.queuedRowBalls.RemoveAt(0);
+            if (this.queuedFollowers.Count > 0)
+            {
+                this.queuedFollowers.RemoveAt(0);
+            }
 
-            var follower = rowBall.GetComponent<PathFollower>();
-            follower?.StopMoving();
+            if (follower != null)
+            {
+                follower.StopMoving();
+            }
             rowBall.transform.SetParent(null, true);
 
             this.InvalidateQueueFollowerCaches();
@@ -122,6 +149,16 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             return this.GetPositionAtDistance(this.queueEntryDistance);
+        }
+
+        public RowBall GetReadyRowAt(int index)
+        {
+            if (index < 0 || index >= this.readyToFill.Count)
+            {
+                return null;
+            }
+
+            return this.readyToFill[index];
         }
 
         public float GetDesiredRowSpacing()
@@ -149,7 +186,7 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             var frontRow = this.queuedRowBalls[0];
-            var frontFollower = frontRow != null ? frontRow.GetComponent<PathFollower>() : null;
+            var frontFollower = this.GetQueuedFollowerAt(0);
             if (frontFollower == null)
             {
                 return;
@@ -175,7 +212,7 @@ namespace HyperCasualGame.Scripts.Conveyor
                     continue;
                 }
 
-                var follower = row.GetComponent<PathFollower>();
+                var follower = this.GetQueuedFollowerAt(index);
                 if (follower == null)
                 {
                     continue;
@@ -199,10 +236,12 @@ namespace HyperCasualGame.Scripts.Conveyor
                 }
             }
 
-            foreach (var row in this.queuedRowBalls)
+            foreach (var follower in this.queuedFollowers)
             {
-                var follower = row != null ? row.GetComponent<PathFollower>() : null;
-                follower?.InvalidateSiblingCache();
+                if (follower != null)
+                {
+                    follower.InvalidateSiblingCache();
+                }
             }
 
             this.RefreshReadyRows();
@@ -284,6 +323,7 @@ namespace HyperCasualGame.Scripts.Conveyor
 
             rowBall.Initialize(rowConfig, this.ballPrefab, this.signalBus, this.config);
             this.queuedRowBalls.Add(rowBall);
+            this.queuedFollowers.Add(follower);
         }
 
         private Vector3 GetPositionAtDistance(float distance)
@@ -377,15 +417,28 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             this.queuedRowBalls.Clear();
+            this.queuedFollowers.Clear();
             this.readyToFill.Clear();
+        }
+
+        private PathFollower GetQueuedFollowerAt(int index)
+        {
+            if (index >= 0 && index < this.queuedFollowers.Count)
+            {
+                return this.queuedFollowers[index];
+            }
+
+            return null;
         }
 
         private void InvalidateQueueFollowerCaches()
         {
-            foreach (var row in this.queuedRowBalls)
+            foreach (var follower in this.queuedFollowers)
             {
-                var follower = row != null ? row.GetComponent<PathFollower>() : null;
-                follower?.InvalidateSiblingCache();
+                if (follower != null)
+                {
+                    follower.InvalidateSiblingCache();
+                }
             }
         }
 

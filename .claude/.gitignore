@@ -3,6 +3,7 @@
 
 # Session state (per-machine, per-session)
 session-state/
+handoffs/
 
 # Telemetry logs (local only, submitted via /t1k:watzup)
 telemetry/

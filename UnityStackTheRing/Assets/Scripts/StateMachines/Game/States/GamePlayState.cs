@@ -1,6 +1,6 @@
 namespace HyperCasualGame.Scripts.StateMachines.Game.States
 {
-    using System.Linq;
+    using System.Collections.Generic;
     using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.DI;
     using GameFoundationCore.Scripts.Signals;
@@ -217,39 +217,11 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
             // Only check lose when all collect areas are occupied
             if (!this.collectAreaManager.AreAllCollectAreasOccupied()) return;
 
-            // Get target colors from buckets in CollectAreas
-            var targetColors = this.collectAreaBucketService.GetTargetColorsFromBuckets();
+            var canCollectAny = this.HasCollectableBall(this.conveyor.ActiveRowBalls);
 
-            // Check if any ball on conveyor can be collected
-            var canCollectAny = false;
-            foreach (var rowBall in this.conveyor.ActiveRowBalls)
-            {
-                foreach (var ball in rowBall.GetActiveBalls())
-                {
-                    if (targetColors.Contains(ball.BallColor) && this.collectAreaBucketService.GetAvailableSlotCountByColor(ball.BallColor) > 0)
-                    {
-                        canCollectAny = true;
-                        break;
-                    }
-                }
-                if (canCollectAny) break;
-            }
-
-            // Also check queue balls — if queue has matching balls, don't lose yet
             if (!canCollectAny && this.multiQueueCoordinator != null)
             {
-                foreach (var rowBall in this.multiQueueCoordinator.ReadyRows)
-                {
-                    foreach (var ball in rowBall.GetActiveBalls())
-                    {
-                        if (targetColors.Contains(ball.BallColor) && this.collectAreaBucketService.GetAvailableSlotCountByColor(ball.BallColor) > 0)
-                        {
-                            canCollectAny = true;
-                            break;
-                        }
-                    }
-                    if (canCollectAny) break;
-                }
+                canCollectAny = this.HasCollectableQueuedBall();
             }
 
             if (!canCollectAny)
@@ -260,6 +232,61 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
                 this.levelManager.FailLevel();
                 this.StateMachine.TransitionTo<GameLoseState>();
             }
+        }
+
+        private bool HasCollectableBall(IReadOnlyList<RowBall> rowBalls)
+        {
+            for (var rowIndex = 0; rowIndex < rowBalls.Count; rowIndex++)
+            {
+                if (this.HasCollectableBall(rowBalls[rowIndex]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool HasCollectableQueuedBall()
+        {
+            var queueConveyors = this.multiQueueCoordinator.QueueConveyors;
+            for (var queueIndex = 0; queueIndex < queueConveyors.Count; queueIndex++)
+            {
+                var queueConveyor = queueConveyors[queueIndex];
+                if (queueConveyor == null)
+                {
+                    continue;
+                }
+
+                for (var rowIndex = 0; rowIndex < queueConveyor.ReadyRowCount; rowIndex++)
+                {
+                    if (this.HasCollectableBall(queueConveyor.GetReadyRowAt(rowIndex)))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool HasCollectableBall(RowBall rowBall)
+        {
+            if (rowBall == null)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < rowBall.SlotCount; index++)
+            {
+                var ball = rowBall.GetBallAt(index);
+                if (ball != null && this.collectAreaBucketService.HasAvailableSlotForColor(ball.BallColor))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         #endregion
