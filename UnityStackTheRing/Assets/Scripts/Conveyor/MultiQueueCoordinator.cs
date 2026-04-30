@@ -2,7 +2,6 @@ namespace HyperCasualGame.Scripts.Conveyor
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using GameFoundationCore.Scripts.Signals;
     using HyperCasualGame.Scripts.Level;
     using HyperCasualGame.Scripts.Ring;
@@ -27,9 +26,25 @@ namespace HyperCasualGame.Scripts.Conveyor
         }
 
         public IReadOnlyList<QueueConveyor> QueueConveyors => this.queueConveyors;
-        public bool HasPendingRows => this.queueConveyors.Any(queue => queue != null && !queue.IsEmpty);
-        public IEnumerable<HyperCasualGame.Scripts.Ring.RowBall> PendingRows => this.queueConveyors.Where(queue => queue != null).SelectMany(queue => queue.PendingRowBalls);
-        public IEnumerable<HyperCasualGame.Scripts.Ring.RowBall> ReadyRows => this.queueConveyors.Where(queue => queue != null).SelectMany(queue => queue.ReadyRows);
+        public bool HasPendingRows
+        {
+            get
+            {
+                for (var index = 0; index < this.queueConveyors.Count; index++)
+                {
+                    var queue = this.queueConveyors[index];
+                    if (queue != null && !queue.IsEmpty)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        public IEnumerable<HyperCasualGame.Scripts.Ring.RowBall> PendingRows => this.GetPendingRows();
+        public IEnumerable<HyperCasualGame.Scripts.Ring.RowBall> ReadyRows => this.GetReadyRows();
 
         public void Initialize(
             ConveyorController conveyorController,
@@ -124,6 +139,40 @@ namespace HyperCasualGame.Scripts.Conveyor
         public void SyncMainQueueState()
         {
             this.conveyorController?.SetHasQueueRows(this.HasPendingRows);
+        }
+
+        private IEnumerable<HyperCasualGame.Scripts.Ring.RowBall> GetPendingRows()
+        {
+            for (var queueIndex = 0; queueIndex < this.queueConveyors.Count; queueIndex++)
+            {
+                var queue = this.queueConveyors[queueIndex];
+                if (queue == null)
+                {
+                    continue;
+                }
+
+                foreach (var rowBall in queue.PendingRowBalls)
+                {
+                    yield return rowBall;
+                }
+            }
+        }
+
+        private IEnumerable<HyperCasualGame.Scripts.Ring.RowBall> GetReadyRows()
+        {
+            for (var queueIndex = 0; queueIndex < this.queueConveyors.Count; queueIndex++)
+            {
+                var queue = this.queueConveyors[queueIndex];
+                if (queue == null)
+                {
+                    continue;
+                }
+
+                foreach (var rowBall in queue.ReadyRows)
+                {
+                    yield return rowBall;
+                }
+            }
         }
     }
 }
