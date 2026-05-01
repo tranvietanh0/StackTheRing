@@ -30,7 +30,7 @@
 
         public void Initialize()
         {
-            this.TransitionTo<GamePlayState>();
+            this.TransitionTo<GameHomeState>();
         }
 
         public T GetState<T>() where T : class, IGameState

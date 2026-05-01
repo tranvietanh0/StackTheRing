@@ -90,20 +90,7 @@ namespace HyperCasualGame.Scripts.Scenes.Main
                     );
                 });
 
-                // Load startup level from local data
-                this.LoadCurrentLevel(levelManager).Forget();
             });
-        }
-
-        private async UniTask LoadCurrentLevel(ILevelManager levelManager)
-        {
-            await UniTask.Yield();
-
-            var controller = await levelManager.LoadCurrentLevel();
-            if (controller == null)
-            {
-                Debug.LogError("[MainSceneScope] Failed to load startup level!");
-            }
         }
     }
 }

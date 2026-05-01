@@ -20,7 +20,8 @@
         "Dreamteck.Splines",
         "Unity.TextMeshPro",
         "GameFoundationCore.BlueprintFlow",
-        "GameFoundationCore.Utilities"
+        "GameFoundationCore.Utilities",
+        "OSA.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

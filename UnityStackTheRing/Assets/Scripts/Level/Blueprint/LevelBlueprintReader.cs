@@ -2,6 +2,7 @@ namespace HyperCasualGame.Scripts.Level.Blueprint
 {
     using System;
     using System.Linq;
+    using System.Collections.Generic;
     using BlueprintFlow.BlueprintReader;
 
     [BlueprintReader("LevelBlueprint")]
@@ -47,6 +48,11 @@ namespace HyperCasualGame.Scripts.Level.Blueprint
             var orderedLevels = this.Keys.OrderBy(level => level).ToArray();
             var nextAvailableLevel = orderedLevels.FirstOrDefault(level => level >= requestedLevel);
             return nextAvailableLevel == 0 ? this.GetMinLevel() : nextAvailableLevel;
+        }
+
+        public IReadOnlyList<int> GetOrderedLevels()
+        {
+            return this.Keys.OrderBy(level => level).ToArray();
         }
 
         public LevelBlueprintRecord GetRecord(int level)

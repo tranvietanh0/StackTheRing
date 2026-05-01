@@ -1,6 +1,7 @@
 namespace HyperCasualGame.Scripts.Level
 {
     using System;
+    using System.Collections.Generic;
     using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.AssetLibrary;
     using GameFoundationCore.Scripts.Signals;
@@ -19,6 +20,9 @@ namespace HyperCasualGame.Scripts.Level
         LevelData CurrentLevelData { get; }
         LevelController CurrentLevelController { get; }
 
+        IReadOnlyList<int> GetSelectableLevels();
+        UniTask<int> GetSavedCurrentLevel();
+        int NormalizeLevel(int levelNumber);
         UniTask<LevelController> LoadLevel(int levelNumber);
         UniTask<LevelController> LoadCurrentLevel();
         UniTask<LevelController> LoadNextLevel();
@@ -72,6 +76,21 @@ namespace HyperCasualGame.Scripts.Level
         public void SetInjectCallback(Action<LevelController> callback)
         {
             this.injectCallback = callback;
+        }
+
+        public IReadOnlyList<int> GetSelectableLevels()
+        {
+            return this.levelBlueprintReader.GetOrderedLevels();
+        }
+
+        public async UniTask<int> GetSavedCurrentLevel()
+        {
+            return this.levelBlueprintReader.NormalizeLevel(await this.localDataController.GetCurrentLevel());
+        }
+
+        public int NormalizeLevel(int levelNumber)
+        {
+            return this.levelBlueprintReader.NormalizeLevel(levelNumber);
         }
 
         public async UniTask<LevelController> LoadLevel(int levelNumber)

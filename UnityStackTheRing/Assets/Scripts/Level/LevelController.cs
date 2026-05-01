@@ -175,11 +175,9 @@ namespace HyperCasualGame.Scripts.Level
 
         private async UniTask StartGame()
         {
-            // Use levelData from prefab (assigned in inspector)
             if (this.levelData != null)
             {
                 this.SetupLevel(this.levelData);
-                this.gameStateMachine.TransitionTo<GamePlayState>();
             }
             else
             {
