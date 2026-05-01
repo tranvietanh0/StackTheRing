@@ -346,7 +346,13 @@ namespace HyperCasualGame.Scripts.Conveyor
             }
 
             var pathLength = this.CalculatePathLength();
+            if (pathLength <= 0f)
+            {
+                return false;
+            }
+
             var nearestDistanceAroundAnchor = float.MaxValue;
+            var nearestAheadDistanceFromAnchor = float.MaxValue;
 
             foreach (var follower in this.activeFollowers)
             {
@@ -355,7 +361,8 @@ namespace HyperCasualGame.Scripts.Conveyor
                     continue;
                 }
 
-                var anchorDelta = Mathf.Abs(follower.GetCurrentDistance() - anchorDistance);
+                var followerDistance = follower.GetCurrentDistance();
+                var anchorDelta = Mathf.Abs(followerDistance - anchorDistance);
                 if (anchorDelta > pathLength * 0.5f)
                 {
                     anchorDelta = pathLength - anchorDelta;
@@ -364,6 +371,17 @@ namespace HyperCasualGame.Scripts.Conveyor
                 if (anchorDelta < nearestDistanceAroundAnchor)
                 {
                     nearestDistanceAroundAnchor = anchorDelta;
+                }
+
+                var aheadDistance = followerDistance - anchorDistance;
+                if (aheadDistance < 0f)
+                {
+                    aheadDistance += pathLength;
+                }
+
+                if (aheadDistance < nearestAheadDistanceFromAnchor)
+                {
+                    nearestAheadDistanceFromAnchor = aheadDistance;
                 }
             }
 
@@ -379,7 +397,9 @@ namespace HyperCasualGame.Scripts.Conveyor
                 return false;
             }
 
-            insertDistance = anchorDistance;
+            insertDistance = nearestAheadDistanceFromAnchor < float.MaxValue
+                ? Mathf.Repeat(anchorDistance + nearestAheadDistanceFromAnchor - desiredSpacing, pathLength)
+                : anchorDistance;
             return true;
         }
 
