@@ -202,7 +202,7 @@ namespace HyperCasualGame.Scripts.Level
             this.multiQueueCoordinator?.SyncMainQueueState();
 
             // Setup bucket grid — include queue balls in target count
-            this.bucketColumnManager.SpawnBuckets(levelData, this.conveyorController.BallsPerRow, this.multiQueueCoordinator);
+            this.bucketColumnManager.SpawnBuckets(levelData, this.conveyorController, this.multiQueueCoordinator);
 
             this.logger.Info($"Level {levelData.LevelNumber} setup complete (queue={levelData.HasQueue})");
         }

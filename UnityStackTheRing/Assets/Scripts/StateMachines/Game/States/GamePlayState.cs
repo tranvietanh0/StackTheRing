@@ -164,6 +164,12 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
                 return;
             }
 
+            if (this.completedBuckets < this.totalBuckets)
+            {
+                this.logger.Info($"All balls cleared but waiting for bucket completion: {this.completedBuckets}/{this.totalBuckets}");
+                return;
+            }
+
             this.logger.Info("All balls cleared - WIN!");
             this.isPlaying = false;
 

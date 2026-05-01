@@ -854,31 +854,20 @@ namespace HyperCasualGame.Scripts.Conveyor
                     return;
                 }
 
-                var targetBucket = this.collectAreaBucketService.GetStableTargetBucketForColor(rowColor.Value);
+                var matchingBallCount = this.GetMatchingBallCount(rowBall, rowColor.Value);
+                var plannedBuckets = this.collectAreaBucketService.BuildBalancedBucketPlanByColor(rowColor.Value, matchingBallCount);
                 if (ENABLE_ENTRY_DEBUG_LOGS)
                 {
-                    Debug.Log($"[ConveyorController] EntryWave row={rowBall.RowId} entry={entryIndex} wave={waveIndex} rowColor={rowColor.Value} activeTarget={this.collectAreaBucketService.GetActiveTargetDebug()} targets={this.FormatTargetBuckets()}");
+                    Debug.Log($"[ConveyorController] EntryWave row={rowBall.RowId} entry={entryIndex} wave={waveIndex} rowColor={rowColor.Value} plannedBuckets={plannedBuckets.Count} targets={this.FormatTargetBuckets()}");
                 }
 
-                if (targetBucket == null)
+                if (plannedBuckets.Count == 0)
                 {
                     this.LogEntryStop(rowBall, entryIndex, waveIndex, $"no-target-bucket rowColor={rowColor.Value}");
                     return;
                 }
 
-                var limitedBallsToCollect = this.GetLimitedMatchingBalls(rowBall, rowColor.Value, targetBucket);
-                if (ENABLE_ENTRY_DEBUG_LOGS)
-                {
-                    Debug.Log($"[ConveyorController] EntryLimited row={rowBall.RowId} entry={entryIndex} wave={waveIndex} limited={this.FormatBallList(limitedBallsToCollect)}");
-                }
-
-                if (limitedBallsToCollect.Count == 0)
-                {
-                    this.LogEntryStop(rowBall, entryIndex, waveIndex, "no-matching-balls-or-slots");
-                    return;
-                }
-
-                var assignments = this.BuildAssignments(targetBucket, limitedBallsToCollect);
+                var assignments = this.BuildAssignments(rowBall, rowColor.Value, plannedBuckets);
                 if (assignments.Count == 0)
                 {
                     this.LogEntryStop(rowBall, entryIndex, waveIndex, "no-assignments");
@@ -905,21 +894,31 @@ namespace HyperCasualGame.Scripts.Conveyor
             this.LogEntryStop(rowBall, entryIndex, waveIndex, "max-wave-reached");
         }
 
-        private List<Ball> GetLimitedMatchingBalls(RowBall rowBall, ColorType color, Bucket targetBucket)
+        private int GetMatchingBallCount(RowBall rowBall, ColorType color)
         {
-            var result = new List<Ball>();
-            if (targetBucket == null)
-            {
-                return result;
-            }
-
-            var availableSlots = targetBucket.GetRemainingSlotCount();
-            if (availableSlots <= 0)
-            {
-                return result;
-            }
-
+            var count = 0;
             for (var index = 0; index < rowBall.SlotCount; index++)
+            {
+                var ball = rowBall.GetBallAt(index);
+                if (ball != null && !ball.IsCollected && ball.BallColor == color)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private List<(Ball ball, Bucket bucket)> BuildAssignments(RowBall rowBall, ColorType color, List<Bucket> plannedBuckets)
+        {
+            var assignments = new List<(Ball ball, Bucket bucket)>(plannedBuckets.Count);
+            if (rowBall == null || plannedBuckets.Count == 0)
+            {
+                return assignments;
+            }
+
+            var assignmentIndex = 0;
+            for (var index = 0; index < rowBall.SlotCount && assignmentIndex < plannedBuckets.Count; index++)
             {
                 var ball = rowBall.GetBallAt(index);
                 if (ball == null || ball.IsCollected || ball.BallColor != color)
@@ -927,28 +926,9 @@ namespace HyperCasualGame.Scripts.Conveyor
                     continue;
                 }
 
-                result.Add(ball);
-                if (result.Count >= availableSlots)
-                {
-                    break;
-                }
-            }
-
-            return result;
-        }
-
-        private List<(Ball ball, Bucket bucket)> BuildAssignments(Bucket targetBucket, List<Ball> ballsToCollect)
-        {
-            var assignments = new List<(Ball ball, Bucket bucket)>(ballsToCollect.Count);
-            if (targetBucket == null)
-            {
-                return assignments;
-            }
-
-            foreach (var ball in ballsToCollect)
-            {
-                targetBucket.StartIncomingBall();
-                assignments.Add((ball, targetBucket));
+                var bucket = plannedBuckets[assignmentIndex++];
+                bucket.StartIncomingBall();
+                assignments.Add((ball, bucket));
             }
 
             return assignments;

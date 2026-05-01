@@ -66,7 +66,7 @@ namespace HyperCasualGame.Scripts.Bucket
         /// Spawn buckets based on level data.
         /// Matches Cocos GridBucketManager.spawnBuckets()
         /// </summary>
-        public void SpawnBuckets(LevelData levelData, int ballsPerRow, MultiQueueCoordinator multiQueueCoordinator = null)
+        public void SpawnBuckets(LevelData levelData, ConveyorController conveyorController, MultiQueueCoordinator multiQueueCoordinator = null)
         {
             this.Cleanup();
 
@@ -87,7 +87,7 @@ namespace HyperCasualGame.Scripts.Bucket
 
             var width = levelData.BucketGridWidth;
             this.collectedUnlockBallCount = 0;
-            var totalBallCountByColor = this.CalculateTotalBallCountByColor(levelData, ballsPerRow, multiQueueCoordinator);
+            var totalBallCountByColor = this.CalculateTotalBallCountByColor(conveyorController, multiQueueCoordinator);
             var bucketCountByColor = this.CalculateBucketCountByColor(layoutCells);
             var assignedBucketCountByColor = new Dictionary<ColorType, int>();
 
@@ -395,25 +395,15 @@ namespace HyperCasualGame.Scripts.Bucket
             bucket.Reveal();
         }
 
-        private Dictionary<ColorType, int> CalculateTotalBallCountByColor(LevelData levelData, int ballsPerRow, MultiQueueCoordinator multiQueueCoordinator)
+        private Dictionary<ColorType, int> CalculateTotalBallCountByColor(ConveyorController conveyorController, MultiQueueCoordinator multiQueueCoordinator)
         {
             var result = new Dictionary<ColorType, int>();
-            var normalizedBallsPerRow = Mathf.Max(1, ballsPerRow);
 
-            // Count main ring balls
-            if (levelData.Rings != null)
+            if (conveyorController != null)
             {
-                foreach (var ring in levelData.Rings)
+                foreach (var rowBall in conveyorController.ActiveRowBalls)
                 {
-                    var totalBallCount = ring.Count * normalizedBallsPerRow;
-                    if (result.ContainsKey(ring.Color))
-                    {
-                        result[ring.Color] += totalBallCount;
-                    }
-                    else
-                    {
-                        result[ring.Color] = totalBallCount;
-                    }
+                    this.AccumulateRowBallColors(result, rowBall);
                 }
             }
 
@@ -421,44 +411,31 @@ namespace HyperCasualGame.Scripts.Bucket
             {
                 foreach (var rowBall in multiQueueCoordinator.PendingRows)
                 {
-                    foreach (var ball in rowBall.GetActiveBalls())
-                    {
-                        if (result.ContainsKey(ball.BallColor))
-                        {
-                            result[ball.BallColor] += 1;
-                        }
-                        else
-                        {
-                            result[ball.BallColor] = 1;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (var lane in levelData.GetActiveQueueLanes())
-                {
-                    if (!lane.Enabled || lane.QueueRings == null)
-                    {
-                        continue;
-                    }
-
-                    foreach (var ring in lane.QueueRings)
-                    {
-                        var totalBallCount = ring.Count * normalizedBallsPerRow;
-                        if (result.ContainsKey(ring.Color))
-                        {
-                            result[ring.Color] += totalBallCount;
-                        }
-                        else
-                        {
-                            result[ring.Color] = totalBallCount;
-                        }
-                    }
+                    this.AccumulateRowBallColors(result, rowBall);
                 }
             }
 
             return result;
+        }
+
+        private void AccumulateRowBallColors(Dictionary<ColorType, int> totalsByColor, RowBall rowBall)
+        {
+            if (rowBall == null)
+            {
+                return;
+            }
+
+            foreach (var ball in rowBall.GetActiveBalls())
+            {
+                if (totalsByColor.ContainsKey(ball.BallColor))
+                {
+                    totalsByColor[ball.BallColor] += 1;
+                }
+                else
+                {
+                    totalsByColor[ball.BallColor] = 1;
+                }
+            }
         }
 
         private Dictionary<ColorType, int> CalculateBucketCountByColor(IEnumerable<BucketLayoutCell> layoutCells)

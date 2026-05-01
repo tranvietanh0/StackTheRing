@@ -1,7 +1,9 @@
 namespace HyperCasualGame.Scripts.StateMachines.Game.States
 {
+    using Cysharp.Threading.Tasks;
     using GameFoundationCore.Scripts.Signals;
     using GameFoundationCore.Scripts.UIModule.ScreenFlow.Manager;
+    using HyperCasualGame.Scripts.Scenes.Screen;
     using HyperCasualGame.Scripts.StateMachines.Game.Interfaces;
     using UniT.Logging;
     using ILogger = UniT.Logging.ILogger;
@@ -38,7 +40,7 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
         {
             this.logger.Info("Entering GameLoseState");
 
-            this.ShowLoseScreen();
+            this.ShowLoseScreen().Forget();
         }
 
         public void Exit()
@@ -50,10 +52,9 @@ namespace HyperCasualGame.Scripts.StateMachines.Game.States
 
         #region Private Methods
 
-        private async void ShowLoseScreen()
+        private async UniTask ShowLoseScreen()
         {
-            // TODO: Open lose popup
-            // await this.screenManager.OpenScreen<LosePopupPresenter>();
+            await this.screenManager.OpenScreen<LoseScreenPresenter>();
         }
 
         #endregion
