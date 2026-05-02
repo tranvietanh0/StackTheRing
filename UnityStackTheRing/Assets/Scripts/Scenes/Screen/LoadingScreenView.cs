@@ -49,7 +49,6 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
         private readonly UserDataManager userDataManager;
         private readonly IGameAssets gameAssets;
         private readonly BlueprintReaderManager blueprintReaderManager;
-        private readonly LocalDataController localDataController;
         private readonly LevelBlueprintReader levelBlueprintReader;
 
         public LoadingScreenPresenter(
@@ -58,14 +57,12 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
             UserDataManager userDataManager,
             IGameAssets gameAssets,
             BlueprintReaderManager blueprintReaderManager,
-            LocalDataController localDataController,
             LevelBlueprintReader levelBlueprintReader
         ) : base(signalBus, loggerManager)
         {
             this.userDataManager = userDataManager;
             this.gameAssets = gameAssets;
             this.blueprintReaderManager = blueprintReaderManager;
-            this.localDataController = localDataController;
             this.levelBlueprintReader = levelBlueprintReader;
         }
 
@@ -86,28 +83,28 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
         {
             await this.AnimateProgressTo(0.05f);
             await this.userDataManager.LoadUserData();
-            await this.AnimateProgressTo(0.2f);
+            await this.AnimateProgressTo(0.1f);
         }
 
         private async UniTask LoadBlueprintWithProgress()
         {
-            await this.AnimateProgressTo(0.25f);
+            await this.AnimateProgressTo(0.15f);
             await this.blueprintReaderManager.LoadBlueprint();
-            await this.AnimateProgressTo(0.45f);
+            await this.AnimateProgressTo(0.25f);
         }
 
         private async UniTask PreloadStartupLevelsWithProgress()
         {
-            await this.AnimateProgressTo(0.45f);
+            await this.AnimateProgressTo(0.25f);
 
-            var preloadKeys = await this.ResolveStartupLevelKeys();
+            var preloadKeys = this.ResolveStartupLevelKeys();
             if (preloadKeys.Count == 0)
             {
-                await this.AnimateProgressTo(0.7f);
+                await this.AnimateProgressTo(0.85f);
                 return;
             }
 
-            var handles = new List<AsyncOperationHandle<GameObject>>(preloadKeys.Count);
+            var handles = new List<(string key, AsyncOperationHandle<GameObject> handle)>(preloadKeys.Count);
             foreach (var preloadKey in preloadKeys)
             {
                 var handle = this.gameAssets.LoadAssetAsync<GameObject>(preloadKey, true, this.NextSceneName);
@@ -117,31 +114,31 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
                     continue;
                 }
 
-                handles.Add(handle);
+                handles.Add((preloadKey, handle));
             }
 
             if (handles.Count == 0)
             {
-                await this.AnimateProgressTo(0.7f);
+                await this.AnimateProgressTo(0.85f);
                 return;
             }
 
-            var displayedProgress = 0.45f;
+            var displayedProgress = 0.25f;
             while (true)
             {
                 var totalProgress = 0f;
                 var completedCount = 0;
-                foreach (var handle in handles)
+                foreach (var preload in handles)
                 {
-                    totalProgress += handle.PercentComplete;
-                    if (handle.IsDone)
+                    totalProgress += preload.handle.PercentComplete;
+                    if (preload.handle.IsDone)
                     {
                         completedCount++;
                     }
                 }
 
                 var averageProgress = totalProgress / handles.Count;
-                var targetProgress = 0.45f + averageProgress * 0.25f;
+                var targetProgress = 0.25f + averageProgress * 0.6f;
                 displayedProgress = Mathf.MoveTowards(displayedProgress, targetProgress, Time.unscaledDeltaTime * ProgressAnimationSpeed);
                 this.View.SetProgress(displayedProgress);
 
@@ -153,29 +150,29 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
                 await UniTask.Yield();
             }
 
-            foreach (var handle in handles)
+            this.Logger.Info($"Startup level preload completed: {handles.Count}/{preloadKeys.Count} level prefabs cached for {this.NextSceneName}.");
+
+            foreach (var preload in handles)
             {
-                if (handle.Status == AsyncOperationStatus.Failed)
+                if (preload.handle.Status == AsyncOperationStatus.Failed)
                 {
-                    this.Logger.Warning($"Startup level preload failed: {handle.OperationException?.Message}");
+                    this.Logger.Warning($"Startup level preload failed for {preload.key}: {preload.handle.OperationException?.Message}");
+                    this.gameAssets.ReleaseAsset(preload.key);
                 }
             }
 
-            await this.AnimateProgressTo(0.7f);
+            await this.AnimateProgressTo(0.85f);
         }
 
-        private async UniTask<List<string>> ResolveStartupLevelKeys()
+        private List<string> ResolveStartupLevelKeys()
         {
-            var preloadKeys = new List<string>(2);
-            if (this.levelBlueprintReader.Count == 0)
+            var orderedLevels = this.levelBlueprintReader.GetOrderedLevels();
+            var preloadKeys = new List<string>(orderedLevels.Count);
+            for (var index = 0; index < orderedLevels.Count; index++)
             {
-                return preloadKeys;
+                this.TryAddLevelKey(preloadKeys, orderedLevels[index]);
             }
 
-            var savedCurrentLevel = await this.localDataController.GetCurrentLevel();
-            var currentLevel = this.levelBlueprintReader.NormalizeLevel(savedCurrentLevel);
-            this.TryAddLevelKey(preloadKeys, currentLevel);
-            this.TryAddLevelKey(preloadKeys, this.levelBlueprintReader.GetNextLevel(currentLevel));
             return preloadKeys;
         }
 
@@ -199,11 +196,11 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
         private async UniTask LoadSceneWithProgress()
         {
             var handle = this.gameAssets.LoadSceneAsync(this.NextSceneName);
-            var displayedProgress = 0.7f;
+            var displayedProgress = 0.85f;
 
             while (!handle.IsDone)
             {
-                var targetProgress = 0.7f + handle.PercentComplete * 0.3f;
+                var targetProgress = 0.85f + handle.PercentComplete * 0.15f;
                 displayedProgress = Mathf.MoveTowards(displayedProgress, targetProgress, Time.unscaledDeltaTime * ProgressAnimationSpeed);
                 this.View.SetProgress(displayedProgress);
                 await UniTask.Yield();

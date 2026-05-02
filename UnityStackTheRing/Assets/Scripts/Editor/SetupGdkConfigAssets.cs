@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace HyperCasualGame.Scripts.Editor
 {
     using BlueprintFlow.BlueprintControlFlow;
@@ -54,3 +55,4 @@ namespace HyperCasualGame.Scripts.Editor
         }
     }
 }
+#endif

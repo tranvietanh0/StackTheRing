@@ -173,11 +173,32 @@ namespace HyperCasualGame.Scripts.Level
         {
             if (this.CurrentLevelController != null)
             {
+                var levelTransform = this.CurrentLevelController.transform;
                 Object.Destroy(this.CurrentLevelController.gameObject);
+                this.CleanupDetachedLevelChildren(levelTransform);
                 this.CurrentLevelController = null;
                 this.CurrentLevelData = null;
 
                 this.logger.Info("Previous level unloaded");
+            }
+        }
+
+        private void CleanupDetachedLevelChildren(Transform currentLevelTransform)
+        {
+            if (this.levelRoot == null)
+            {
+                return;
+            }
+
+            for (var index = this.levelRoot.childCount - 1; index >= 0; index--)
+            {
+                var child = this.levelRoot.GetChild(index);
+                if (child == null || child == currentLevelTransform)
+                {
+                    continue;
+                }
+
+                Object.Destroy(child.gameObject);
             }
         }
 

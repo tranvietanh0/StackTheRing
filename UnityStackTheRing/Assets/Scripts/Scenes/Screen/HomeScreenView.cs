@@ -7,6 +7,7 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
     using GameFoundationCore.Scripts.Signals;
     using GameFoundationCore.Scripts.UIModule.ScreenFlow.BaseScreen.Presenter;
     using GameFoundationCore.Scripts.UIModule.ScreenFlow.BaseScreen.View;
+    using GameFoundationCore.Scripts.UIModule.ScreenFlow.Manager;
     using HyperCasualGame.Scripts.Level;
     using HyperCasualGame.Scripts.StateMachines.Game;
     using HyperCasualGame.Scripts.StateMachines.Game.States;
@@ -192,6 +193,7 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
     {
         private readonly GameStateMachine gameStateMachine;
         private readonly ILevelManager levelManager;
+        private readonly IScreenManager screenManager;
         private readonly List<HomeLevelItemModel> levelModels = new();
         private int selectedLevel;
 
@@ -199,11 +201,13 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
             SignalBus signalBus,
             ILoggerManager loggerManager,
             GameStateMachine gameStateMachine,
-            ILevelManager levelManager
+            ILevelManager levelManager,
+            IScreenManager screenManager
         ) : base(signalBus, loggerManager)
         {
             this.gameStateMachine = gameStateMachine;
             this.levelManager = levelManager;
+            this.screenManager = screenManager;
         }
 
         protected override void OnViewReady()
@@ -254,14 +258,6 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
             this.UpdateSelectedLevelText();
         }
 
-        public override void Dispose()
-        {
-            if (this.View != null && this.View.PlayButton != null)
-            {
-                this.View.PlayButton.onClick.RemoveListener(this.OnClickPlay);
-            }
-        }
-
         private void OnSelectedLevel(int levelNumber)
         {
             if (this.selectedLevel == levelNumber)
@@ -304,6 +300,18 @@ namespace HyperCasualGame.Scripts.Scenes.Screen
                     return;
                 }
 
+                var gameplayScreen = await this.screenManager.GetScreen<GameplayScreenPresenter>();
+                if (gameplayScreen == null)
+                {
+                    if (this.View.SelectedLevelText != null)
+                    {
+                        this.View.SelectedLevelText.text = "SCREEN FAILED";
+                    }
+
+                    return;
+                }
+
+                await gameplayScreen.OpenViewAsync();
                 this.gameStateMachine.TransitionTo<GamePlayState>();
             }
             finally

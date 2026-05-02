@@ -6,6 +6,7 @@ namespace HyperCasualGame.Scripts.Ring
     using HyperCasualGame.Scripts.Bucket;
     using HyperCasualGame.Scripts.Core;
     using HyperCasualGame.Scripts.Effects;
+    using HyperCasualGame.Scripts.Level;
     using HyperCasualGame.Scripts.Services;
     using HyperCasualGame.Scripts.Signals;
     using UnityEngine;
@@ -105,8 +106,10 @@ namespace HyperCasualGame.Scripts.Ring
                     Color = this.BallColor
                 });
 
-                // Detach from parent for jump
-                this.transform.SetParent(null);
+                // Detach from moving row but keep under current level instance so unload cleans it up
+                var levelController = targetBucket.GetComponentInParent<LevelController>();
+                var levelTransform = levelController != null ? levelController.transform : targetBucket.transform.root;
+                this.transform.SetParent(levelTransform, true);
 
                 // Jump animation using JumpService
                 await JumpService.Instance.JumpToDestination(
@@ -116,6 +119,11 @@ namespace HyperCasualGame.Scripts.Ring
                     GameConstants.BallConfig.JumpDuration,
                     Vector3.zero
                 );
+
+                if (this == null || targetBucket == null)
+                {
+                    return;
+                }
 
                 // === Landing Effect Sequence ===
 

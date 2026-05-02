@@ -60,6 +60,7 @@
 
         private void OnClickHome()
         {
+            this.levelManager.UnloadCurrentLevel();
             this.gameStateMachine.TransitionTo<GameHomeState>();
         }
 

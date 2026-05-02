@@ -48,7 +48,11 @@ namespace HyperCasualGame.Scripts.Level
         [InfoBox("BucketGrid matches play mode directly: horizontal = column, vertical = row, access = grid[col, row].")]
         [OdinSerialize]
         [ValidateInput(nameof(IsBucketGridValid), "BucketGrid contains unsupported data.")]
+#if UNITY_EDITOR
         [TableMatrix(SquareCells = true, ResizableColumns = false, DrawElementMethod = nameof(DrawBucketCell))]
+#else
+        [TableMatrix(SquareCells = true, ResizableColumns = false)]
+#endif
         public BucketCellType[,] BucketGrid;
 
         [ShowIf(nameof(HasBucketGrid))]
